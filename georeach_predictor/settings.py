@@ -37,7 +37,24 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "core", # Our core app
 ]
+
+# Database configuration for PostGIS
+# You will need to have PostgreSQL with PostGIS extension installed and configured.
+# For local development, you might use a Docker container or a local PostgreSQL installation.
+# Example for PostgreSQL:
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.contrib.gis.db.backends.postgis",
+#         "NAME": "georeach_db",
+#         "USER": "georeach_user",
+#         "PASSWORD": "georeach_password",
+#         "HOST": "localhost",
+#         "PORT": "5432",
+#     }
+# }
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
