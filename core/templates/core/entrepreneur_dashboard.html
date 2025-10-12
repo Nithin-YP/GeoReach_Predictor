@@ -5,5 +5,43 @@
 {% block content %}
     <h2>Welcome, {{ user.username }}!</h2>
     <p>This is your entrepreneur dashboard.</p>
+
+    <h3>Create New Prediction Request</h3>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit Prediction Request</button>
+    </form>
+
+    <h3>Past Predictions</h3>
+    {% if past_predictions %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Product Type</th>
+                    <th>Luxury Level</th>
+                    <th>Target Audience</th>
+                    <th>Price</th>
+                    <th>Region</th>
+                    <th>Request Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prediction in past_predictions %}
+                    <tr>
+                        <td>{{ prediction.product_type }}</td>
+                        <td>{{ prediction.product_luxury }}</td>
+                        <td>{{ prediction.target_audience }}</td>
+                        <td>{{ prediction.price }}</td>
+                        <td>{{ prediction.region }}</td>
+                        <td>{{ prediction.request_timestamp }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No past predictions found.</p>
+    {% endif %}
+
     <p><a href="{% url 'core:logout' %}">Logout</a></p>
 {% endblock %}

@@ -1,12 +1,18 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import User, PredictionRequest, PredictionResult, Cluster, Dataset
+from .forms import CustomUserCreationForm, CustomUserChangeForm
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
+    form = CustomUserChangeForm
+    add_form = CustomUserCreationForm
     list_display = ('username', 'email', 'is_staff', 'is_active', 'is_superuser', 'is_blocked')
     fieldsets = UserAdmin.fieldsets + (
-        (None, {'fields': ('is_blocked',)}),
+        ('Blocked Status', {'fields': ('is_blocked',)}),
+    )
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        ('Blocked Status', {'fields': ('is_blocked',)}),
     )
 
 @admin.register(PredictionRequest)

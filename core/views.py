@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .forms import EntrepreneurRegistrationForm
-from .models import User
+from .forms import EntrepreneurRegistrationForm, PredictionRequestForm
+from .models import User, PredictionRequest
 
 def entrepreneur_register(request):
     if request.method == 'POST':
@@ -44,7 +44,22 @@ def user_logout(request):
 @login_required
 def entrepreneur_dashboard(request):
     if not request.user.is_superuser:
-        return render(request, 'core/entrepreneur_dashboard.html')
+        if request.method == 'POST':
+            form = PredictionRequestForm(request.POST)
+            if form.is_valid():
+                prediction_request = form.save(commit=False)
+                prediction_request.user = request.user
+                prediction_request.save()
+                return redirect('core:entrepreneur_dashboard') # Redirect to clear form
+        else:
+            form = PredictionRequestForm()
+
+        past_predictions = PredictionRequest.objects.filter(user=request.user).order_by('-request_timestamp')
+        context = {
+            'form': form,
+            'past_predictions': past_predictions,
+        }
+        return render(request, 'core/entrepreneur_dashboard.html', context)
     else:
         return redirect('core:admin_dashboard') # Admins shouldn't access entrepreneur dashboard
 
