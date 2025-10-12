@@ -1,10 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import User
-
-from django import forms
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import User
+from .models import User, PredictionRequest
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
