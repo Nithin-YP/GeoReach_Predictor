@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+    <h2>Welcome, Admin {{ user.username }}!</h2>
+    <p>This is your admin dashboard.</p>
+    <p><a href="{% url 'core:logout' %}">Logout</a></p>
+{% endblock %}

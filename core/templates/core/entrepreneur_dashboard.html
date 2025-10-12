@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block title %}Entrepreneur Dashboard{% endblock %}
+
+{% block content %}
+    <h2>Welcome, {{ user.username }}!</h2>
+    <p>This is your entrepreneur dashboard.</p>
+    <p><a href="{% url 'core:logout' %}">Logout</a></p>
+{% endblock %}
