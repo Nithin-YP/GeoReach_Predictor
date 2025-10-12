@@ -5,5 +5,14 @@
 {% block content %}
     <h2>Welcome, Admin {{ user.username }}!</h2>
     <p>This is your admin dashboard.</p>
+
+    <h3>System Overview</h3>
+    <ul>
+        <li>Total Registered Users: [Placeholder: X]</li>
+        <li>Total Predictions Made: [Placeholder: Y]</li>
+        <li>Most Queried Regions: [Placeholder: Region A, Region B]</li>
+        <li>Dataset & Model Version: [Placeholder: v1.0]</li>
+    </ul>
+
     <p><a href="{% url 'core:logout' %}">Logout</a></p>
 {% endblock %}

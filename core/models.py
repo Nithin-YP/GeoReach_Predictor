@@ -21,7 +21,8 @@ class User(AbstractUser):
         related_name="core_user_permissions_set", # Custom related_name
         related_query_name="user",
     )
-    pass
+    is_blocked = models.BooleanField(default=False, help_text='Designates whether this user should be treated as blocked.')
+
 
 class PredictionRequest(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
