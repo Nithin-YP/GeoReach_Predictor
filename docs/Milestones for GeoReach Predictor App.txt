@@ -1,0 +1,592 @@
+﻿Milestones for GeoReach Predictor App
+Milestones for GeoReach Predictor – v1.0
+Project: GeoReach Predictor
+The project is divided into 0th milestone, Core Requirements (6 Milestones), and Recommended Functionalities & Optional Enhancements (3 Milestones).
+All core milestones can be completed in any order.
+Recommended and optional enhancements should only be started after the core milestones are done.
+Each milestone includes a Git commit message. When completed, use the provided commit message and push your updates to GitHub.
+________________
+
+
+Milestone 0: GitHub Repository Setup (Mandatory)
+Deadline: <<insert date>>
+✅ Expected Time: 1 day
+📊 Completion Progress: 5%
+Tasks:
+1. Create a private GitHub repository.
+
+2. Add README.md with a short project description.
+
+3. Add .gitignore for Django, Python, and frontend assets.
+
+4. Commit and push initial setup to the repository.
+
+Git Commit Message:
+ Milestone-0 Github repo Setup
+
+
+Core Requirements (n Milestones)
+________________
+
+
+Milestone: Database Models and Schema Setup
+✅ Expected Time: 5–7 days
+📊 Completion Progress: 15%
+Tasks:
+   * Create models for:
+
+      * User (id, username, email, password_hash, role, created_at, is_active)
+
+      * PredictionRequest (id, user_id, product_type, product_luxury, target_audience, price, region, request_timestamp)
+
+      * PredictionResult (id, prediction_request_id, predicted_reach, success_probability, model_confidence, created_at)
+
+      * Cluster (id, prediction_result_id, latitude, longitude, cluster_label, population_density, avg_income, employment_rate, interest_index)
+
+      * Dataset (id, name, source, upload_date, last_updated, feature_list, record_count)
+
+         * Define relationships:
+
+            * User 1 → n PredictionRequest
+
+            * PredictionRequest 1 → 1 PredictionResult
+
+            * PredictionResult 1 → n Cluster
+
+               * Ensure Admin user is pre-created programmatically via a Django management script.
+
+Git Commit Message:
+ Milestone-DB-Relationship
+________________
+
+
+Milestone: Authentication and Role-Based Access
+✅ Expected Time: 5 days
+📊 Completion Progress: 10%
+Tasks:
+                  * Implement authentication: login/logout, hashed passwords.
+
+                  * Role-based access:
+
+                     * Entrepreneur: self-register + login.
+
+                     * Admin: predefined login only (no registration).
+
+                        * Redirect users to role-specific dashboards after login.
+
+Git Commit Message:
+ Milestone-Auth-RBAC
+________________
+
+
+Milestone: Admin Dashboard and Management
+✅ Expected Time: 7–9 days
+📊 Completion Progress: 15%
+Admin Functionalities:
+                           * Dashboard shows system overview:
+
+                              * Total registered users
+
+                              * Total predictions made
+
+                              * Most queried regions
+
+                              * Dataset & model version
+
+                                 * CRUD operations for all roles (Add/Edit/Delete/Blacklist).
+
+                                 * Search specific roles and view complete info.
+
+                                 * View/manage functionalities of each role.
+
+                                 * Verify/unverify (block) roles if required.
+
+Git Commit Message:
+ Milestone-Admin-Dashboard-Management
+________________
+
+
+Milestone: Entrepreneur Dashboard and Management
+✅ Expected Time: 7 days
+📊 Completion Progress: 15%
+Entrepreneur Functionalities:
+                                    * Dashboard displays:
+
+                                       * Welcome panel with user info
+
+                                       * Summary of past predictions (predicted reach, success probability)
+
+                                          * Functionality 1: Create New Prediction Request (product type, luxury, audience, price, region)
+
+                                          * Functionality 2: View GIS Cluster Visualization (Leaflet.js map, color-coded clusters)
+
+                                          * Functionality 3: Growth Projection Chart (Chart.js line chart showing market adoption trend)
+
+                                          * Functionality 4: Export Prediction Report (CSV/PDF)
+
+                                          * Functionality 5: View Past Predictions (re-run or compare results)
+
+Git Commit Message:
+ Milestone-Entrepreneur-Dashboard-Management
+________________
+
+
+Milestone: Core Functionality 1 – Prediction Engine
+✅ Expected Time: 5–6 days
+📊 Completion Progress: 12%
+Requirements / Features:
+                                             * Receive input parameters from entrepreneur dashboard.
+
+                                             * Preprocess input data for model compatibility.
+
+                                             * Run RandomForestRegressor to predict reach.
+
+                                             * Run KMeans clustering for high/medium/low potential clusters.
+
+                                             * Return JSON output with:
+
+                                                * Predicted reach (%)
+
+                                                * Success probability (0–1)
+
+                                                * Cluster coordinates and labels
+
+                                                   * Ensure API integrates smoothly with frontend dashboards.
+
+Git Commit Message:
+ Milestone-core-feature-1-Prediction-Engine
+Milestone: Core Functionality 2 – Map & Cluster Visualization
+✅ Expected Time: 5–6 days
+📊 Completion Progress: 12%
+Requirements / Features:
+                                                      * Integrate Leaflet.js in entrepreneur dashboard.
+
+                                                      * Display color-coded clusters based on potential:
+
+                                                         * 🟢 High Potential
+
+                                                         * 🟡 Medium Potential
+
+                                                         * 🔴 Low Potential
+
+                                                            * Hover over clusters to display demographic info:
+
+                                                               * Average income
+
+                                                               * Employment rate
+
+                                                               * Population density
+
+                                                               * Interest index
+
+                                                                  * Dynamically update clusters based on input parameters (price, product type, audience, region).
+
+                                                                  * Allow zoom/pan for detailed regional exploration.
+
+Git Commit Message:
+ Milestone-core-feature-2-Map-Cluster-Visualization
+________________
+
+
+Milestone: Core Functionality 3 – Time Projection / Growth Chart
+✅ Expected Time: 4–5 days
+📊 Completion Progress: 10%
+Requirements / Features:
+                                                                     * Integrate Chart.js for time-based adoption trend.
+
+                                                                     * Use prediction results to simulate market growth or shrinkage over months (6–12 months).
+
+                                                                     * Display line chart showing projected reach over time.
+
+                                                                     * Include interactive tooltip to show % reach per month.
+
+                                                                     * Update chart dynamically when entrepreneur adjusts input parameters.
+
+Git Commit Message:
+ Milestone-core-feature-3-Time-Projection-Chart
+________________
+
+
+Milestone: Core Functionality 4 – Prediction Report Export
+✅ Expected Time: 3–4 days
+📊 Completion Progress: 8%
+Requirements / Features:
+                                                                        * Enable export of prediction results in CSV and PDF formats.
+
+                                                                        * Include in report:
+
+                                                                           * Input parameters (product type, price, target audience, region)
+
+                                                                           * Predicted reach (%)
+
+                                                                           * Success probability
+
+                                                                           * Cluster summary (High/Medium/Low potential clusters)
+
+                                                                           * Map snapshot (optional for PDF)
+
+                                                                              * Ensure download button is available on entrepreneur dashboard.
+
+Git Commit Message:
+ Milestone-core-feature-4-Prediction-Report-Export
+________________
+
+
+Milestone: Core Functionality 5 – Past Prediction History & Filtering
+✅ Expected Time: 3–4 days
+📊 Completion Progress: 8%
+Requirements / Features:
+                                                                                 * Maintain historical predictions per entrepreneur.
+
+                                                                                 * Display table view of all past predictions.
+
+                                                                                 * Filtering options by:
+
+                                                                                    * Product Type
+
+                                                                                    * Price Range
+
+                                                                                    * Region
+
+                                                                                    * Date Range
+
+                                                                                       * Allow re-run or compare previous predictions.
+
+Git Commit Message:
+ Milestone-core-feature-5-Past-Prediction-History
+Recommended/Optional Enhancements (m Milestones)
+________________
+
+
+Milestone: UI/UX Enhancements & PWA Features
+✅ Expected Time: 6 days
+Tasks / Features:
+                                                                                          * Improve UI styling using modern frameworks (e.g., Tailwind CSS, Bootstrap, or Material Design for Django).
+
+                                                                                          * Make the web app mobile-responsive for tablets and smartphones.
+
+                                                                                          * Implement frontend validation for user inputs and backend validation for security.
+
+                                                                                          * Add “Add to Home Screen” functionality for PWA-like behavior.
+
+                                                                                          * Ensure consistent design across devices (desktop, mobile, tablet).
+
+Git Commit Message:
+ Milestone-Responsive-PWA
+________________
+
+
+Milestone: Competitive Pricing Analysis (Optional)
+✅ Expected Time: 5 days
+Tasks / Features:
+                                                                                             * Allow entrepreneur to enter competitor prices for similar products.
+
+                                                                                             * Model predicts relative market share capture based on competitor pricing.
+
+                                                                                             * Display graph/chart comparing predicted reach vs competitor scenario.
+
+                                                                                             * Update map clusters to reflect price-sensitive regions.
+
+Git Commit Message:
+ Milestone-Competitive-Pricing-Analysis
+________________
+
+
+Milestone: Optimal Marketing Channel Guidance (Optional)
+✅ Expected Time: 5 days
+Tasks / Features:
+                                                                                                * Suggest top 3 marketing channels based on target cluster demographics and interests.
+
+                                                                                                * Example outputs:
+
+                                                                                                   * Affluent Urban Professionals → LinkedIn Ads, Podcasts, Metro Advertising.
+
+                                                                                                   * Students → Instagram, YouTube, Campus Events.
+
+                                                                                                      * Integrate suggestions into entrepreneur dashboard alongside prediction results.
+
+                                                                                                      * Option to export marketing recommendations along with prediction report.
+
+Git Commit Message:
+ Milestone-Optimal-Marketing-Channel-Guidance
+________________
+
+
+Milestone: Interactive Scenario Simulations (Optional)
+✅ Expected Time: 4–5 days
+Tasks / Features:
+                                                                                                         * Allow entrepreneurs to adjust parameters dynamically (price, product type, audience, region) and see predicted outcomes in real-time.
+
+                                                                                                         * Update GIS clusters and growth charts instantly on parameter changes.
+
+                                                                                                         * Enable “what-if” analysis for multiple scenarios to compare reach and success probabilities.
+
+                                                                                                         * Provide visual summary dashboard comparing scenarios side-by-side.
+
+Git Commit Message:
+ Milestone-Interactive-Scenario-Simulation
+Milestone: Reports, Charts & Payments (Optional)
+✅ Expected Time: 7 days
+Tasks / Features:
+                                                                                                            * Integrate Chart.js for analytics visualization (e.g., predicted reach over time, cluster distributions).
+
+                                                                                                            * Enable export of monthly activity reports as PDF for entrepreneurs and admin summaries.
+
+                                                                                                            * Implement dummy payment module if monetization or subscription simulation is required (optional for hackathon).
+
+Git Commit Message:
+ Milestone-Reports-Charts-Payment
+________________
+
+
+Milestone: Final Project Submission
+✅ Expected Time: 2 days
+📊 After Completion Progress: 100%
+Tasks / Features:
+                                                                                                               * Prepare ZIP of full project code including frontend, backend, and dataset scripts.
+
+                                                                                                               * Submit 3–5 page report documenting:
+
+                                                                                                                  * Project overview, architecture, workflows, and screenshots.
+
+                                                                                                                  * AI/ML model usage declaration (percentage of AI usage if any).
+
+                                                                                                                     * Ensure all milestones are completed and Git commits pushed.
+
+                                                                                                                     * Verify all core and optional features work as intended before submission.
+
+Git Commit Message:
+ Milestone-Final-Submission
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+GeoReach Predictor – v1.0 Hackathon Roadmap
+Milestones Overview
+This document consolidates all milestones for the GeoReach Predictor project including Core, Recommended, and Optional Enhancements. Each milestone includes expected time, progress percentage, and Git commit message for tracking.
+Milestone #
+	Title
+	Expected Time
+	Completion Progress
+	Key Tasks
+	Git Commit Message
+	0
+	GitHub Repository Setup
+	1 day
+	5%
+	Create private repo, add README.md, add .gitignore
+	Milestone-0 Github repo Setup
+	1
+	Django Project & App Setup
+	2 hours
+	10%
+	Initialize Django project, app, settings, URLs, templates, static files
+	Milestone-1 Django project & app setup
+	2
+	Authentication & Role-Based Access
+	4 hours
+	15%
+	Implement login/logout, role-based access, redirect to dashboards
+	Milestone-2 Authentication & role-based authorization implemented
+	3
+	Admin Dashboard & Management
+	5 hours
+	20%
+	Admin overview panel, CRUD for entrepreneurs, search/filter users
+	Milestone-3 Admin dashboard & user management CRUD implemented
+	4
+	Dataset Upload & Management
+	3 hours
+	15%
+	Admin dataset upload, validation, storage
+	Milestone-4 Dataset upload & management implemented
+	5
+	ML Model Integration
+	6 hours
+	20%
+	RandomForest prediction, KMeans clustering, API endpoint for predictions
+	Milestone-5 ML model integration & prediction API ready
+	6
+	Entrepreneur Dashboard & Map Visualization
+	6 hours
+	25%
+	Input product parameters, Leaflet.js map, Chart.js growth projection, display predicted reach and probability
+	Milestone-6 Entrepreneur dashboard, GIS map & prediction visualization implemented
+	7
+	Database Models & Schema Setup
+	5–7 days
+	15%
+	Create User, PredictionRequest, PredictionResult, Cluster, Dataset models; define relationships; pre-create Admin
+	Milestone-DB-Relationship
+	8
+	Authentication & Role-Based Access (Detailed)
+	5 days
+	10%
+	Implement auth, role-specific functions, redirect dashboards
+	Milestone-Auth-RBAC
+	9
+	Admin Dashboard & Management (Detailed)
+	7–9 days
+	15%
+	Dashboard overview, CRUD, search, verify/unverify users
+	Milestone-Admin-Dashboard-Management
+	10
+	Entrepreneur Dashboard & Management
+	7 days
+	15%
+	Dashboard summary, create predictions, GIS map, growth chart, export reports, view past predictions
+	Milestone-Entrepreneur-Dashboard-Management
+	11
+	Core Feature 1 – Prediction Engine
+	5–6 days
+	12%
+	Input processing, ML prediction, clustering, JSON output
+	Milestone-core-feature-1-Prediction-Engine
+	12
+	Core Feature 2 – Map & Cluster Visualization
+	5–6 days
+	12%
+	Leaflet.js integration, color-coded clusters, hover details, dynamic updates
+	Milestone-core-feature-2-Map-Cluster-Visualization
+	13
+	Core Feature 3 – Time Projection / Growth Chart
+	4–5 days
+	10%
+	Chart.js integration, line chart, interactive tooltip, dynamic updates
+	Milestone-core-feature-3-Time-Projection-Chart
+	14
+	Core Feature 4 – Prediction Report Export
+	3–4 days
+	8%
+	Export CSV/PDF including input params, predicted results, cluster summary, optional map snapshot
+	Milestone-core-feature-4-Prediction-Report-Export
+	15
+	Core Feature 5 – Past Prediction History & Filtering
+	3–4 days
+	8%
+	Display table of past predictions, filter by region/product/price/date, re-run or compare
+	Milestone-core-feature-5-Past-Prediction-History
+	16
+	UI/UX Enhancements & PWA Features
+	6 days
+	Optional
+	Responsive design, frontend/backend validation, PWA "Add to Home Screen", consistent styling
+	Milestone-Responsive-PWA
+	17
+	Competitive Pricing Analysis
+	5 days
+	Optional
+	Input competitor prices, market share prediction, charts comparison, map update
+	Milestone-Competitive-Pricing-Analysis
+	18
+	Optimal Marketing Channel Guidance
+	5 days
+	Optional
+	Suggest top marketing channels per cluster, integrate into dashboard, export options
+	Milestone-Optimal-Marketing-Channel-Guidance
+	19
+	Interactive Scenario Simulations
+	4–5 days
+	Optional
+	Dynamic parameter adjustment, real-time map/chart updates, scenario comparison
+	Milestone-Interactive-Scenario-Simulation
+	20
+	Reports, Charts & Payments
+	7 days
+	Optional
+	Chart.js analytics, monthly PDF reports, dummy payment module
+	Milestone-Reports-Charts-Payment
+	21
+	Final Project Submission
+	2 days
+	100%
+	ZIP project code, 3–5 page report, AI usage declaration, verify milestone completion
+	Milestone-Final-Submission
+	________________
+
+
+Notes:
+                                                                                                                        * Core milestones should be prioritized and can be completed in any order.
+
+                                                                                                                        * Recommended and optional enhancements are to be completed only after core features are stable.
+
+                                                                                                                        * All Git commit messages should be followed as provided to maintain consistent version control tracking.
+
+                                                                                                                        * Time estimates are for hackathon planning purposes; adjust according to team size and progress.
+
+________________
+
+
+This roadmap provides a complete, hackathon-ready schedule for GeoReach Predictor v1.0 including setup, core functionality, optional enhancements, and final submission.

@@ -1,0 +1,625 @@
+﻿Project Statement
+GeoReach Predictor – v1.0
+________________
+
+
+Why is this project needed and relevant
+Entrepreneurs often face uncertainty when deciding where, how, and at what price to launch a new product. Traditional market research is time-consuming and expensive, making it inaccessible for startups or small businesses.
+GeoReach Predictor solves this by using data-driven insights to predict market reach, visualize customer clusters on a map, and estimate product success probability — all interactively and instantly.
+This tool bridges geospatial intelligence, consumer analytics, and predictive modeling to help validate product-market fit before launch, making it highly relevant in today’s data-centric entrepreneurship ecosystem.
+________________
+
+
+Requirements to build
+You are required to build an interactive web-based predictive analytics platform that allows entrepreneurs to:
+1. Input parameters such as product type, luxury level, price, and target audience.
+
+2. Select a geographic region (e.g., a state or city).
+
+3. Visualize color-coded clusters of potential customers on a map interface.
+
+4. See projections of how market potential could grow or shrink over time.
+
+5. Receive predictive outputs:
+
+   * Predicted Market Reach (%)
+
+   * Product Success Probability (0–1)
+
+The platform will use an ML model (RandomForest + KMeans) trained on demographic and expenditure datasets to simulate adoption rates and visualize consumer segmentation.
+________________
+
+
+Frameworks to be used
+      * Core Framework: Django (monolithic, handling both backend and frontend)
+
+      * ML/Analytics: Scikit-learn, Pandas, NumPy
+
+      * Visualization: Leaflet.js (for GIS maps), Chart.js (for reach/time projection)
+
+      * Styling: Tailwind CSS
+________________
+
+
+Backend – API
+         * Framework: Django REST Framework
+
+         * Core Responsibilities:
+
+            * Handle input parameters (product type, price, area, etc.)
+
+            * Fetch or preprocess regional demographic data from preloaded datasets
+
+            * Perform ML inference using trained model files (RandomForestRegressor + KMeans)
+________________
+
+
+Frontend for UI
+               * Framework: Django Templates + Leaflet.js + Chart.js
+
+               * Core Components:
+
+                  * Input Form Section: Dropdowns/sliders for price, product type, luxury level, area
+
+                  * GIS Map Section: Interactive map highlighting color-coded audience clusters
+
+                  * Prediction Dashboard: Displays reach %, success probability, and a time projection line chart
+
+
+________________
+
+
+Templates if using CDN only for entry point (not necessary)
+Use Bootstrap via CDN in the main HTML (base.html) if Tailwind setup is skipped:
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                     * All other JS/CSS libraries (Leaflet.js, Chart.js) can also be loaded via CDN for speed.
+
+________________
+
+
+HTML Generation and Styling Frameworks
+                        * Templating: Django Template Engine
+
+                        * Styling: Tailwind CSS
+
+                        * Charts/Maps:
+
+                           * Leaflet.js → map clusters
+
+                           * Chart.js → time projection / growth visualization
+
+________________
+
+
+Database
+
+                              * PostgreSQL (for spatial queries if using GeoDjango)
+________________
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Roles & Functionalities
+This platform has 2 roles:
+1. Admin (pre-user/superuser)
+ 2. Entrepreneur (primary user)
+________________
+
+
+Admin (pre-user/superuser)
+Admin is the pre-existing superuser of the application.
+Functionalities:
+                              1. CRUD of Other Roles
+
+                                 * Create, read, update, and delete Entrepreneur accounts.
+
+                                 * Reset passwords or deactivate users if needed.
+
+                                    2. Dataset Management
+
+                                       * Upload and update core datasets (demographic, expenditure, geographic).
+
+                                       * Validate dataset integrity before retraining the ML model.
+
+                                          3. Model Retraining Trigger
+
+                                             * Run batch jobs (via Django management command) to retrain or refresh the predictive model on updated datasets.
+
+                                                4. Monitor System Activity
+
+                                                   * View logs of all user predictions, areas queried, and model usage statistics.
+
+                                                   * Check API performance or identify failed prediction calls.
+
+                                                      5. Search and Filter Roles
+
+                                                         * Search for users by username, region, or last login.
+
+                                                         * Filter based on active/inactive status.
+
+                                                            6. View Global Analytics Dashboard
+
+                                                               * Aggregate summary: total predictions made, most queried states, and average predicted reach score across users.
+
+________________
+
+
+Entrepreneur (primary user)
+The main user who interacts with the platform to evaluate potential market success for their product idea.
+Functionalities:
+                                                                  1. Secure Login & Authentication
+
+                                                                     * Access via credentials assigned by admin.
+
+                                                                        2. Input Product Parameters
+
+                                                                           * Select:
+
+                                                                              * Product Type (e.g., Apparel, Tech Device, Service)
+
+                                                                              * Product Luxury Level (e.g., Basic, Mid-range, Premium)
+
+                                                                              * Target Audience (e.g., Students, Professionals, Families)
+
+                                                                              * Price Range (adjustable slider)
+
+                                                                              * Geographic Area (choose state or district)
+
+                                                                                 3. Trigger Prediction
+
+                                                                                    * Sends input parameters to the backend API.
+
+                                                                                    * ML model returns:
+
+                                                                                       * Predicted Market Reach (% of target audience)
+
+                                                                                       * Product Success Probability (0–1 score)
+
+                                                                                          4. Interactive GIS Visualization
+
+                                                                                             * Map (via Leaflet.js) highlights clusters:
+
+                                                                                                * 🟢 High Potential
+
+                                                                                                * 🟡 Medium Potential
+
+                                                                                                * 🔴 Low Potential
+
+                                                                                                   * Hovering on clusters reveals demographics like income, spending power, and employment rate.
+
+                                                                                                      5. Time-Based Growth Projection
+
+                                                                                                         * Chart.js graph showing how potential adoption might evolve over 6–12 months.
+
+                                                                                                            6. Result Dashboard View
+
+                                                                                                               * Displays a concise summary:
+
+                                                                                                                  * Predicted Reach: 72%
+
+                                                                                                                  * Success Probability: 0.81
+
+                                                                                                                  * Top Clusters: Delhi Urban, Bengaluru Tech Corridor
+
+                                                                                                                     7. Export/Download Results (Optional)
+
+                                                                                                                        * Export the prediction report as CSV or PDF for investor or marketing reference.
+
+                                                                                                                           8. View Past Predictions
+
+                                                                                                                              * Access previous analyses stored in database (linked to user session).
+
+                                                                                                                              * Re-run or compare predictions for different configurations.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Key Terminologies
+Admin (superuser)
+A user with the highest level of access who manages roles, datasets, and overall system functionality.
+                                                                                                                                 * Has authority to create/delete users, upload datasets, retrain ML models, and monitor analytics.
+
+________________
+
+
+Entrepreneur (primary user)
+The main role of the platform.
+                                                                                                                                    * Represents an entrepreneur or startup founder who wants to test the market viability of a product before launching it.
+
+                                                                                                                                    * Uses predictive analytics and GIS visualization to identify where the product would gain traction and how price impacts adoption.
+
+________________
+
+
+Action/Function: Prediction Request
+Description:
+ A process initiated when an entrepreneur submits product and market parameters for analysis.
+The backend model processes input data and returns predicted reach, success probability, and cluster segmentation.
+Attributes:
+                                                                                                                                       * Product Type
+
+                                                                                                                                       * Product Luxury Level
+
+                                                                                                                                       * Target Audience Category
+
+                                                                                                                                       * Price Range
+
+                                                                                                                                       * Geographic Area (State/City)
+
+                                                                                                                                       * DateTime of Request
+
+                                                                                                                                       * Result ID (linked to prediction result)
+
+________________
+
+
+Action/Function: Prediction Result
+Description:
+ The output generated by the ML engine based on the entrepreneur’s input.
+Displays on a dashboard with numerical results, charts, and map highlights.
+Attributes:
+                                                                                                                                          * Predicted Market Reach (%)
+
+                                                                                                                                          * Product Success Probability (0–1 scale)
+
+                                                                                                                                          * High/Medium/Low Potential Cluster Count
+
+                                                                                                                                          * Dominant Region (Top Cluster by Probability)
+
+                                                                                                                                          * Growth Projection (time-series % increase/decrease)
+
+                                                                                                                                          * Model Confidence Score
+
+________________
+
+
+Action/Function: Cluster Visualization
+Description:
+ A GIS-based map highlighting audience clusters by potential level.
+High, Medium, and Low clusters are color-coded for easy interpretation.
+Attributes:
+                                                                                                                                             * Cluster ID
+
+                                                                                                                                             * Latitude
+
+                                                                                                                                             * Longitude
+
+                                                                                                                                             * Cluster Label (High/Medium/Low)
+
+                                                                                                                                             * Population Density
+
+                                                                                                                                             * Average Income
+
+                                                                                                                                             * Employment Rate
+
+                                                                                                                                             * Interest Index
+
+                                                                                                                                             * Region Name
+
+________________
+
+
+Action/Function: Dataset Management (Admin)
+Description:
+ Admin uploads and manages demographic and expenditure datasets used for predictions.
+These datasets form the foundation of the ML model.
+Attributes:
+                                                                                                                                                * Dataset Name
+
+                                                                                                                                                * Source (e.g., Kaggle, Census, Custom CSV)
+
+                                                                                                                                                * Upload Date
+
+                                                                                                                                                * Last Updated
+
+                                                                                                                                                * Record Count
+
+                                                                                                                                                * Columns/Features Used (Income, Population, Expenditure, etc.)
+
+________________
+
+
+Action/Function: Model Retraining (Admin)
+Description:
+ An administrative action to retrain the ML model using new or updated datasets to improve accuracy.
+Attributes:
+                                                                                                                                                   * Retrain Job ID
+
+                                                                                                                                                   * Dataset Version Used
+
+                                                                                                                                                   * Model Version
+
+                                                                                                                                                   * Training Timestamp
+
+                                                                                                                                                   * Model Accuracy (Validation Score)
+
+                                                                                                                                                   * Updated By (Admin Username)
+
+________________
+
+
+Action/Function: User Management (Admin)
+Description:
+ Allows the admin to create, update, or deactivate entrepreneur accounts and manage permissions.
+Attributes:
+                                                                                                                                                      * User ID
+
+                                                                                                                                                      * Username
+
+                                                                                                                                                      * Role Type
+
+                                                                                                                                                      * Account Status (Active/Inactive)
+
+                                                                                                                                                      * Date Created
+
+                                                                                                                                                      * Last Login
+
+________________
+
+
+Action/Function: Analytics Dashboard (Admin)
+Description:
+ Displays an overview of overall platform usage and system insights.
+Attributes:
+                                                                                                                                                         * Total Users
+
+                                                                                                                                                         * Total Predictions Made
+
+                                                                                                                                                         * Most Queried Regions
+
+                                                                                                                                                         * Average Success Probability
+
+                                                                                                                                                         * Most Common Product Category
+
+                                                                                                                                                         * Model Accuracy Trend
+
+________________
+
+
+Note:
+The above entities, attributes, and functions are not exhaustive.
+Additional tables and fields (e.g., user sessions, historical datasets, or extended product attributes) may be added as required during project expansion or data enrichment.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Core Features
+Admin and User Login Functionality
+                                                                                                                                                            * Authentication & Authorization:
+
+                                                                                                                                                               * Role-based access control using Django’s built-in authentication system.
+
+                                                                                                                                                               * Admin (superuser) pre-exists with the highest privileges.
+
+                                                                                                                                                               * Entrepreneurs register or are added by the admin.
+
+                                                                                                                                                               * Secure session handling with CSRF protection and hashed passwords.
+
+                                                                                                                                                                  * Security:
+
+                                                                                                                                                                     * JWT or Django session-based tokens for user sessions.
+
+                                                                                                                                                                     * CSRF and XSS protection enabled.
+
+                                                                                                                                                                     * Access restricted by role-based decorators (@login_required, @user_passes_test).
+
+________________
+
+
+Admin Functionalities:
+Admin Dashboard Must Display
+                                                                                                                                                                        * Overview of system statistics:
+
+                                                                                                                                                                           * Total registered entrepreneurs.
+
+                                                                                                                                                                           * Total predictions made.
+
+                                                                                                                                                                           * Top 5 most queried states/regions.
+
+                                                                                                                                                                           * Average predicted success probability.
+
+                                                                                                                                                                           * Dataset version currently in use.
+
+                                                                                                                                                                           * Model accuracy score.
+
+Admin Should Pre-Exist in the App
+                                                                                                                                                                              * The superuser account (Admin) is created during initial Django setup.
+
+                                                                                                                                                                              * Admin credentials are used to access all configuration features.
+
+Admin Can Add/Update Datasets
+                                                                                                                                                                                 * Upload new demographic or expenditure datasets (CSV).
+
+                                                                                                                                                                                 * Update dataset details (source, date, feature list).
+
+                                                                                                                                                                                 * Trigger model retraining based on updated datasets.
+
+Admin Can View All Predictions
+                                                                                                                                                                                    * View all prediction results submitted by any entrepreneur.
+
+                                                                                                                                                                                    * Access cluster data, predicted reach, and success probability per user.
+
+Admin Can Search for Entrepreneurs and View Their Details
+                                                                                                                                                                                       * Search entrepreneurs by:
+
+                                                                                                                                                                                          * Username or Name.
+
+                                                                                                                                                                                          * Region of interest.
+
+                                                                                                                                                                                          * Last login date or activity level.
+
+                                                                                                                                                                                             * View detailed analytics for each entrepreneur (e.g., how many predictions made, average success scores).
+
+Admin Can Add, Edit Entrepreneur Details if Needed
+                                                                                                                                                                                                * Edit entrepreneur profile details (name, email, status).
+
+                                                                                                                                                                                                * Reset passwords or assign temporary credentials.
+
+Admin Can Remove/Blacklist Entrepreneurs from the System
+                                                                                                                                                                                                   * Mark entrepreneurs as inactive or blacklist them for violating terms.
+
+                                                                                                                                                                                                   * Blacklisted users lose login access until reactivated by admin.
+
+________________
+
+
+Entrepreneur Functionalities (Primary User)
+Entrepreneur Dashboard Must Display
+                                                                                                                                                                                                      * Personalized welcome panel showing name and recent prediction summaries.
+
+                                                                                                                                                                                                      * Current statistics:
+
+                                                                                                                                                                                                         * Total predictions made.
+
+                                                                                                                                                                                                         * Average success probability across their analyses.
+
+                                                                                                                                                                                                         * Most recently analyzed region or product type.
+
+Entrepreneur Dashboard Must Show List of Past Predictions
+                                                                                                                                                                                                            * List view table displaying:
+
+                                                                                                                                                                                                               * Product Type
+
+                                                                                                                                                                                                               * Region
+
+                                                                                                                                                                                                               * Price Range
+
+                                                                                                                                                                                                               * Predicted Reach
+
+                                                                                                                                                                                                               * Success Probability
+
+                                                                                                                                                                                                               * Date/Time of prediction
+
+                                                                                                                                                                                                                  * Option to view or re-run a previous prediction configuration.
+
+Entrepreneur Dashboard Must Have the Option To
+                                                                                                                                                                                                                     1. Create New Prediction Request
+
+                                                                                                                                                                                                                        * Input parameters:
+
+                                                                                                                                                                                                                           * Product Type
+
+                                                                                                                                                                                                                           * Product Luxury Level
+
+                                                                                                                                                                                                                           * Target Audience
+
+                                                                                                                                                                                                                           * Price Range
+
+                                                                                                                                                                                                                           * Geographic Area
+
+                                                                                                                                                                                                                              * Submit for prediction and instantly view results.
+
+                                                                                                                                                                                                                                 2. View GIS Cluster Visualization
+
+                                                                                                                                                                                                                                    * Interactive Leaflet map displaying:
+
+                                                                                                                                                                                                                                       * 🟢 High-potential clusters.
+
+                                                                                                                                                                                                                                       * 🟡 Medium-potential clusters.
+
+                                                                                                                                                                                                                                       * 🔴 Low-potential clusters.
+
+                                                                                                                                                                                                                                          * Hover to view cluster data (income, spending power, employment rate).
+
+                                                                                                                                                                                                                                             3. View Growth Projection Graph
+
+                                                                                                                                                                                                                                                * Chart.js line chart showing projected market adoption trend (growth/shrink over months).
+
+                                                                                                                                                                                                                                                   4. Export Prediction Report
+
+                                                                                                                                                                                                                                                      * Download prediction results as CSV or PDF (includes input parameters, results, and map snapshot).
+
+                                                                                                                                                                                                                                                         5. Filter Predictions
+
+                                                                                                                                                                                                                                                            * Filter by:
+
+                                                                                                                                                                                                                                                               * Region
+
+                                                                                                                                                                                                                                                               * Product Type
+
+                                                                                                                                                                                                                                                               * Price Range
+
+                                                                                                                                                                                                                                                               * Time Period
+
+                                                                                                                                                                                                                                                                  6. Profile Settings
+
+                                                                                                                                                                                                                                                                     * Update personal information (email, password, contact info).
