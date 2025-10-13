@@ -10,22 +10,27 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load environment variables
+def get_env_variable(var_name: str, default: str = '') -> str:
+    """Get environment variable or return default"""
+    return os.environ.get(var_name, default)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-t9zn=@i6-l84goj=zid(@s5yn9g+%q+d)y=x+8w&h0u%5-)1&4"
+SECRET_KEY = get_env_variable('SECRET_KEY', 'django-insecure-change-this-key-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = get_env_variable('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = get_env_variable('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -40,20 +45,33 @@ INSTALLED_APPS = [
     "core", # Our core app
 ]
 
-# Database configuration for PostGIS
-# You will need to have PostgreSQL with PostGIS extension installed and configured.
-# For local development, you might use a Docker container or a local PostgreSQL installation.
-# Example for PostgreSQL:
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.contrib.gis.db.backends.postgis",
-#         "NAME": "georeach_db",
-#         "USER": "georeach_user",
-#         "PASSWORD": "georeach_password",
-#         "HOST": "localhost",
-#         "PORT": "5432",
-#     }
-# }
+# Database configuration
+# Default to SQLite for development, can be overridden with DATABASE_URL environment variable
+DATABASE_URL = get_env_variable('DATABASE_URL', f'sqlite:///{BASE_DIR}/db.sqlite3')
+
+if DATABASE_URL.startswith('postgres'):
+    # PostgreSQL configuration (for production)
+    try:
+        import dj_database_url  # type: ignore
+        DATABASES = {
+            'default': dj_database_url.parse(DATABASE_URL)  # type: ignore
+        }
+    except ImportError:
+        # Fallback to SQLite if dj_database_url not available
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.sqlite3",
+                "NAME": BASE_DIR / "db.sqlite3",
+            }
+        }
+else:
+    # SQLite configuration (for development)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 MIDDLEWARE = [
@@ -86,15 +104,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "georeach_predictor.wsgi.application"
 
 
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
+# Database configuration is set above based on environment variables
 
 
 # Password validation
@@ -117,6 +127,23 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 LOGIN_URL = '/core/login/'
+LOGIN_REDIRECT_URL = '/core/dashboard/entrepreneur/'
+LOGOUT_REDIRECT_URL = '/core/login/'
+
+# Security settings
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
+# Static files configuration
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

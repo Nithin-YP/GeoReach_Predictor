@@ -3,16 +3,118 @@
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block content %}
-    <h2>Welcome, Admin {{ user.username }}!</h2>
-    <p>This is your admin dashboard.</p>
+<div class="container mt-5">
+    <h1 class="mb-4">Admin Dashboard</h1>
 
-    <h3>System Overview</h3>
-    <ul>
-        <li>Total Registered Users: [Placeholder: X]</li>
-        <li>Total Predictions Made: [Placeholder: Y]</li>
-        <li>Most Queried Regions: [Placeholder: Region A, Region B]</li>
-        <li>Dataset & Model Version: [Placeholder: v1.0]</li>
-    </ul>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">Total Users</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ total_users }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Total Predictions</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ total_predictions }}</h5>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <p><a href="{% url 'core:logout' %}">Logout</a></p>
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header">Most Queried Regions</div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for region in most_queried_regions %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ region.region }}
+                                <span class="badge bg-primary rounded-pill">{{ region.count }}</span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item">No regions queried yet.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header">Latest Datasets</div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for dataset in latest_datasets %}
+                            <li class="list-group-item">{{ dataset.name }} ({{ dataset.upload_date|date:"Y-m-d" }})</li>
+                        {% empty %}
+                            <li class="list-group-item">No datasets uploaded yet.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card mb-3">
+                <div class="card-header">ML Model Files</div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for model_file in ml_model_files %}
+                            <li class="list-group-item">{{ model_file }}</li>
+                        {% empty %}
+                            <li class="list-group-item">No ML model files found.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white">Quick Actions</div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'core:user_management' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-people me-2"></i>User Management
+                        </a>
+                        <a href="{% url 'core:dataset_management' %}" class="btn btn-outline-info">
+                            <i class="bi bi-database me-2"></i>Dataset Management
+                        </a>
+                        <a href="/admin/" class="btn btn-outline-secondary">
+                            <i class="bi bi-gear me-2"></i>Django Admin
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header bg-warning text-dark">System Status</div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        Database: Connected
+                    </p>
+                    <p class="mb-2">
+                        <i class="bi bi-{% if ml_model_files %}check-circle-fill text-success{% else %}x-circle-fill text-danger{% endif %} me-2"></i>
+                        ML Models: {% if ml_model_files %}Ready{% else %}Not Available{% endif %}
+                    </p>
+                    <p class="mb-0">
+                        <i class="bi bi-info-circle-fill text-info me-2"></i>
+                        Version: 1.0.0
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
 {% endblock %}

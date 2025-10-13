@@ -1,0 +1,1 @@
+# Create templatetags directory and __init__.py

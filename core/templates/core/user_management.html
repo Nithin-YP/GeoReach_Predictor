@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load form_extras %}
+
+{% block title %}User Management - GeoReach Predictor{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:admin_dashboard' %}">Admin Dashboard</a></li>
+                <li class="breadcrumb-item active">User Management</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="text-primary">
+                <i class="bi bi-people me-2"></i>User Management
+            </h1>
+            <a href="{% url 'core:admin_dashboard' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-person-lines-fill me-2"></i>User List
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if users %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Role</th>
+                                    <th>Join Date</th>
+                                    <th>Last Login</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ user.username }}</strong>
+                                        </td>
+                                        <td>
+                                            {% if user.email %}
+                                                {{ user.email }}
+                                            {% else %}
+                                                <span class="text-muted">No email</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if not user.is_active %}
+                                                <span class="badge bg-danger">Inactive</span>
+                                            {% elif user.is_blocked %}
+                                                <span class="badge bg-warning">Blocked</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Active</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if user.is_superuser %}
+                                                <span class="badge bg-primary">Admin</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Entrepreneur</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small>{{ user.date_joined|date:"M d, Y" }}</small>
+                                        </td>
+                                        <td>
+                                            {% if user.last_login %}
+                                                <small>{{ user.last_login|date:"M d, Y H:i" }}</small>
+                                            {% else %}
+                                                <span class="text-muted">Never</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if not user.is_superuser %}
+                                                <div class="btn-group btn-group-sm">
+                                                    {% if user.is_blocked %}
+                                                        <form method="post" style="display: inline;">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                            <input type="hidden" name="action" value="unblock">
+                                                            <button type="submit" class="btn btn-outline-success btn-sm" 
+                                                                    title="Unblock user">
+                                                                <i class="bi bi-check-circle"></i>
+                                                            </button>
+                                                        </form>
+                                                    {% else %}
+                                                        <form method="post" style="display: inline;">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                            <input type="hidden" name="action" value="block">
+                                                            <button type="submit" class="btn btn-outline-warning btn-sm" 
+                                                                    title="Block user"
+                                                                    onclick="return confirm('Are you sure you want to block this user?')">
+                                                                <i class="bi bi-x-circle"></i>
+                                                            </button>
+                                                        </form>
+                                                    {% endif %}
+                                                    
+                                                    {% if user.is_active %}
+                                                        <form method="post" style="display: inline;">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                            <input type="hidden" name="action" value="deactivate">
+                                                            <button type="submit" class="btn btn-outline-danger btn-sm" 
+                                                                    title="Deactivate user"
+                                                                    onclick="return confirm('Are you sure you want to deactivate this user?')">
+                                                                <i class="bi bi-person-x"></i>
+                                                            </button>
+                                                        </form>
+                                                    {% else %}
+                                                        <form method="post" style="display: inline;">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                            <input type="hidden" name="action" value="activate">
+                                                            <button type="submit" class="btn btn-outline-success btn-sm" 
+                                                                    title="Activate user">
+                                                                <i class="bi bi-person-check"></i>
+                                                            </button>
+                                                        </form>
+                                                    {% endif %}
+                                                </div>
+                                            {% else %}
+                                                <small class="text-muted">Admin user</small>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-people text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="text-muted mt-3">No users found</h5>
+                        <p class="text-muted">No users have registered yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
