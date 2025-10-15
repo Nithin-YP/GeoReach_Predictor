@@ -10,11 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-import os
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
 
 # Load environment variables
 def get_env_variable(var_name: str, default: str = '') -> str:
@@ -42,37 +45,20 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.gis",
     "core", # Our core app
 ]
 
 # Database configuration
-# Default to SQLite for development, can be overridden with DATABASE_URL environment variable
-DATABASE_URL = get_env_variable('DATABASE_URL', f'sqlite:///{BASE_DIR}/db.sqlite3')
+DATABASES = {
+    'default': dj_database_url.parse(
+        get_env_variable('DATABASE_URL', 'postgis://georeach:pass@localhost:5432/georeach_db'),
+        engine='django.contrib.gis.db.backends.postgis'
+    )
+}
 
-if DATABASE_URL.startswith('postgres'):
-    # PostgreSQL configuration (for production)
-    try:
-        import dj_database_url  # type: ignore
-        DATABASES = {
-            'default': dj_database_url.parse(DATABASE_URL)  # type: ignore
-        }
-    except ImportError:
-        # Fallback to SQLite if dj_database_url not available
-        DATABASES = {
-            "default": {
-                "ENGINE": "django.db.backends.sqlite3",
-                "NAME": BASE_DIR / "db.sqlite3",
-            }
-        }
-else:
-    # SQLite configuration (for development)
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
-
+# GDAL library path for Django GIS support
+GDAL_LIBRARY_PATH = get_env_variable('GDAL_LIBRARY_PATH', '')
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -102,9 +88,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "georeach_predictor.wsgi.application"
-
-
-# Database configuration is set above based on environment variables
 
 
 # Password validation
@@ -160,7 +143,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
