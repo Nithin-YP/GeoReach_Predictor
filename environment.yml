@@ -1,0 +1,20 @@
+name: georeach_env
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.12
+  - django>=5.2.7
+  - pandas>=2.1.0
+  - numpy>=1.24.0
+  - scikit-learn>=1.3.0
+  - joblib>=1.3.0
+  - psycopg2>=2.9.9
+  - gdal
+  - geopandas
+  - shapely
+  - rasterio
+  - pip
+  - pip:
+      - django-environ>=0.11.2
+      - dj-database-url>=2.1.0
