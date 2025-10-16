@@ -1,0 +1,1001 @@
+Customer_Name,Age,Gender,Education_Level,Income,Purchase_Frequency,Spending
+Teresa Williams MD,42,Female,High School,53936,0.9,13227.12
+Christine Myers,49,Female,Master,82468,0.6,12674.04
+Dwayne Moreno,55,Male,Bachelor,56941,0.3,5354.115
+Amy Norton,24,Female,Bachelor,60651,0.2,2606.51
+Tonya Adams,64,Male,Master,81884,0.9,18984.78
+Charles Smith,24,Female,PhD,61444,1.0,18072.2
+Misty Moody,58,Male,PhD,78024,0.9,21511.08
+Brian Kent,34,Male,High School,32225,0.7,6727.875
+Stacie Ray,63,Male,PhD,63664,0.4,9273.28
+Brian Townsend,64,Female,High School,45043,1.0,16252.15
+Samantha Bailey,32,Male,Bachelor,91170,0.8,12446.8
+Christopher Wright,23,Male,Master,86576,0.8,11463.04
+John Harrington,24,Female,Master,36359,0.9,12436.155
+Gregory Franklin,39,Male,Master,78325,0.2,3783.25
+Jordan Garrett,56,Female,Master,95451,0.4,9509.02
+Barbara Fuller,36,Male,Bachelor,44475,0.1,1522.375
+Eric Rogers,57,Female,PhD,29055,0.2,4690.55
+Christopher Fleming,61,Male,Bachelor,25064,0.2,3250.6400000000003
+Sandra Wheeler,62,Female,Master,88392,0.4,9367.84
+Elizabeth Guzman,31,Female,Master,79056,0.8,15162.24
+Kathleen Mata,60,Female,High School,62509,1.0,17125.45
+Jack Perry,25,Female,Master,44953,0.4,5699.06
+Tyler Silva,19,Female,High School,48896,0.6,5666.879999999999
+Joy Carter,28,Female,PhD,28151,0.2,3881.51
+Jody Collins,27,Male,High School,95217,0.9,11484.765
+Elizabeth Brown,56,Male,High School,36311,0.4,5526.22
+Mrs. Brandy Tate,56,Male,PhD,31997,0.6,12959.909999999998
+Janet Miller,25,Male,High School,45505,0.3,2182.575
+Mary Smith,63,Male,PhD,47600,0.1,2238.0
+Denise Martin,61,Male,PhD,33303,0.5,10832.575
+Michael Brown,22,Male,High School,59460,0.6,4783.8
+Craig Thomas,45,Male,High School,86012,0.8,11440.48
+Ashley Cain,20,Male,PhD,46129,0.5,7653.225
+Carolyn Wilson,40,Female,Bachelor,46661,0.1,1733.305
+Allison Chen,61,Male,Bachelor,64867,0.9,16419.015
+Crystal Jacobson,34,Male,PhD,42913,0.1,1814.5650000000005
+Rhonda Gordon,48,Female,Master,66812,0.7,14238.419999999998
+Jenna Cowan,60,Female,Bachelor,93478,0.1,2167.3900000000003
+Taylor Yang,47,Male,Master,25989,0.9,14669.505
+Judy Moses,35,Male,Bachelor,83154,0.6,9094.62
+Eric Farmer,57,Female,Master,97368,1.0,23868.4
+Meghan Hansen,26,Female,PhD,74318,0.2,4343.18
+Susan Jones,18,Male,Master,40981,0.4,4819.62
+Mr. Anthony Powell Jr.,32,Female,PhD,94468,0.7,15906.38
+Tony Hayes,20,Female,PhD,26131,0.3,4891.964999999999
+Brianna Price MD,46,Male,Master,40668,0.8,13626.72
+Kelly Guerrero,51,Female,High School,25100,0.8,12204.0
+Kendra Cook,38,Female,PhD,26534,0.7,14928.69
+Anthony Simpson,30,Male,Bachelor,21930,0.7,8467.55
+Nicole Simpson,61,Female,Master,20444,0.4,8008.880000000001
+Sydney Smith,18,Male,High School,44963,0.2,1449.63
+Heather Wright,56,Male,Master,56697,0.3,5950.454999999999
+Margaret Taylor,24,Female,PhD,30662,0.1,1653.31
+Charles Mitchell,35,Female,High School,53618,0.3,3804.27
+David Harris,59,Female,High School,40242,0.5,8006.05
+Kim Perry,19,Male,High School,46966,0.5,3674.15
+Ashley Chambers,53,Female,Master,94379,0.1,2371.895
+Linda Saunders,65,Female,PhD,77074,0.6,15512.22
+Amber Jensen,52,Male,Bachelor,69227,1.0,18461.35
+Joseph Mitchell,36,Male,Bachelor,39794,0.5,7494.85
+Brittney Wright,39,Female,Master,32282,0.6,11168.46
+Derek Ibarra,57,Male,High School,55339,0.3,4430.085
+William Torres,27,Female,Master,71746,0.9,16728.57
+Melissa Green,26,Female,High School,82660,0.4,5653.200000000001
+Harry Hodges,21,Female,Bachelor,88557,0.2,2885.57
+Timothy Shaffer,37,Female,Master,59220,0.7,13972.7
+Chase Bryant,24,Male,PhD,82128,0.6,10263.84
+Kristen Mccoy,39,Male,PhD,35205,0.8,15808.2
+Tamara Morgan,45,Male,Master,63919,0.3,5458.785
+Stephanie Clayton,28,Female,High School,28629,0.2,2286.2900000000004
+Erika Lowery,30,Male,High School,70438,0.1,1152.19
+Richard Sanford,24,Female,Master,78791,0.8,12751.64
+Vanessa Hernandez,55,Male,PhD,30965,0.6,12928.95
+Jason Neal,32,Female,Bachelor,76521,0.4,6730.42
+Cameron Shields,40,Male,High School,23620,0.9,10062.9
+Ashley Rodriguez,46,Male,High School,85154,0.7,9980.39
+Karen Jackson,34,Male,High School,48297,1.0,10414.85
+Jonathan Sullivan,27,Male,Bachelor,80084,0.7,10502.94
+Margaret Olson,41,Male,High School,98150,0.8,11926.0
+Thomas Watson,27,Female,PhD,88318,0.8,17932.72
+Ms. Megan Lucas,61,Female,PhD,85358,0.4,10507.160000000002
+Stephanie Smith,52,Male,High School,64593,0.6,9137.79
+Courtney Young,38,Male,Bachelor,53670,1.0,15683.5
+Thomas Miller,27,Female,Master,81660,0.2,3816.6
+Mrs. Sabrina Weaver MD,23,Male,High School,49503,0.3,2242.545
+Tracy Shaw,20,Female,High School,78797,0.6,6563.91
+Vanessa Fox,28,Male,PhD,68669,0.9,17490.105
+Jessica Oliver,42,Male,High School,87895,1.0,14394.75
+Benjamin Coleman,22,Female,Bachelor,57966,0.9,11608.47
+Susan Perez,56,Female,PhD,70930,1.0,25546.5
+Shannon Lloyd,55,Male,High School,20031,0.3,3900.465
+Jessica Sanders PhD,37,Female,Master,28601,0.8,14744.04
+Connor Aguirre,34,Female,PhD,70352,0.7,15062.319999999998
+Betty Sanders DVM,21,Male,Bachelor,51319,0.5,5282.975
+Joshua Holland,64,Female,High School,24709,0.8,12188.36
+Bradley Lewis,44,Male,PhD,98900,0.2,4589.0
+Lisa Myers,61,Male,Master,73888,0.1,2069.44
+Lindsay Fisher,57,Female,PhD,80146,0.1,2600.73
+Kevin Torres,24,Female,Bachelor,22651,0.1,1113.255
+Jessica Flores,56,Male,Master,33800,0.9,16821.0
+Ashley Fry,59,Female,Bachelor,70254,0.8,16410.16
+Todd Deleon,25,Male,PhD,64284,0.2,3242.84
+Samuel Simon,61,Female,Bachelor,70809,0.5,10270.225
+Randall Jackson,65,Male,Bachelor,25004,0.7,11375.14
+Jessica Flowers,46,Female,Bachelor,79699,0.6,11390.97
+Tiffany Sutton,58,Male,High School,25240,0.8,10609.6
+Cheryl Lane,34,Male,Bachelor,50101,0.2,2701.01
+Jacob White,58,Female,Master,34869,0.3,6223.035
+Larry Reyes,45,Female,High School,33731,0.7,9580.585
+Diana Jones,22,Male,PhD,40467,0.1,1502.335
+Derrick Williams,46,Female,PhD,23949,0.8,16957.960000000003
+Mrs. Peggy Weaver,38,Female,High School,66203,0.2,3062.03
+Kaylee Moore,25,Female,High School,65278,0.6,6158.339999999999
+Sean Hughes DDS,29,Male,Bachelor,67946,0.2,2879.46
+Erika Bush,56,Male,Bachelor,20423,0.4,6408.46
+Kelly Morris,60,Male,High School,58438,0.6,8953.14
+Chelsey Garcia,62,Male,Bachelor,38597,0.3,5078.954999999999
+Barbara Thompson,47,Male,PhD,65147,0.5,10628.675
+Kevin Cole,26,Male,Bachelor,67479,0.6,8624.37
+Richard Scott,48,Female,Master,92509,0.6,12975.27
+Rodney Miller,29,Male,High School,89891,1.0,12494.55
+Richard Harris,37,Male,PhD,39257,0.3,5988.855
+Jonathon Powell,32,Female,Bachelor,51019,0.3,4665.285
+Michael Brown,36,Female,PhD,26062,0.3,6390.929999999999
+Peter Reid,56,Male,PhD,30213,0.2,4302.13
+Destiny Singh,26,Female,Master,92191,0.7,13726.685
+Brent Rich,65,Male,PhD,59063,0.6,13771.89
+Seth Johnson,23,Male,PhD,68399,0.9,14777.955000000002
+James David,21,Female,PhD,21104,0.7,11238.64
+Alice Torres,64,Female,PhD,46737,0.6,14602.11
+Paul Lopez,36,Female,High School,44308,0.2,2843.08
+Anna Carter,35,Male,Bachelor,78479,0.7,10446.765
+Benjamin Smith,29,Female,PhD,42903,0.4,8058.060000000001
+Richard Barnes,47,Female,Bachelor,66578,0.8,14663.120000000004
+Jonathan Michael,58,Male,PhD,46691,0.5,11167.275
+Anthony Bell,18,Female,PhD,21019,0.4,6420.380000000001
+Ashley Riggs,37,Male,Master,91461,1.0,19573.05
+Jeffrey Hardy,27,Female,PhD,32131,0.8,15685.24
+Robin Miller,32,Female,Master,22833,0.2,3228.33
+Rebecca Hammond,35,Male,High School,53629,0.7,7477.015
+Thomas Perez,51,Female,PhD,33373,0.5,11834.325
+Kristin Collins,40,Female,Bachelor,98041,0.2,3980.41
+Caitlyn Nguyen,20,Male,Master,60056,0.9,11702.52
+Emily Williams,39,Male,Bachelor,41437,0.2,3014.3700000000003
+Jessica Walker,44,Female,Master,88135,0.3,6422.025
+David Jones,54,Male,High School,73844,0.9,14122.98
+Kristi Stevens,43,Female,Master,77981,0.6,12539.429999999998
+Michelle Jordan,54,Male,Bachelor,36160,0.2,3361.6000000000004
+Alexis Ortega,42,Female,PhD,38288,0.9,19722.960000000003
+Cheyenne Wright,60,Female,Master,81953,0.7,16168.355
+Ashley Rodriguez,31,Female,PhD,85741,0.6,13372.23
+John Schmitt,49,Male,PhD,59345,0.3,6290.175
+Renee Shelton,65,Female,High School,48274,0.1,1641.37
+John Ford,40,Female,PhD,21325,0.9,18959.625
+Dawn Carter,22,Male,PhD,20841,0.6,8425.23
+Marcus Walker,20,Male,High School,55432,0.5,3885.8
+Sharon Haney,64,Male,Bachelor,95084,0.5,9877.1
+Terri Miller,30,Male,PhD,80410,0.6,12012.3
+Kathy Lee,42,Male,Master,75274,0.7,13134.59
+Melissa Moore,27,Female,Bachelor,88702,0.6,10461.06
+Rachel Evans,26,Male,Bachelor,78212,0.6,8946.36
+Adam Murray,42,Female,PhD,71057,0.4,9421.14
+Melinda Murphy,30,Female,Bachelor,96877,0.1,1784.385
+James Johnson,42,Male,Bachelor,31096,0.3,4366.44
+Angela Walter,41,Male,Bachelor,50548,1.0,15527.4
+Andrew Morris,37,Male,Master,66277,0.7,12819.694999999998
+Patrick Wiggins,47,Male,PhD,96147,0.8,18245.88
+Tom Baker,49,Female,PhD,48235,0.6,13447.05
+Clayton Garrison,35,Male,High School,26888,0.3,2803.32
+Matthew Smith,40,Male,Master,20934,0.3,4814.01
+Ashley Maldonado,22,Female,Bachelor,99775,0.7,10492.125
+Adam Ortiz,53,Male,PhD,45277,0.6,13358.31
+Scott Gray,56,Male,High School,61815,0.6,9054.45
+Scott Wilcox,52,Female,Master,53488,0.1,2167.44
+Amy Cannon,51,Male,Bachelor,68326,0.2,3683.26
+Daisy Walter,31,Female,Bachelor,46426,0.5,7660.65
+John Koch,61,Female,Master,87751,0.7,16371.284999999998
+Anthony Castillo,34,Female,Master,51452,0.1,1757.26
+Michael Griffin,37,Male,High School,80415,0.8,11216.6
+Julia George,64,Female,High School,74017,0.8,14160.68
+Kevin Huff,47,Female,High School,31221,0.2,2712.21
+Omar Suarez,33,Male,Bachelor,74265,0.4,5885.3
+Kathleen Barton,46,Male,PhD,93270,0.7,15864.45
+Vanessa Stevens,20,Male,Bachelor,84227,0.4,4884.54
+Marcus Brown,26,Female,Master,61890,0.7,12666.15
+Jeffrey Haley,24,Female,Bachelor,58881,0.8,10355.24
+David Myers,50,Female,Master,55723,0.4,7914.460000000001
+Felicia Fisher,19,Male,High School,42619,0.7,4991.665
+Ashley Curtis,33,Male,Master,20844,0.9,12637.98
+Troy Mendoza,50,Female,High School,35963,0.7,9658.705
+Leonard Acevedo,59,Female,High School,94012,0.6,11220.36
+Kelly Ritter,32,Female,Bachelor,51475,0.2,3114.75
+Tom Gonzales,51,Female,Master,50618,0.6,12918.54
+Elizabeth Benson,58,Female,Master,96291,0.3,7144.365
+Bradley Chavez,26,Male,Master,68101,1.0,16405.05
+Kristen Davis,58,Male,Bachelor,71849,0.3,5577.735
+Debra Hogan,29,Male,Bachelor,47066,0.8,10682.64
+Derek Garcia,54,Male,Bachelor,37318,0.4,6746.360000000001
+Kevin Kemp,42,Female,Bachelor,85334,0.2,3853.34
+Johnny Johnson,57,Male,Master,84120,0.8,16964.8
+Jeremy Peters,37,Male,Bachelor,92813,0.3,5292.195000000001
+Jeffrey Ramos DDS,60,Female,PhD,91569,0.6,15947.07
+Christopher Nichols,63,Male,Master,38015,1.0,18900.75
+Mary Jones,43,Male,Master,58237,0.7,12538.294999999998
+Carl Carter,21,Male,High School,61308,0.4,3226.16
+Carrie Nichols,39,Female,Bachelor,54092,0.6,10622.759999999998
+Anthony Paul,60,Male,Master,22225,0.6,10866.75
+Mary Robbins,54,Male,Bachelor,66323,0.1,1831.615
+Caleb Smith,49,Male,High School,51649,0.1,1258.245
+John Reed,18,Male,Master,28722,0.1,1143.61
+James Mayer,40,Female,Bachelor,48380,0.8,13935.2
+Mary Powell,45,Male,Master,60888,0.3,5413.320000000001
+Russell Olson,59,Female,PhD,70157,0.1,2550.785
+Jennifer Johnson,44,Female,PhD,25497,1.0,21274.85
+Luis Reed,25,Female,PhD,42454,0.1,1712.2700000000002
+Kevin Burch,50,Male,Bachelor,30439,0.6,8713.17
+Joshua Munoz,33,Male,Bachelor,22880,0.3,3643.2
+Shelby Arnold,65,Male,High School,75990,1.0,15799.5
+Victoria Montes,24,Female,Bachelor,98901,0.1,1494.505
+James Nguyen Jr.,34,Female,PhD,23573,0.1,1917.865
+Danielle Fuentes,49,Male,Master,58369,0.3,5375.535
+Theresa Garcia,47,Male,Master,41270,0.7,11944.45
+Rebecca Whitaker,39,Female,PhD,71457,0.1,2357.285
+Andrea Lin,37,Female,PhD,24578,0.9,19106.01
+Jamie Lee,54,Female,High School,79758,0.7,12591.53
+Michelle Williams,64,Male,PhD,65428,0.8,18617.120000000003
+Carol Oliver,21,Male,Master,24492,0.5,5612.3
+Christopher Sherman,61,Female,Bachelor,89372,0.9,19321.74
+Jennifer Hunter,39,Female,Master,47390,0.2,3873.9
+Stephen Brewer,54,Female,Bachelor,96827,0.9,19657.215
+Danielle Todd,61,Female,Bachelor,40061,0.6,11401.83
+Gregory Moore,65,Male,High School,94038,0.3,5010.570000000001
+Alexandra Diaz,40,Female,Master,58459,0.6,11953.77
+Tabitha Gonzales,49,Female,PhD,42286,0.1,2211.43
+Kevin Baker,27,Male,PhD,36495,0.6,10694.85
+Nicole Williams,18,Female,Master,44596,0.2,2845.96
+Curtis Beasley,53,Female,Master,42784,0.9,19025.28
+John Guzman,28,Male,Bachelor,95980,0.2,3159.8
+Sarah Hernandez,50,Female,PhD,54833,0.5,11370.825
+Benjamin Brown,36,Male,PhD,56757,0.5,10418.925
+Diane Small DVM,52,Female,Master,44902,0.7,14871.569999999998
+Ashley Bird,27,Male,Bachelor,93830,0.7,10984.05
+Susan Pham,41,Female,High School,93609,0.7,11676.315
+Kathleen Rodriguez,58,Male,High School,67477,0.9,13836.465
+Stephanie Jones,28,Male,Master,85141,0.1,1725.705
+Abigail Shaw,64,Male,Bachelor,55975,0.3,5339.625
+Samantha Saunders,44,Male,PhD,51029,0.8,16441.16
+Lisa Brown,50,Male,Bachelor,41559,0.8,12062.36
+Mary Smith,22,Female,PhD,55632,0.5,8890.8
+Timothy Adkins,45,Female,Master,31878,0.5,9296.95
+Michele Chang,19,Female,High School,52841,0.4,3856.82
+Andrea Russell,43,Female,PhD,71021,0.1,2355.105
+Kimberly Craig,55,Female,Master,94552,0.3,7118.28
+Charles Moore,54,Female,Master,23185,0.7,14111.475
+Mary Miranda,48,Male,High School,30680,1.0,11534.0
+Emily Nixon,40,Female,High School,29092,0.4,5381.84
+Patricia Villarreal,63,Male,PhD,25651,0.6,12769.53
+David Kirby,19,Female,PhD,36419,0.5,8410.475
+Brandon Jackson,44,Male,Bachelor,72979,0.5,8324.475
+April Meyer,50,Male,Bachelor,36434,0.3,4446.51
+John Green,48,Male,High School,92737,0.7,10245.795
+Tonya Gamble,29,Female,High School,30581,0.9,10376.145
+Michael Davis,29,Female,Bachelor,54205,0.6,9426.15
+Brittney Ball,62,Female,Master,87821,0.8,18712.84
+Emily Garcia,27,Female,Bachelor,25059,1.0,14252.95
+Isaiah Weaver,29,Male,Master,29390,0.4,5787.8
+Jennifer Ramirez,59,Female,Bachelor,80118,0.9,18905.31
+Daniel Chen,28,Female,Bachelor,82453,0.9,15410.385000000002
+Grace Howard,21,Male,Master,20322,0.2,2203.2200000000003
+Tonya Thomas,24,Female,Master,94746,0.8,13389.84
+Ryan Johnson,39,Female,Master,35577,0.3,5633.655
+Leah Wilson,38,Male,Bachelor,36397,0.1,1481.985
+Christopher Walker,39,Male,High School,74242,0.1,1371.21
+Jason Meyers,62,Female,PhD,26846,1.0,23342.3
+Lisa Carter,63,Male,Master,30147,0.7,12955.145
+Jill Ward,21,Female,Master,99186,1.0,16959.3
+Bruce Ramirez,34,Female,PhD,74031,0.3,6510.464999999999
+John Swanson,19,Female,Master,44968,0.7,9973.88
+Kenneth Vazquez,22,Female,High School,36169,0.1,880.8450000000001
+Andrew Collier,40,Male,Bachelor,72922,1.0,16646.1
+Jason Pollard,62,Male,Master,79831,0.9,18892.395
+Cathy Hunter,65,Female,PhD,30544,0.1,2352.7200000000003
+Bradley Rice,52,Female,Master,23643,0.9,18163.935
+Brian Hamilton,24,Male,Master,66995,0.2,2669.9500000000003
+Amber Moreno,48,Male,Bachelor,87711,0.5,8692.775
+Michael Snyder,20,Male,PhD,64261,0.3,4863.915
+Jeremy Hogan,53,Male,Bachelor,42887,0.3,5143.304999999999
+Nicole Long,58,Male,Master,23125,0.8,14525.0
+Glenda Watson,58,Female,High School,49678,0.4,6593.560000000001
+Veronica Adams,58,Female,Master,42284,0.4,8445.68
+Dennis Watson,40,Male,Bachelor,75148,0.8,13405.920000000002
+Sandra Garner,41,Male,PhD,94044,0.1,2270.2200000000003
+Michael Bishop,28,Male,PhD,42539,0.3,5438.085
+Ryan Hunter,19,Male,Master,86858,0.1,1434.2900000000002
+Christopher Mendoza,20,Male,High School,95104,1.0,9755.2
+Jesus Stewart,27,Male,PhD,23465,0.7,12021.275
+Breanna Griffin,45,Female,Bachelor,38065,0.6,10141.95
+Karen Sanders,50,Male,PhD,29574,0.3,5843.61
+Christopher Knox,44,Female,High School,76562,0.7,11079.67
+Laurie Willis,33,Female,PhD,49495,0.7,14332.325
+Terri Lara,33,Female,PhD,96202,0.2,4562.02
+Clifford Haynes,34,Female,Master,91085,0.1,1955.425
+Amy Petty,56,Female,Bachelor,56212,0.1,1981.06
+Matthew Lopez,57,Female,PhD,33980,0.9,21329.1
+Amanda Rice,21,Male,PhD,23512,0.7,9922.92
+Sylvia Lee,64,Female,PhD,33738,0.8,18949.52
+Leslie Sullivan,56,Female,Bachelor,42230,0.6,11466.9
+Lisa Reyes,48,Female,Bachelor,97359,0.5,9933.975
+Mr. Curtis Kemp,50,Male,Master,65274,0.3,5479.11
+Roberta Morgan,58,Female,PhD,87989,0.1,2639.945
+Erik Brown,30,Female,Bachelor,96504,0.6,10695.12
+Todd Gonzalez,36,Female,High School,58156,0.9,13417.02
+Jennifer Taylor,45,Male,PhD,55267,0.7,14534.344999999998
+Ana Ryan,64,Male,Master,37584,0.3,5663.76
+Dr. Robert King Jr.,25,Female,Bachelor,24092,0.7,7843.219999999999
+Ian Moon,54,Female,PhD,29983,0.2,4699.830000000001
+Jason Wagner,45,Male,Bachelor,40049,0.4,6000.9800000000005
+Jacob Adkins,28,Male,High School,88852,0.3,3732.78
+Thomas Anderson,49,Female,Master,63931,0.2,4039.31
+Maria Patel,44,Female,Bachelor,64888,0.9,16419.960000000003
+Michelle Rivera,39,Male,PhD,92807,0.5,11320.175
+Zachary Romero,33,Female,Master,71152,0.8,14846.08
+George Walker,50,Female,PhD,73254,0.2,4732.54
+Amanda Walker,61,Male,Bachelor,20644,1.0,16032.2
+Mr. Richard Barry Jr.,56,Male,Bachelor,98090,1.0,19904.5
+Lindsey Rodriguez,50,Male,Master,42103,0.7,11973.605
+Deborah Vasquez,23,Male,High School,35125,0.6,4053.75
+Matthew Leach,64,Female,Master,34174,0.8,16566.960000000003
+Jeremy Thomas,41,Female,PhD,49978,0.3,6749.67
+Jessica Hall,53,Male,Bachelor,23379,0.3,4850.685
+Christopher Owens,51,Female,Bachelor,77433,0.7,14610.155
+Sydney Molina,34,Male,Bachelor,70884,0.3,4363.26
+Christopher Allen,46,Male,PhD,31376,1.0,19568.8
+Nancy Wright,43,Female,Bachelor,86426,0.8,15457.04
+Jaime Rodgers,20,Female,High School,55217,0.9,8784.765000000001
+Joyce Cook,49,Female,PhD,54774,0.3,6821.61
+Alex Sanchez,32,Female,Bachelor,59643,1.0,15982.15
+Willie Lawson PhD,27,Female,High School,28977,0.8,9159.08
+Russell Young,43,Female,High School,54803,0.8,11792.12
+Matthew Rojas,32,Male,Master,38490,0.6,8954.699999999999
+Mark Burton,24,Male,High School,37931,1.0,6896.55
+Jennifer Li,53,Male,High School,24333,0.7,9251.655
+Joseph Ramos,53,Female,High School,81992,0.9,16289.64
+Christopher Owen MD,40,Female,High School,20674,0.4,5213.4800000000005
+Rebekah Dorsey,32,Female,Master,55973,0.4,7119.460000000001
+Hunter Phillips,18,Female,Master,86712,0.6,9801.36
+Diane Evans,23,Male,Master,95191,0.7,10331.685
+Eric Allen,32,Female,PhD,39067,0.4,7981.34
+Sierra Harmon,36,Male,PhD,67076,0.5,10676.9
+Aimee Mitchell,42,Male,High School,72585,0.6,8177.549999999999
+Kyle Gilmore,50,Female,Bachelor,69012,0.6,11070.36
+Andrew Cook,45,Female,Master,72543,0.5,10313.575
+Joseph Wilson,24,Female,Master,35810,0.8,11032.4
+Randy Ramirez,27,Female,Bachelor,44502,0.6,9135.06
+Hannah Gibson,49,Male,High School,70319,0.7,9461.165
+Michael Watson,47,Female,Bachelor,72335,0.9,16755.075
+Dr. John Moore,37,Female,Bachelor,61225,0.9,16255.125
+Jason Thomas,61,Male,High School,81835,0.6,9655.05
+Austin Johns,43,Male,PhD,26373,1.0,19318.65
+Derek Miranda,20,Female,High School,54532,0.4,3890.64
+Brandon Gardner,64,Female,Bachelor,34825,0.3,5622.375
+Walter Simmons,62,Female,High School,50635,0.1,1653.1750000000002
+Michael Mason,18,Female,High School,36994,0.2,1769.9400000000005
+Stanley Thomas,56,Male,High School,81091,0.4,6421.82
+Robert Roman,18,Female,High School,90376,0.3,3455.64
+Kenneth Evans,32,Male,PhD,70060,0.8,15602.4
+Edward Ewing,18,Female,Bachelor,69970,0.1,1349.85
+Raymond Adkins,57,Female,High School,96390,0.6,11291.7
+Hayley Powell DVM,63,Female,Master,79495,0.3,6892.425
+Lindsay Hopkins,56,Male,Master,33534,0.2,3735.34
+Maria Torres,35,Male,Bachelor,37813,0.7,9023.455
+Jeffrey Moreno,31,Female,Bachelor,75203,0.9,15084.135000000002
+James Owens,50,Male,High School,82208,0.2,2822.0800000000004
+Rebecca Blevins,50,Female,PhD,43419,0.8,17736.760000000002
+Chelsea French,53,Female,Bachelor,74554,0.5,10363.85
+Andrew Farmer,42,Male,Master,50613,0.8,14024.520000000002
+Lisa Romero,33,Female,PhD,73776,0.1,2168.88
+Dominic Vargas,46,Male,PhD,78468,0.4,8769.36
+Ebony Howell,45,Male,Master,82551,0.8,15302.04
+William Powell,27,Male,PhD,57161,0.6,11314.83
+Christopher Woods,59,Female,Bachelor,88469,0.2,4284.6900000000005
+Micheal Williams,30,Female,High School,27732,0.3,3415.98
+Thomas Williams,39,Male,Master,41018,0.8,13640.72
+Jared Adams,42,Male,PhD,85024,0.4,8900.480000000001
+Tracy Johnston,28,Female,High School,64428,0.9,11899.26
+Laura Carter,30,Female,Bachelor,88053,0.9,15662.385000000002
+Rebecca Palmer,63,Female,Bachelor,84676,1.0,21233.8
+Adrienne Buchanan,31,Female,High School,51846,0.8,10073.84
+Matthew Perry,56,Female,Bachelor,20067,0.1,1800.335
+Richard Johnson,21,Male,Bachelor,78093,1.0,11904.65
+Olivia Johnson,32,Male,PhD,57538,0.6,11326.14
+Richard Michael,49,Male,Bachelor,68842,0.9,14797.89
+Miguel Fowler,40,Female,PhD,77527,0.6,14325.81
+Virginia Huynh,47,Male,Bachelor,48806,0.2,3088.06
+Jerry Warren,27,Female,PhD,90856,0.4,9017.12
+Bradley Lowe,41,Male,High School,73233,0.4,5464.66
+Daniel Kennedy,23,Female,PhD,90889,0.4,7817.780000000001
+Jason Munoz,58,Male,Bachelor,89578,0.8,15583.120000000004
+Andrew Gould,37,Female,High School,30260,1.0,13513.0
+Gary Smith,64,Female,High School,46732,0.7,11435.62
+Katherine Grant,57,Female,Master,30972,0.1,2054.86
+Anthony Brown,33,Male,Master,40103,0.8,12004.12
+Paul Williams,34,Male,PhD,56497,0.4,7529.94
+Robin Solis MD,42,Female,Master,49924,1.0,19496.2
+Elizabeth Castillo DVM,34,Male,High School,40288,0.6,6008.639999999999
+Antonio Rodriguez,58,Female,High School,89116,0.8,14764.64
+John Kelly,45,Female,PhD,23183,0.2,4231.830000000001
+Michael Stone,45,Male,Bachelor,24079,0.2,2840.7900000000004
+Tara Bean,63,Female,Bachelor,24166,0.5,9104.15
+Joshua Brown,34,Female,High School,65065,0.5,6626.625
+Derrick Miller,41,Male,High School,64400,0.9,11898.0
+Kelly Beck,53,Male,Bachelor,84940,0.1,1924.7
+Shaun Barnett,58,Female,Master,38044,0.6,12541.32
+Jody Williams,24,Female,High School,52967,1.0,9648.35
+Sheryl Cook,24,Male,Bachelor,83605,0.1,1218.025
+Joseph Caldwell,51,Male,Master,32689,0.9,16771.005
+Morgan Williams,63,Male,Bachelor,50166,0.7,12255.81
+Jeffrey Nicholson,30,Female,Master,40704,0.5,8517.6
+Erin Proctor,64,Female,Bachelor,48320,0.8,15532.8
+Nicholas Moore,38,Male,Master,93544,0.1,1967.7200000000005
+Jonathon Lara,23,Female,Master,62371,0.1,1511.855
+Carla Nielsen,23,Male,Master,35028,0.3,3525.42
+Scott Thompson,63,Female,Bachelor,87201,0.9,19224.045
+Seth Vaughan,40,Female,High School,74344,0.9,14145.48
+Alexandra Baker,52,Female,High School,30534,1.0,15526.7
+Tony Jones,47,Female,Bachelor,58871,0.4,7177.42
+Thomas Young,58,Female,Master,24108,0.1,2020.54
+Debra Fleming,18,Female,High School,61040,0.6,6031.2
+Emily Ortiz,53,Female,High School,52612,0.9,14967.54
+Jennifer Hayes,26,Female,High School,70936,0.7,9482.759999999998
+David Simmons,35,Male,Master,60992,0.9,14444.64
+Samantha Jones,49,Female,High School,75529,0.6,9465.87
+Taylor Peterson,28,Male,Bachelor,82563,0.7,10589.705
+Joshua Grant,19,Male,High School,60409,0.2,1604.09
+David Lee,29,Male,PhD,21991,0.6,10259.73
+Virginia Wolfe,51,Female,High School,89118,0.4,7382.360000000001
+William Davidson,49,Female,Master,72981,0.7,14454.335
+Anna Schroeder,48,Male,Bachelor,88712,0.6,10461.36
+James Henderson,30,Male,Bachelor,49007,0.5,6725.175
+Steven Wagner,27,Male,Master,91325,0.1,1756.625
+Steven Novak,29,Male,PhD,40557,0.4,7211.139999999999
+Sean Evans,53,Male,Bachelor,52499,0.9,15862.455000000002
+Charles Molina,37,Male,PhD,46186,0.1,2030.93
+Cynthia Oneal,44,Male,PhD,86260,0.7,15619.1
+Nathaniel Peters,31,Female,PhD,33505,0.3,5902.575
+Daniel Chen,23,Male,High School,21382,0.4,2427.6400000000003
+Benjamin Murphy,65,Female,PhD,56148,0.7,17365.18
+John White,40,Female,Master,30044,0.3,5550.66
+Brian Moreno,55,Male,Bachelor,25943,0.1,1629.715
+Matthew Duncan,50,Male,PhD,52635,0.8,16505.4
+Shannon Hogan,63,Male,Master,21768,1.0,18088.4
+Steven Klein,27,Female,Master,68106,0.5,9202.65
+Christopher Collins,50,Female,Bachelor,22949,0.8,12917.96
+Kendra Mcclain,64,Male,PhD,64482,0.8,18579.28
+Juan Wade,37,Female,Bachelor,82317,0.5,9557.925
+Alyssa Christensen,62,Female,Master,99048,0.7,16766.68
+Leslie Esparza,43,Female,Master,94017,0.4,8680.34
+Dan Frank,30,Female,Bachelor,54754,0.9,14163.93
+Bonnie Rojas,28,Male,PhD,64789,0.5,9619.725
+Charlotte Fuentes,45,Female,PhD,89038,0.1,2445.19
+Jessica Johnson,64,Male,Master,80138,0.2,4201.38
+Chelsea Allen,19,Male,High School,53600,0.1,768.0
+Jeffrey Brown,31,Male,Bachelor,67235,1.0,14361.75
+Mary Welch,35,Male,High School,22706,1.0,9135.3
+Benjamin Simmons,28,Female,Bachelor,71517,0.8,13260.68
+Terry Meza,65,Female,Master,31509,1.0,20575.45
+Justin Herrera,45,Male,High School,42569,0.1,1212.845
+Michelle Schneider,56,Female,Master,47343,0.7,14957.005
+Holly Sweeney,30,Female,Bachelor,43437,0.8,12137.48
+Marissa Lin,60,Male,PhD,96913,0.4,9938.260000000002
+Tammy Kennedy,18,Male,PhD,99230,0.1,1796.15
+Jared Vazquez,59,Male,High School,74961,0.5,7874.025
+James Howard,39,Male,High School,64450,0.3,3966.75
+Rodney Bowen,38,Female,PhD,83078,1.0,24153.9
+Aaron Hughes,39,Female,High School,80117,0.3,4801.755
+Olivia Petty,24,Female,PhD,99692,0.8,15987.68
+John Lewis,44,Male,PhD,36567,0.2,3965.67
+Nicole Cook DDS,55,Male,Bachelor,83213,0.5,9580.325
+Ashley Cruz,61,Male,PhD,54370,0.5,11359.25
+Pamela Cunningham,25,Female,High School,21058,0.1,805.29
+Kelly Graves,56,Male,Bachelor,36104,0.7,11763.64
+Jeff Smith,42,Female,High School,61063,0.3,4515.945
+Samantha Mathews,23,Female,Bachelor,26384,0.4,4527.68
+Joshua Johnson,44,Male,High School,98522,0.7,10448.27
+Brian Houston,26,Female,PhD,73047,0.9,19487.115
+Justin Smith,21,Female,Bachelor,93474,0.3,4402.11
+Regina Reilly,59,Male,Bachelor,31702,1.0,16585.1
+Kevin Ruiz,48,Female,Master,53123,0.4,7862.460000000001
+Robert Stone,43,Male,High School,88612,0.2,2886.1200000000003
+Maria Smith,18,Female,Bachelor,38461,0.9,10730.745
+George Herrera,26,Male,Master,20842,0.6,8425.26
+Christopher Mcdaniel,27,Female,High School,31290,0.6,6938.7
+Michael Silva,31,Female,PhD,63491,0.8,16939.64
+Lisa King,48,Male,High School,61356,0.8,10454.24
+Vincent Ballard,42,Female,PhD,92257,0.7,17228.995
+Jacob Park,51,Male,Bachelor,38838,0.7,11859.33
+Tina Sanders,50,Female,Bachelor,29236,0.3,4938.54
+Jamie King,27,Male,PhD,94082,0.2,4140.82
+Nathaniel Martinez III,60,Male,Master,94093,0.5,10852.325
+Julia Keller,40,Female,PhD,97525,0.6,14925.75
+Bryan Hood,65,Female,Master,50447,0.9,19370.115
+Amber Martinez,20,Female,Master,64861,0.9,13718.745
+Jerry Gonzales,18,Male,High School,82297,0.2,1822.9700000000005
+Maureen Castro,41,Female,Bachelor,91532,0.1,1957.66
+Adam Nelson,51,Male,High School,94698,0.6,10040.94
+Regina Douglas,20,Female,Bachelor,64683,0.5,6617.075
+Randy Gregory,49,Female,PhD,20170,0.4,8403.4
+Cindy Graham,59,Female,Master,41065,0.1,2105.3250000000003
+Yolanda Thompson,65,Female,Bachelor,70498,0.5,10262.45
+Michele Villa,61,Female,Bachelor,23577,0.8,14543.08
+Jessica Nguyen,57,Male,PhD,61320,1.0,23066.0
+Mary Hughes,38,Female,Bachelor,87161,0.7,13550.634999999998
+Michael Byrd,43,Male,Master,69936,0.5,9248.4
+Douglas Anderson,33,Male,Master,51692,0.9,14026.14
+Angela Soto,55,Female,PhD,51216,1.0,24560.8
+Deborah Summers,39,Male,Master,51925,0.3,5278.875
+Nicole Gray,34,Male,High School,78575,0.8,9543.0
+Shannon Davis,31,Male,Master,99329,0.4,7186.580000000001
+Erin Osborne,63,Male,PhD,47563,0.5,11189.075
+Jason Smith,42,Female,Bachelor,66392,0.7,12823.719999999998
+Jordan Thomas,38,Male,High School,45177,0.4,4903.54
+Abigail Hood,56,Male,PhD,30608,0.5,10765.2
+Frank Allen,50,Female,PhD,75021,0.6,14250.63
+Veronica Miller,61,Female,High School,35077,0.1,1575.3850000000002
+Vanessa Burns,39,Male,Master,93240,0.8,15729.6
+Douglas Owens,37,Female,PhD,69148,0.4,9382.96
+Lynn Andrade,61,Male,High School,31959,0.9,12238.155
+Catherine Nelson PhD,19,Female,High School,93860,0.4,4677.2
+Amber Church,19,Male,High School,60906,0.2,1609.0600000000002
+Clayton Weber,55,Female,Bachelor,95467,1.0,21773.35
+Jamie Harmon,51,Male,Master,58729,0.3,5980.935
+Donald Juarez,29,Male,Bachelor,37052,0.4,5141.040000000001
+Mariah Ayala,34,Female,Master,39040,1.0,16952.0
+Nicole Haynes,35,Male,High School,37871,0.7,6925.484999999999
+Kathleen Miller,29,Male,High School,66065,0.9,10172.925
+Amy Smith,60,Female,Bachelor,55501,0.2,3955.01
+Lindsay Mendez,64,Female,Bachelor,20533,0.3,5407.995
+Ann Gates,31,Male,PhD,36666,0.3,5349.99
+Robert Conley,49,Male,Master,48834,0.3,5232.51
+Sharon Brown,47,Female,PhD,50335,0.5,11258.375
+Gregory Morgan,61,Male,High School,65849,0.8,12233.96
+Ryan Yang,35,Female,Master,48556,0.5,8713.9
+Dennis Garcia,53,Female,High School,42963,0.7,11303.705
+Elizabeth Smith,25,Male,Bachelor,80400,0.3,3606.0
+Rachel Haney,45,Female,Bachelor,43283,0.2,3432.8300000000004
+Steve Stewart,34,Female,Master,69305,0.9,16618.725000000002
+Derek Weber,21,Female,PhD,70325,0.9,16664.625
+Russell Huffman,26,Male,High School,60028,1.0,11001.4
+Amy Brown,46,Female,Bachelor,81434,0.4,7628.68
+Peter Garcia,43,Male,High School,90163,0.7,10155.705
+Andre Boyd,25,Female,Bachelor,24231,0.4,4484.62
+Chelsea Mora,32,Male,High School,98447,0.7,9045.645
+Luis Marsh,44,Male,Bachelor,88896,0.4,6977.92
+Jeffrey Ramos,31,Female,High School,45095,0.2,2450.9500000000003
+Casey Graves,50,Male,Bachelor,92120,1.0,17606.0
+Patrick Gilbert,51,Female,PhD,54353,0.8,19774.120000000003
+Tyler Cardenas,58,Male,Master,65268,0.4,8105.360000000001
+Laura Coleman,62,Male,Bachelor,77742,0.4,7554.84
+Rachel Miller,51,Male,High School,38788,0.4,5575.76
+Chloe Case,47,Female,High School,99203,0.5,8480.075
+Carrie Johnson,59,Female,PhD,63128,0.5,12578.2
+Timothy Miranda,60,Male,High School,85056,0.6,9751.679999999998
+Mr. Nicholas Mason,57,Male,Bachelor,37838,0.7,11824.33
+Rachel White,33,Male,PhD,57081,0.3,5656.214999999999
+Billy Myers,51,Female,Bachelor,35172,0.9,16882.739999999998
+Kara Brewer,38,Female,High School,67119,0.4,6142.380000000001
+Ashley Greene,30,Female,PhD,69656,0.7,15037.96
+Cindy Harrison,20,Male,PhD,30106,0.5,7252.65
+Raymond Brown,58,Male,Bachelor,98952,0.8,15958.08
+Laura Howard,40,Male,Bachelor,95054,0.7,12426.89
+Jason Martinez,34,Male,High School,40680,0.3,3010.2
+Victor Allen,46,Female,Bachelor,25021,0.5,8125.525
+John Phelps III,48,Male,Master,32913,0.2,3329.130000000001
+Kristin Cuevas,49,Male,High School,23946,1.0,11197.3
+Makayla Butler,23,Female,Master,96787,0.5,8419.675
+Connie Thomas,62,Female,Bachelor,51141,0.2,3911.41
+Charles White,61,Male,PhD,51875,0.1,2259.375
+Crystal Strickland,32,Male,Bachelor,40230,1.0,13011.5
+Tyrone Wilson,57,Male,High School,33841,0.5,6846.025
+Kristy Hunter,24,Female,PhD,95654,0.5,9891.35
+Melissa Johnson,55,Female,High School,29796,0.3,4646.94
+Tanya Brown,46,Male,Master,63628,0.5,9090.7
+Jeffery Delacruz,58,Female,PhD,22906,0.5,11572.65
+Rebecca Phelps,59,Male,Bachelor,31684,1.0,16584.2
+Karen Bridges,64,Male,Bachelor,88536,0.4,7770.72
+Jennifer Sherman,46,Female,High School,52831,0.7,10249.085
+Dawn Davies,55,Male,Master,94643,0.9,19558.935
+Patrick Watkins,42,Male,Master,32443,0.8,13297.72
+Jeremy Costa,59,Female,Bachelor,54317,0.5,9857.925
+Jennifer Coleman,23,Female,Bachelor,78974,0.1,1394.87
+Ryan Hall,42,Female,High School,57400,0.9,13383.0
+Brandy Grant DDS,57,Female,PhD,94573,0.9,24055.785000000003
+Joseph Wells,30,Male,High School,54968,0.2,2149.68
+Mary Wright,42,Female,Bachelor,83543,0.8,15341.72
+Kristopher Brown,34,Female,Bachelor,99780,0.8,14391.2
+John Riley,35,Male,High School,47230,0.6,6216.9
+Heather Williams,34,Male,High School,77157,0.5,5928.925
+Michael Brown,38,Male,Master,73779,0.3,5606.685
+Bryan Gonzalez,59,Male,Bachelor,66856,0.8,14674.24
+Zachary Mason,46,Male,Master,76057,0.7,13161.995
+Karen Rodriguez,44,Female,High School,31507,0.9,12217.815
+Linda Savage,46,Male,High School,22038,0.9,9991.71
+Nicole Lee,62,Female,PhD,51122,0.7,17189.269999999997
+Stephanie Martinez,58,Male,PhD,27508,0.5,10687.7
+Nicholas Thornton,56,Male,Master,56511,0.9,17842.995
+Megan Vasquez,25,Female,High School,38933,0.1,894.665
+William Rodriguez,23,Female,Master,79288,0.4,6385.76
+Kyle Anderson,33,Female,PhD,54278,0.9,18642.51
+Timothy Mccann,28,Female,PhD,21946,0.2,3819.46
+Cheryl May,18,Male,Master,47226,0.5,6180.65
+Vanessa Barnett,52,Male,Master,32127,0.2,3721.27
+Daniel Martin,52,Female,High School,52222,0.2,3322.22
+Christy Hays,61,Male,PhD,41702,0.3,6625.53
+Patty Stokes,47,Female,Bachelor,77652,1.0,18882.6
+Heather Mccarthy,19,Female,High School,36082,0.2,1760.8200000000002
+Michael Davis,37,Male,PhD,47349,0.5,10183.725
+Johnny Torres,64,Female,Bachelor,80701,1.0,21035.05
+Samuel Vance,50,Female,Bachelor,75766,0.1,1878.83
+Joshua Craig,55,Female,Bachelor,57131,0.6,11913.929999999998
+Sarah Rowe,50,Female,PhD,81283,0.5,12032.075
+Oscar Johnson,40,Female,Bachelor,44445,0.4,6888.900000000001
+Rhonda Molina,47,Female,High School,68799,0.8,12351.96
+Robert Davis,57,Female,Bachelor,22754,0.2,3627.54
+Robert Hoffman,47,Male,Bachelor,70944,1.0,16547.2
+Tyler Brown,39,Male,High School,84427,0.7,9954.945
+Bradley Boyd,47,Female,Master,21561,0.4,7231.22
+Anthony Thompson,54,Male,High School,84271,0.3,4864.065
+Caitlin Shelton,60,Male,PhD,56561,0.4,9131.22
+Kim Spencer,23,Female,High School,91375,0.8,9255.0
+John Hogan,63,Female,High School,45910,1.0,16295.5
+Jackie Roberts,36,Female,PhD,87348,0.5,12183.7
+Daniel Fox,22,Male,High School,65368,0.7,5787.879999999999
+David Serrano,59,Female,PhD,50435,0.5,12260.875
+Willie Tyler,49,Female,High School,77006,0.5,7925.15
+Matthew Duffy,61,Female,Bachelor,72308,0.7,14430.78
+Samantha Hansen,43,Female,PhD,91783,0.6,14753.49
+Samantha Roberts,37,Female,Bachelor,65437,0.1,1827.185
+Melinda Marshall,45,Female,PhD,60679,0.2,4606.79
+Stephen Williamson,61,Male,Master,50282,0.7,13659.87
+Katherine Hartman,19,Female,Bachelor,43992,0.8,9759.68
+Scott Kelly,22,Male,Bachelor,99160,0.1,1295.8000000000002
+Douglas Hall,32,Male,High School,88182,0.7,8686.369999999999
+James Miller,61,Female,Bachelor,57937,0.7,13927.794999999998
+Connor Matthews,46,Female,High School,40892,0.8,11235.68
+Elizabeth Diaz,28,Male,High School,82075,0.5,6051.875
+Kenneth Frazier,64,Female,Master,71273,0.1,2256.365
+Andrew Davis,55,Female,Master,80464,0.2,4604.64
+Amy Thomas,21,Female,Bachelor,79609,0.5,6990.225
+Misty Hayes,53,Male,PhD,28918,0.7,15012.13
+Christie Huffman,20,Male,High School,68345,0.1,841.725
+Jennifer Joseph,36,Female,High School,20153,0.1,1300.765
+Lisa Shelton,57,Male,Bachelor,97851,0.3,5967.764999999999
+Brent Park,48,Male,Bachelor,22650,0.9,12719.25
+Kyle Palmer,26,Male,High School,28561,1.0,9428.05
+Caleb Sullivan,60,Male,Bachelor,33121,0.8,13324.84
+Brenda Bonilla,45,Male,High School,82073,0.8,11282.920000000002
+Shaun Jackson,50,Male,High School,38113,0.6,7143.389999999999
+Mary Hill,64,Female,Bachelor,30583,0.9,16676.235
+Kaitlin Murphy,20,Male,High School,69563,0.6,5086.889999999999
+Tina Simmons,51,Female,PhD,60201,0.4,10004.02
+Gordon Jacobson,54,Male,Bachelor,99292,0.7,13975.219999999998
+Anthony Fox,41,Female,Master,86244,0.6,12787.32
+Robert Short,19,Male,High School,38759,0.5,3468.975
+Jacob Erickson,65,Male,Bachelor,44407,0.2,3444.07
+Brittney Cohen,49,Female,Bachelor,56112,0.5,8902.8
+Alicia Duncan,26,Male,Bachelor,66045,0.6,8581.35
+Robert Freeman,30,Male,PhD,38954,0.5,8973.85
+Jimmy Bowen,38,Male,High School,51845,0.6,7555.349999999999
+Susan Carroll,43,Male,Master,70837,0.9,16687.665
+Katelyn Snyder,40,Male,Master,50352,0.7,12262.319999999998
+Aaron Martin,20,Female,Master,40872,0.5,7021.8
+Matthew Moore,20,Female,High School,63899,0.7,7136.465
+Michael Weber,18,Female,Bachelor,43490,0.5,6087.25
+Michael Patrick,41,Male,Bachelor,85198,0.4,6903.960000000001
+Katie Cunningham,54,Male,PhD,57376,0.1,2286.88
+Edward Riggs,34,Male,High School,99532,0.3,3892.98
+Cassandra Armstrong,39,Male,PhD,50697,1.0,20534.85
+Robert Hernandez,53,Male,High School,91185,0.4,6623.700000000001
+Dana Roberts,47,Female,Master,65435,0.6,12163.05
+Keith Williams,25,Male,PhD,67668,0.3,4915.02
+Kathryn Leonard,48,Male,PhD,98627,0.1,2293.135
+Stephen Jones,60,Male,PhD,74182,0.7,16596.37
+Bryan Williams,28,Male,PhD,69974,0.8,15598.96
+Anne Stewart,65,Male,Master,28279,0.3,5524.185
+Matthew Ramirez Jr.,54,Male,Master,44193,0.2,3841.93
+Jennifer Owens,27,Female,Bachelor,72157,0.5,8303.925
+Brooke Nelson,51,Female,Master,90579,0.7,16470.265
+Ashley Marshall,49,Female,High School,52873,1.0,14643.65
+Tammy Nguyen,38,Female,Master,57342,0.7,13906.969999999998
+Denise Manning,56,Male,PhD,87337,0.9,21930.165
+Gregory Nixon,30,Female,Master,73303,0.1,1866.5150000000003
+Brian Fleming,19,Female,High School,56471,0.1,982.355
+Ronald Tyler,19,Female,PhD,89930,0.6,11697.9
+Melissa Atkins,53,Female,PhD,92860,0.8,21314.4
+James Brown,55,Male,High School,99582,0.6,10187.46
+Charles Henderson,31,Female,PhD,28740,0.4,7774.8
+Brent Baker,24,Male,PhD,36870,0.8,11874.8
+Jennifer Gutierrez,38,Female,Bachelor,84060,0.5,9601.5
+Thomas Castro,49,Female,Bachelor,25887,0.6,9776.61
+Connor Lee,50,Female,PhD,90137,1.0,24506.85
+Jeffery Adams,24,Female,Bachelor,86048,0.3,4290.72
+Tiffany Reed,27,Male,Master,45501,0.1,1527.505
+Ronald Carter,19,Female,PhD,30220,1.0,16511.0
+Stephanie Wagner,51,Male,Bachelor,81139,1.0,19056.95
+Olivia Leon,26,Female,High School,59644,0.6,7789.32
+Jason Hayes MD,26,Female,Master,25604,0.6,9768.12
+Wanda Wiley,24,Male,High School,60165,0.5,4004.125
+Susan Juarez,55,Female,Bachelor,20931,0.8,14437.24
+Daniel Baker,43,Female,Bachelor,31970,0.7,11618.95
+Jessica Bell,35,Female,PhD,84592,0.7,15560.719999999998
+Jessica Tate,27,Female,Bachelor,75585,0.4,6711.700000000001
+Katherine Dominguez,35,Male,Bachelor,80946,0.6,9028.38
+Joshua Rowland,41,Female,PhD,65035,0.4,9300.7
+Kevin Hubbard,28,Female,Bachelor,64545,0.4,6490.900000000001
+Christian Black,49,Male,High School,90344,1.0,14517.2
+Victor Baker,56,Female,Master,42831,0.2,4228.31
+Daniel Wright,60,Female,Bachelor,55692,0.6,11870.759999999998
+Sarah Gibson,60,Male,High School,69655,0.6,9289.65
+Casey Mccoy,38,Female,Master,20197,0.4,7203.94
+Ian Morris,60,Female,Bachelor,42250,0.9,17201.25
+Anthony Moore,28,Female,Bachelor,30401,0.9,13068.045
+Amanda Cohen,34,Male,High School,69656,0.2,2296.56
+Sharon Savage,43,Female,PhD,38456,0.3,6576.839999999999
+Elizabeth Rodriguez,21,Male,Bachelor,35694,0.7,6849.29
+Paula Branch,56,Male,Master,30726,1.0,18536.3
+Dr. Cory Roth,55,Male,Bachelor,59600,0.7,12586.0
+Sara Marquez,29,Female,Master,64265,0.3,5463.974999999999
+Kathleen Smith,59,Female,Master,43226,0.3,6348.389999999999
+Samuel Fowler,64,Male,Bachelor,88173,0.6,11645.19
+Candice Gilmore,61,Female,High School,63517,0.9,15458.265
+Shannon Campbell,45,Female,PhD,27374,0.3,6410.61
+Krista Joyce,40,Male,PhD,49645,0.4,8192.9
+Emily Sanders,22,Male,PhD,76912,0.2,3369.12
+Charles Williams,41,Male,High School,62252,0.3,3933.78
+Angie Wheeler,30,Male,Master,85087,0.6,10352.61
+Jason Bender,55,Female,Master,58796,0.1,2193.98
+Rebecca Johnson DDS,57,Male,Master,45652,0.9,17354.34
+Tammy Camacho,53,Male,Master,77634,0.3,6264.51
+Taylor Thomas,25,Male,PhD,89489,0.9,15727.005
+Katherine Parrish,53,Female,PhD,61615,1.0,25080.75
+Jacqueline Cross,39,Male,Master,84799,0.3,5771.985
+Tiffany Young,51,Male,PhD,38324,0.1,2191.6200000000003
+Tina Griffin,23,Male,Bachelor,34337,0.1,971.685
+Mrs. Nicole Sutton MD,38,Female,Bachelor,28219,0.1,1641.0950000000005
+Rita Poole,32,Male,Master,70176,0.9,14857.92
+Robert Scott,57,Female,PhD,47499,0.7,17062.465
+Ryan Smith,64,Male,Bachelor,94575,0.1,1972.875
+Alyssa Ortega,46,Male,PhD,40115,0.4,8002.3
+John Owens,22,Male,Master,56774,0.5,6419.35
+George Golden,46,Female,PhD,84377,0.6,14531.31
+Lauren Brown,35,Female,PhD,90020,0.6,13500.6
+Alexis Potts,43,Female,PhD,56741,0.1,2283.705
+Theresa Ryan,31,Female,Master,72843,0.7,13049.505
+Michael Sullivan,65,Male,Bachelor,82563,0.4,7651.260000000001
+William Richards,28,Male,High School,55478,0.9,9696.51
+Dorothy Allen,50,Male,Bachelor,83564,0.2,3435.6400000000003
+John Little,48,Male,PhD,44076,0.2,4040.76
+Scott Ramirez,21,Male,High School,32382,1.0,6619.1
+Adam Frazier,26,Male,Bachelor,67068,0.6,8612.039999999999
+Francisco Ramirez,24,Male,PhD,84001,0.3,5160.014999999999
+Alexis Davis,39,Male,Bachelor,98275,1.0,17913.75
+Greg Mcgrath,46,Female,High School,38394,0.7,9743.79
+Tammy Rojas,24,Male,Bachelor,43321,0.5,5083.025
+David Hernandez,35,Female,Bachelor,78404,0.6,10152.12
+Matthew Collins,52,Male,High School,71944,0.1,1559.7200000000005
+Jordan Rodriguez,21,Male,Master,77042,0.4,5540.84
+Anthony Norris,39,Female,High School,63019,0.2,3030.1900000000005
+Janet Reyes,48,Female,Master,52114,0.7,13723.99
+Laura Potter,63,Male,Master,63459,0.3,6051.885
+Mr. Jason Conway DDS,23,Female,PhD,20814,1.0,16040.7
+Nathan Wagner,58,Male,Bachelor,93113,1.0,19655.65
+Marie Brown,39,Female,High School,71060,0.5,7776.5
+Joe Fry,47,Female,High School,73015,0.1,1565.075
+Mrs. Cynthia Murphy,47,Male,Bachelor,59397,0.6,9581.91
+Evan Carter,37,Male,PhD,78285,0.1,2191.425
+Betty Frazier,56,Female,Bachelor,74277,0.1,2071.385
+Leslie May,37,Male,Bachelor,30257,0.7,10158.995
+Charles Johns,50,Female,Bachelor,75070,0.6,11252.1
+Patricia Horn,26,Female,Bachelor,30804,0.2,2908.0400000000004
+Kimberly Burke,33,Male,Bachelor,82700,0.4,6054.0
+Jennifer Leach,19,Female,Master,54643,0.6,8839.289999999999
+Sarah Cortez,55,Female,PhD,88051,0.1,2640.255
+Patrick Hernandez,37,Female,PhD,49206,0.8,17968.24
+Justin Perkins,18,Female,Master,48098,1.0,14404.9
+Ryan Davis,40,Female,Bachelor,43207,0.5,8580.175
+Michael Scott,30,Male,Master,69542,0.3,4943.129999999999
+Barbara Blanchard,37,Female,Bachelor,73179,0.1,1865.895
+Christina Morris,60,Male,Bachelor,71161,0.7,12990.634999999998
+Kelly Morales DDS,23,Male,Bachelor,90214,0.2,2502.1400000000003
+Andrea Harrison,31,Female,PhD,93124,1.0,22656.2
+Andrea Thomas,24,Male,Bachelor,99376,1.0,12968.8
+Jeffrey Reilly,56,Male,PhD,54101,0.4,9082.02
+David Hood,52,Male,PhD,29603,0.1,2148.0150000000003
+Douglas Gonzales,59,Male,Bachelor,42457,0.8,13698.28
+Sylvia Hughes,60,Male,Master,95351,1.0,21767.55
+Jeffrey Levy,23,Male,Master,91482,0.1,1457.41
+Eric Gray,57,Female,Master,91637,0.4,9432.74
+Tyler Burton,55,Female,High School,95225,0.7,13132.875
+Amy Butler,40,Male,Master,56694,0.6,10700.82
+Sarah Williams,24,Female,Bachelor,66151,0.1,1330.755
+Melvin Johnson,64,Male,PhD,21110,0.7,14738.85
+Melissa Fisher,32,Female,PhD,58522,0.1,2092.61
+Victoria Smith,29,Female,High School,21794,0.1,1108.97
+Barbara Murphy,23,Male,PhD,70287,1.0,16514.35
+Wanda Ward,29,Male,High School,23907,0.1,919.535
+Joshua Ross,43,Female,Master,42434,0.7,13385.19
+Danielle Clay,19,Female,PhD,87998,0.4,7759.960000000001
+Candice Chase,50,Female,Bachelor,24226,0.7,11347.909999999998
+Andrea Reeves,49,Male,Bachelor,64340,0.8,12973.6
+Cynthia Nunez,64,Male,Bachelor,47834,0.1,1739.17
+John Osborne,30,Male,Master,62407,0.6,9672.21
+Deborah Crawford,64,Female,Bachelor,43658,1.0,19182.9
+Mike Campbell,64,Female,Master,27243,0.7,14253.505
+Cathy Campos,25,Female,Bachelor,69806,0.4,5396.12
+Mikayla Foster,44,Female,Bachelor,93412,0.8,15736.48
+Michael Owens,57,Female,High School,88787,0.4,7375.74
+Timothy Miller,31,Female,PhD,49392,1.0,20469.6
+Deborah Martinez,64,Male,High School,40091,0.3,4201.365
+Natalie Bell,37,Male,Master,34914,0.3,5023.71
+Kimberly Duncan,57,Male,PhD,53608,0.1,2268.0400000000004
+Gregory Gonzalez,41,Male,High School,87512,0.4,5750.240000000001
+James Allen,63,Female,Master,74625,0.1,2273.125
+Lauren Taylor,33,Female,Bachelor,64200,0.2,3242.0
+Jennifer Liu,62,Female,PhD,68641,0.5,12716.025
+Krystal Mitchell,21,Female,High School,67077,0.5,5176.925
+Miss Jessica Ramirez,30,Female,Bachelor,51612,0.4,6232.240000000001
+Renee Reid,30,Female,High School,90114,0.5,7252.85
+Jennifer Moore,60,Male,Master,71206,0.1,2056.03
+Megan Proctor,52,Male,PhD,34355,0.5,10858.875
+Amy Knight,63,Male,Master,31248,0.2,3712.480000000001
+Darren Wilson,50,Female,Master,43523,0.3,5752.845
+Jesse Williams,25,Female,Master,42802,0.8,11312.080000000002
+Gregory Mccarthy,36,Male,Bachelor,30182,0.8,11607.28
+Ann Kent,30,Female,PhD,55201,0.6,12456.03
+Johnny Hall,24,Male,PhD,66037,0.9,14671.665
+David Thompson,26,Male,PhD,72566,0.8,15702.64
+Morgan Caldwell,38,Female,PhD,38475,0.5,10961.875
+Mark Peterson,20,Female,High School,80763,1.0,11038.15
+Veronica Garcia,29,Male,High School,71628,0.4,4632.56
+Allison Gonzalez,36,Male,PhD,96477,0.5,11411.925
+Ernest Christensen,52,Male,High School,72988,0.7,10954.58
+Kenneth Ballard,51,Female,Bachelor,52164,0.3,5882.46
+Tyler Wallace,59,Male,High School,90162,1.0,16508.1
+Christopher Chapman,27,Female,Master,83622,0.9,17262.989999999998
+Maria Morse,33,Female,Bachelor,98404,1.0,17920.2
+Dr. Emily Clark,29,Female,Bachelor,22852,0.6,8485.56
+Carolyn Simon,27,Male,Master,99484,0.4,7189.68
+Anne Larson,24,Male,PhD,88549,1.0,17427.45
+Brent Chapman,62,Female,Master,63928,1.0,22196.4
+Joshua Carey,23,Male,High School,72951,0.5,4323.775
+Chelsea Miller,50,Female,Bachelor,97108,0.6,11913.24
+Sara White,34,Male,PhD,36687,0.1,1783.435
+Lisa Velasquez,60,Male,PhD,56832,0.6,13704.96
+Brent Mccoy,34,Female,High School,64992,0.6,7949.76
+Aimee Morrison,58,Male,Master,67452,0.6,12223.56
+Crystal Hughes,63,Female,Bachelor,22283,0.7,12679.905
+Amy Kennedy,58,Female,PhD,99016,0.1,2695.08
+Stephanie Davis,52,Male,Master,23171,0.7,12710.985
+Theresa Lambert,27,Male,Bachelor,26649,0.9,11099.205000000002
+Sandra Shea,36,Male,Master,51774,1.0,17588.7
+Thomas Savage,23,Male,PhD,61600,0.5,8040.0
+Charles Simon,19,Male,PhD,56048,0.7,11061.679999999998
+Michael Jones,31,Male,PhD,21424,0.3,5121.36
+Melissa Horn,18,Male,High School,32036,0.6,3961.08
+James Allen,21,Male,Bachelor,85062,0.5,6126.55
+Robert Macias DVM,37,Female,Master,85161,1.0,21258.05
+James Love,50,Male,Bachelor,37027,0.4,5940.540000000001
+Angela Long,32,Male,Bachelor,33833,0.1,1269.165
+Kimberly Blackwell,56,Male,PhD,79396,0.8,19175.84
+Hector Moyer,43,Male,Master,88436,0.4,7768.72
+Edward Martin,26,Female,Master,72673,1.0,18633.65
+Mrs. Helen Sanchez,51,Male,PhD,94796,1.0,24739.8
+Daniel Schultz,33,Female,Master,92967,0.5,9824.175
+Reginald Livingston,65,Male,Master,95144,0.5,10878.6
+Joseph Jones,62,Female,PhD,78546,0.2,5185.46
+William Bell,55,Female,Master,29992,0.7,14349.719999999998
+Nancy Collins,39,Male,High School,63133,1.0,13156.65
+Joseph Hess,24,Male,High School,22397,0.1,611.985
+Brooke Carter,37,Female,High School,87741,0.1,1638.705
+Justin Blanchard,49,Male,Master,87463,0.5,9686.575
+Jason Allen,34,Male,PhD,99090,0.8,16763.600000000002
+Heather Hansen,48,Female,Master,21952,1.0,18097.6
+Alan Arias MD,56,Female,High School,64790,0.2,3447.9
+Brittany Ramsey,27,Female,PhD,54374,0.6,12431.22
+George Flores,35,Male,Bachelor,92243,0.8,12489.72
+Francisco Obrien,47,Female,PhD,32318,0.2,4323.18
+Jillian Hoffman,61,Male,High School,52896,0.6,8786.88
+Nathan Jones,39,Female,High School,70317,0.6,9309.51
+James James,29,Female,PhD,25808,0.9,17361.36
+Lisa Davis,50,Female,Master,55406,1.0,19770.3
+Gregory Taylor,58,Female,High School,65749,0.1,1728.745
+Adam Ruiz,46,Male,Master,58611,0.5,8965.275
+Angela Thompson,49,Male,PhD,40678,0.4,8013.560000000001
+Christopher Cooper,40,Male,High School,26247,0.7,7918.644999999999
+Alexandra Nichols,46,Female,High School,62523,0.1,1512.615
+James Ewing,61,Male,PhD,52773,0.4,9055.46
+Deborah Yu,62,Male,PhD,33460,0.7,15171.1
+Debra Thomas,53,Male,Master,33722,0.3,5605.829999999999
+Cindy Singh,21,Male,Master,75457,0.9,12395.565
+Danny Lutz,60,Female,High School,63714,0.8,13748.56
+Emily Campbell,55,Female,Master,63828,0.4,8876.560000000001
+Dr. Ashley Lopez,21,Male,PhD,88592,0.1,1742.96
+Gary Jones,61,Female,Master,25588,0.9,18251.460000000003
+Cameron Daniels,30,Male,Bachelor,23947,0.9,10977.615
+Natasha Bennett,38,Male,Bachelor,94979,0.8,14199.160000000002
+Elizabeth Harris,52,Female,PhD,43552,0.8,19342.08
+Jordan Harper,34,Male,High School,67276,0.5,5681.9
+Michelle Nichols,65,Female,Master,50017,0.7,15050.594999999998
+James Lopez,18,Male,High School,37793,1.0,6889.65
+David Bennett,39,Male,High School,25449,0.9,10145.205000000002
+John Lowery,28,Male,High School,38291,0.3,2974.365
+Wendy Norman,53,Male,PhD,70979,0.1,2354.895
+Jacob Rios,41,Female,Master,93859,0.1,2169.295
+Shannon Page,33,Male,Master,68148,0.6,9844.44
+Eric Powers,23,Female,Master,28482,0.7,9396.87
+Rodney Mejia,30,Female,Master,39701,0.4,6794.02
+Maria Jackson,51,Male,Bachelor,86267,0.2,3862.67
+Glenn Davis,38,Male,Bachelor,66881,0.5,8172.025
+Daniel Hunt,47,Female,PhD,44238,0.7,15548.33
+Michelle Roman,44,Female,High School,61578,0.3,4523.67
+Bonnie Hansen,34,Male,Master,78670,0.2,3386.7000000000003
+Renee Jackson,41,Female,Master,66114,0.3,6091.71
+Stephen Morrow,44,Male,Bachelor,40671,1.0,15033.55
+Luis Shaw,47,Female,Bachelor,20206,0.6,9606.179999999998
+Roger Martin,26,Male,PhD,73630,1.0,19681.5
+Blake Sanchez,24,Male,PhD,57931,1.0,15896.55
+Veronica Sellers,62,Male,PhD,20403,1.0,21020.15
+Lisa Hendrix,32,Female,PhD,84710,1.0,22235.5
+Jonathan Dorsey,45,Female,PhD,28001,0.5,10700.025
+Cassandra Watson,29,Male,Master,35972,0.9,13318.74
+Logan Reynolds,57,Female,Bachelor,95396,0.7,15238.86
+Cindy Pena,32,Male,Master,22330,0.8,11293.2
+Rickey Hernandez,38,Female,Master,86587,0.4,8531.74
+Julie Knox,37,Male,PhD,38010,0.5,9950.25
+Margaret Tran,31,Female,High School,57605,1.0,12880.25
+Tonya Arnold,45,Male,High School,48924,1.0,12446.2
+Derek Larson,42,Male,Master,95660,0.9,17804.7
+Taylor Williams,30,Male,PhD,94002,0.8,16560.079999999998
+Robert Keith,41,Female,Bachelor,24034,1.0,16201.7
+Ryan Smith,43,Female,Master,60588,0.3,6008.820000000001
+Jonathon Holder,36,Female,Master,72059,1.0,20602.95
+Kathryn Silva,33,Female,Bachelor,43961,0.8,12158.44
+Charles Jimenez,47,Male,PhD,46541,0.9,18294.345
+Linda Bennett,36,Female,High School,60515,0.5,7512.875
+Bonnie Odom,28,Male,Bachelor,60282,0.3,4204.23
+James Mckee,28,Female,Bachelor,95620,1.0,17781.0
+Lisa Stone,28,Male,High School,36579,0.5,4914.475
+Douglas Scott,54,Female,Master,44343,0.1,2121.715
+Kelly Fuller,35,Female,High School,74219,0.5,6855.475
+Morgan Norman,39,Female,High School,92706,0.9,14971.77
+Diane Singh,21,Male,Master,75594,1.0,13779.7
+Daniel Powell,48,Female,Bachelor,35639,0.7,11747.365
+Lauren Fisher,44,Male,Master,91499,0.6,11744.97
+Jeanne Perez,64,Male,High School,21213,0.3,3918.195
+Brenda Long,42,Female,High School,68834,0.6,9265.02
+Briana Moore,51,Female,High School,33767,1.0,15688.35
+Heidi Lozano,53,Male,Bachelor,62304,0.9,16303.68
+Linda Day,43,Male,High School,30880,0.1,1154.4
+Christopher Jones,58,Female,Bachelor,73963,1.0,20698.15
+Molly Rodriguez,62,Male,PhD,47156,0.6,13414.679999999998
+James Hall,23,Male,Bachelor,55825,0.4,4316.5
+Ryan Acevedo,60,Male,Bachelor,70421,0.7,12964.735
+Robin Huynh,30,Male,High School,88458,0.5,6211.450000000001
+Mark Wright,44,Male,High School,67573,0.6,8027.19
+Michael Andrews,34,Male,PhD,95920,0.4,8318.4
+Dr. Brian Williams,54,Male,High School,54788,0.7,10317.58
+Tammy Roberts,59,Male,High School,33096,0.6,8192.88
+Brooke Smith,39,Male,Master,32823,0.4,6656.460000000001
+Adrian Wise,37,Male,High School,71323,0.8,10852.92
+Paul Maldonado,27,Female,Bachelor,37098,0.4,5941.96
+Jennifer Caldwell,26,Male,High School,81298,0.8,9651.92
+Jennifer Reed,53,Male,PhD,52440,0.4,9048.8
+Justin Johnston,57,Male,Master,42895,0.5,9572.375
+Chad Wu,24,Female,PhD,46459,0.8,13858.36
+James Oliver,34,Female,Bachelor,79336,0.3,5090.04
+James Jones,56,Male,PhD,65975,0.7,16309.124999999998
+Timothy Malone,34,Female,Bachelor,37155,1.0,14857.75
+Latoya Stuart,52,Female,High School,50725,1.0,16536.25
+Kimberly Murphy,40,Female,High School,60052,0.8,12002.080000000002
+Jesus Sanders,31,Female,Bachelor,57925,1.0,15896.25
+Eddie Clark,38,Male,Master,24581,0.7,11360.335
+Patricia Cline,64,Male,High School,26324,0.1,1331.62
+Michael Schneider,44,Female,PhD,63465,0.1,2317.3250000000003
+Ian Phillips,53,Female,High School,75148,0.5,8878.7
+Scott Lopez,65,Male,Master,25826,0.1,1829.13
+Rodney May,40,Male,High School,88912,0.2,2889.1200000000003
+Kimberly Howard,54,Male,Bachelor,97603,1.0,19880.15
+Andre Wagner,44,Female,High School,34195,0.3,4112.925
+Linda Hunter,25,Male,Bachelor,50324,0.8,8412.960000000001
+Bradley Anderson,56,Female,PhD,46752,0.1,2433.76
+William Wright,51,Female,High School,49951,0.3,4949.264999999999
+Joanne Watson,43,Female,High School,52276,0.4,5845.52
+Vincent Wallace,25,Male,PhD,84339,0.7,12051.865
+Jennifer Malone,34,Male,High School,92407,0.7,8834.244999999999
+Laura Wright MD,27,Female,Bachelor,26321,0.5,7158.025
+Jason Haas,42,Female,PhD,98170,0.7,17435.949999999997
+Sharon Valdez,39,Male,High School,59174,0.9,11662.830000000002
+Andrew Taylor,50,Male,Master,59808,0.4,7196.160000000001
+Jessica Johnson,50,Female,Master,58272,0.7,13939.52
+Brian Williams,38,Female,Bachelor,32512,0.5,8312.8

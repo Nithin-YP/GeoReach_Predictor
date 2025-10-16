@@ -55,6 +55,8 @@ cp .env.example .env
 ```bash
 # Apply migrations
 python manage.py migrate
+cd scripts
+python data_loading.py
 
 # Create superuser (admin)
 python manage.py create_admin

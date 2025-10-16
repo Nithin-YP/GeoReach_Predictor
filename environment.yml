@@ -1,4 +1,4 @@
-name: georeach_env
+name: georeach
 channels:
   - defaults
   - conda-forge
@@ -16,6 +16,9 @@ dependencies:
   - shapely
   - rasterio
   - pip
+  - geos
+  - proj
+  - libpq
   - pip:
       - django-environ>=0.11.2
       - dj-database-url>=2.1.0

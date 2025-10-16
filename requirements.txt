@@ -12,6 +12,9 @@ numpy>=1.24.0
 scikit-learn>=1.3.0
 joblib>=1.3.0
 
+# .env loader for scripts
+python-dotenv>=1.0.0
+
 # Development dependencies (optional)
 # django-stubs>=4.2.0
 # mypy>=1.5.0

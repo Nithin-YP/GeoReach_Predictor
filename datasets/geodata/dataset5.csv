@@ -1,0 +1,384 @@
+Employment_Status,Age_Group,Education_Level,Industry,Location,Monthly_Salary_INR
+Employed,25_34,High School,Retail,Delhi,77600.0
+Unemployed,18-24,Masters,Retail,Urban,100200.0
+Unemployed,18-24,Bachelors,Healthcare,Bangalore,28700.0
+Unemployed,25_34,Ph.D,Technology,Hyderabad,107700.0
+Employed,18-24,Master,Health,Urban,13300.0
+Employed,25_34,High School,Finance,Urban,134500.0
+Employed,25-34,Bachelor'S,Fintech,Delhi,7700.0
+Unemployed,45-54,Masters,Tech,Hyderabad,12900.0
+Employed,25_34,High School,Health,Hyderabad,97900.0
+Unemployed,18-24,Phd,Fintech,Rural,14200.0
+Unemployed,25_34,Phd,Retail,Suburban,106500.0
+Unemployed,18-24,Phd,Retail,Delhi,15700.0
+Unemployed,45-54,Masters,Healthcare,Delhi,42100.0
+Employed,25_34,Masters,Education,Urban,137400.0
+Unemployed,18 To 24,Master,Health,Delhi,126300.0
+Unemployed,25-34,Masters,Education,Mumbai,78900.0
+Unemployed,45-54,Bachelor'S,Finance,Suburban,57200.0
+Employed,35 - 44,High School,Retail,Bangalore,33400.0
+Unemployed,45-54,Diploma,Fintech,Rural,130700.0
+Employed,25_34,Bachelors,Health,Hyderabad,79100.0
+Employed,18-24,High School,Health,Suburban,46100.0
+Employed,45-54,Diploma,Finance,Bangalore,124600.0
+Employed,35 - 44,Bachelor'S,Fintech,Hyderabad,19000.0
+Employed,35 - 44,Master,Retail,Bangalore,66200.0
+Employed,45-54,Bachelors,Retail,Urban,137100.0
+Unemployed,25-34,Bachelors,Health,Urban,73800.0
+Unemployed,35 - 44,Ph.D,Finance,Delhi,44700.0
+Unemployed,18 To 24,Phd,Health,Urban,20200.0
+Employed,25-34,Masters,Education,Suburban,7600.0
+Employed,35 - 44,High School,Technology,Rural,21000.0
+Employed,45-54,Phd,Tech,Hyderabad,10500.0
+Unemployed,25_34,Ph.D,Tech,Urban,11500.0
+Unemployed,18 To 24,Masters,Fintech,Urban,122200.0
+Employed,18 To 24,Masters,Health,Mumbai,44700.0
+Unemployed,55+,Master,Education,Mumbai,110800.0
+Unemployed,55+,Bachelors,Education,Hyderabad,115100.0
+Unemployed,35 - 44,Ph.D,Retail,Urban,16400.0
+Unemployed,18-24,High School,Retail,Suburban,96000.0
+Unemployed,35 - 44,Ph.D,Healthcare,Urban,54200.0
+Employed,18-24,High School,Tech,Mumbai,77200.0
+Employed,45-54,Bachelor'S,Finance,Urban,96400.0
+Unemployed,45-54,Bachelor'S,Health,Rural,74200.0
+Unemployed,55+,Masters,Tech,Suburban,127100.0
+Employed,25-34,High School,Education,Rural,68600.0
+Employed,55+,Ph.D,Education,Hyderabad,31500.0
+Employed,18-24,Bachelor'S,Retail,Hyderabad,22300.0
+Unemployed,18 To 24,High School,Retail,Delhi,70400.0
+Employed,25_34,Ph.D,Tech,Hyderabad,105700.0
+Unemployed,18 To 24,Bachelor'S,Finance,Delhi,17600.0
+Unemployed,25-34,Master,Tech,Hyderabad,102200.0
+Employed,25-34,Ph.D,Healthcare,Mumbai,102800.0
+Employed,18 To 24,Master,Health,Hyderabad,68500.0
+Employed,45-54,High School,Education,Bangalore,66200.0
+Unemployed,55+,Bachelors,Fintech,Hyderabad,88000.0
+Employed,25-34,Bachelors,Tech,Hyderabad,103000.0
+Employed,25_34,High School,Retail,Delhi,144200.0
+Employed,18 To 24,Bachelors,Fintech,Urban,78200.0
+Employed,55+,Phd,Fintech,Suburban,109300.0
+Unemployed,18-24,High School,Fintech,Mumbai,12600.0
+Unemployed,25_34,Phd,Health,Urban,141700.0
+Employed,18-24,High School,Retail,Rural,102800.0
+Employed,45-54,Ph.D,Finance,Urban,89300.0
+Unemployed,25-34,Phd,Fintech,Hyderabad,141200.0
+Employed,45-54,Phd,Fintech,Suburban,89600.0
+Unemployed,35 - 44,Masters,Education,Suburban,42700.0
+Employed,55+,Masters,Fintech,Rural,38000.0
+Unemployed,18 To 24,High School,Healthcare,Delhi,39800.0
+Unemployed,55+,Diploma,Retail,Urban,96600.0
+Unemployed,18 To 24,Masters,Education,Suburban,51000.0
+Employed,35 - 44,Bachelor'S,Education,Suburban,100400.0
+Unemployed,45-54,Master,Education,Rural,29300.0
+Unemployed,25_34,Masters,Education,Delhi,17800.0
+Unemployed,18-24,Master,Health,Urban,52900.0
+Unemployed,35 - 44,Ph.D,Technology,Delhi,34800.0
+Unemployed,18-24,High School,Healthcare,Mumbai,64300.0
+Unemployed,25_34,Masters,Retail,Urban,64900.0
+Unemployed,25_34,Bachelor'S,Education,Bangalore,106500.0
+Unemployed,18-24,Ph.D,Retail,Suburban,46300.0
+Employed,45-54,Bachelors,Education,Hyderabad,119200.0
+Unemployed,25-34,Bachelor'S,Tech,Hyderabad,16000.0
+Unemployed,18 To 24,Master,Education,Suburban,18300.0
+Unemployed,18-24,High School,Education,Hyderabad,14700.0
+Unemployed,55+,Diploma,Health,Delhi,73300.0
+Employed,45-54,Bachelors,Retail,Hyderabad,120500.0
+Employed,25-34,Phd,Technology,Urban,90500.0
+Employed,25-34,High School,Health,Urban,144500.0
+Employed,55+,Bachelor'S,Tech,Mumbai,16200.0
+Employed,35 - 44,High School,Technology,Bangalore,136000.0
+Employed,25_34,Bachelor'S,Health,Urban,98200.0
+Employed,18-24,Ph.D,Health,Urban,6800.0
+Employed,25-34,Bachelor'S,Fintech,Bangalore,64900.0
+Unemployed,18 To 24,Bachelors,Retail,Urban,146300.0
+Employed,18 To 24,Bachelors,Finance,Mumbai,51100.0
+Unemployed,35 - 44,Masters,Retail,Urban,11000.0
+Employed,55+,Phd,Tech,Urban,62800.0
+Employed,18-24,Bachelor'S,Technology,Urban,46000.0
+Employed,55+,Masters,Tech,Mumbai,105500.0
+Employed,55+,Diploma,Education,Urban,17400.0
+Employed,35 - 44,Masters,Technology,Suburban,34900.0
+Unemployed,18 To 24,Master,Retail,Suburban,100400.0
+Unemployed,55+,Bachelor'S,Healthcare,Mumbai,93400.0
+Unemployed,55+,Masters,Education,Urban,96700.0
+Employed,18-24,Phd,Retail,Delhi,138700.0
+Unemployed,18-24,Masters,Healthcare,Hyderabad,133300.0
+Employed,45-54,Bachelor'S,Fintech,Mumbai,24100.0
+Unemployed,25-34,Bachelor'S,Fintech,Rural,140600.0
+Employed,55+,Master,Retail,Suburban,97800.0
+Employed,18-24,Phd,Retail,Hyderabad,86600.0
+Unemployed,18 To 24,High School,Health,Rural,109300.0
+Unemployed,25_34,Master,Technology,Hyderabad,73000.0
+Unemployed,45-54,Diploma,Retail,Urban,70900.0
+Employed,25_34,Masters,Healthcare,Hyderabad,132100.0
+Unemployed,35 - 44,Masters,Healthcare,Delhi,74600.0
+Unemployed,35 - 44,Phd,Tech,Hyderabad,30700.0
+Employed,18 To 24,Bachelors,Healthcare,Suburban,87900.0
+Unemployed,25-34,High School,Education,Bangalore,144100.0
+Employed,18-24,Diploma,Retail,Urban,143200.0
+Unemployed,25-34,Bachelor'S,Fintech,Bangalore,51800.0
+Unemployed,35 - 44,Bachelor'S,Tech,Mumbai,118500.0
+Employed,18-24,Bachelors,Healthcare,Bangalore,113800.0
+Unemployed,55+,Master,Technology,Delhi,132700.0
+Employed,25-34,Masters,Tech,Bangalore,26800.0
+Employed,25_34,Bachelors,Healthcare,Urban,112300.0
+Unemployed,25-34,Ph.D,Finance,Urban,43900.0
+Employed,25_34,Ph.D,Education,Mumbai,40200.0
+Employed,35 - 44,Ph.D,Technology,Suburban,63200.0
+Employed,18-24,Ph.D,Healthcare,Delhi,53800.0
+Unemployed,35 - 44,Master,Tech,Urban,35200.0
+Unemployed,45-54,High School,Tech,Rural,149200.0
+Employed,45-54,High School,Retail,Delhi,112100.0
+Unemployed,25-34,Diploma,Retail,Bangalore,55600.0
+Employed,18-24,Master,Healthcare,Delhi,32900.0
+Employed,35 - 44,High School,Finance,Hyderabad,52900.0
+Employed,55+,High School,Retail,Suburban,65500.0
+Employed,18 To 24,High School,Technology,Urban,59900.0
+Unemployed,55+,Masters,Tech,Rural,68800.0
+Employed,18 To 24,High School,Retail,Rural,42000.0
+Employed,18 To 24,Ph.D,Tech,Hyderabad,44500.0
+Employed,25_34,Bachelors,Finance,Urban,104100.0
+Employed,55+,Bachelor'S,Healthcare,Hyderabad,143100.0
+Unemployed,18-24,Ph.D,Fintech,Mumbai,105500.0
+Unemployed,55+,Diploma,Tech,Bangalore,77300.0
+Employed,35 - 44,Bachelors,Technology,Hyderabad,47300.0
+Employed,18-24,Bachelor'S,Technology,Urban,128000.0
+Employed,25-34,High School,Finance,Urban,144700.0
+Unemployed,25_34,Masters,Retail,Delhi,86800.0
+Employed,45-54,High School,Fintech,Urban,37100.0
+Unemployed,25-34,High School,Tech,Delhi,92200.0
+Employed,55+,Masters,Education,Delhi,117100.0
+Unemployed,18 To 24,Bachelors,Finance,Hyderabad,114400.0
+Unemployed,55+,Ph.D,Tech,Delhi,139500.0
+Unemployed,25-34,High School,Retail,Suburban,113500.0
+Unemployed,18-24,Bachelors,Technology,Mumbai,25900.0
+Unemployed,18 To 24,Masters,Finance,Suburban,121400.0
+Unemployed,25_34,Phd,Education,Mumbai,145700.0
+Unemployed,18 To 24,Masters,Fintech,Urban,105700.0
+Unemployed,25_34,Diploma,Health,Bangalore,68600.0
+Employed,18-24,Bachelors,Fintech,Suburban,120200.0
+Employed,35 - 44,Bachelors,Retail,Suburban,77600.0
+Unemployed,25-34,Ph.D,Technology,Rural,145700.0
+Unemployed,35 - 44,Master,Finance,Urban,108400.0
+Unemployed,18 To 24,High School,Finance,Suburban,24700.0
+Unemployed,55+,Masters,Healthcare,Suburban,25000.0
+Unemployed,45-54,Masters,Fintech,Bangalore,43400.0
+Employed,25-34,Diploma,Finance,Bangalore,39700.0
+Employed,45-54,Ph.D,Health,Delhi,146200.0
+Employed,25-34,High School,Retail,Urban,28100.0
+Employed,45-54,Bachelors,Fintech,Mumbai,32900.0
+Unemployed,35 - 44,Bachelor'S,Education,Urban,78600.0
+Employed,45-54,Phd,Fintech,Hyderabad,110600.0
+Employed,18 To 24,High School,Health,Bangalore,108300.0
+Unemployed,25_34,High School,Tech,Mumbai,64500.0
+Unemployed,18-24,Phd,Retail,Urban,71300.0
+Employed,18-24,Masters,Healthcare,Mumbai,98700.0
+Unemployed,18-24,Diploma,Retail,Mumbai,12400.0
+Unemployed,25_34,Ph.D,Healthcare,Urban,13100.0
+Unemployed,25-34,Ph.D,Health,Rural,118600.0
+Unemployed,18-24,High School,Technology,Mumbai,89900.0
+Unemployed,45-54,Ph.D,Tech,Delhi,32300.0
+Unemployed,25_34,Diploma,Retail,Rural,70600.0
+Unemployed,25-34,Bachelors,Education,Rural,137200.0
+Employed,18 To 24,Ph.D,Finance,Mumbai,133700.0
+Employed,18 To 24,Phd,Technology,Urban,122500.0
+Employed,25-34,High School,Finance,Delhi,122400.0
+Unemployed,25-34,Master,Healthcare,Delhi,16300.0
+Unemployed,55+,Diploma,Health,Suburban,59800.0
+Unemployed,45-54,Masters,Healthcare,Hyderabad,116900.0
+Unemployed,45-54,High School,Health,Urban,63900.0
+Unemployed,25_34,Bachelor'S,Technology,Hyderabad,103700.0
+Unemployed,55+,Master,Healthcare,Urban,102000.0
+Unemployed,35 - 44,Diploma,Retail,Hyderabad,121700.0
+Unemployed,18-24,Bachelors,Fintech,Suburban,17700.0
+Employed,18 To 24,Master,Fintech,Bangalore,37800.0
+Unemployed,18-24,Masters,Retail,Urban,53400.0
+Unemployed,25-34,High School,Retail,Urban,100600.0
+Unemployed,35 - 44,Diploma,Finance,Bangalore,34200.0
+Employed,18-24,Ph.D,Retail,Bangalore,46700.0
+Unemployed,45-54,Master,Technology,Urban,41900.0
+Unemployed,45-54,Masters,Retail,Suburban,39400.0
+Unemployed,25_34,Bachelors,Healthcare,Mumbai,128500.0
+Employed,25_34,Ph.D,Finance,Rural,48400.0
+Employed,25-34,Master,Finance,Urban,14500.0
+Employed,25_34,Diploma,Fintech,Mumbai,31900.0
+Unemployed,35 - 44,Bachelors,Technology,Urban,7600.0
+Unemployed,18-24,Diploma,Healthcare,Rural,57500.0
+Employed,45-54,Master,Technology,Mumbai,75900.0
+Unemployed,18 To 24,Bachelor'S,Retail,Hyderabad,82600.0
+Employed,45-54,Bachelors,Technology,Bangalore,69200.0
+Employed,25-34,High School,Retail,Rural,78100.0
+Unemployed,55+,Diploma,Health,Bangalore,36800.0
+Employed,25-34,Ph.D,Tech,Delhi,84500.0
+Employed,18-24,Masters,Fintech,Rural,65100.0
+Unemployed,55+,Bachelor'S,Retail,Urban,53200.0
+Unemployed,35 - 44,Bachelors,Fintech,Suburban,65100.0
+Unemployed,18-24,Master,Education,Mumbai,107300.0
+Unemployed,18 To 24,Ph.D,Tech,Urban,122000.0
+Employed,45-54,Diploma,Education,Urban,98600.0
+Unemployed,55+,Masters,Health,Rural,73200.0
+Unemployed,55+,Ph.D,Tech,Delhi,42700.0
+Employed,55+,Ph.D,Technology,Suburban,129400.0
+Employed,55+,Phd,Fintech,Mumbai,40600.0
+Unemployed,35 - 44,Phd,Healthcare,Rural,43100.0
+Employed,18-24,Master,Technology,Bangalore,54400.0
+Employed,35 - 44,High School,Finance,Rural,137000.0
+Unemployed,45-54,Diploma,Health,Suburban,144900.0
+Employed,35 - 44,Ph.D,Technology,Suburban,149800.0
+Unemployed,25-34,Masters,Retail,Bangalore,28900.0
+Unemployed,35 - 44,Bachelor'S,Health,Hyderabad,52200.0
+Employed,35 - 44,Master,Tech,Delhi,15200.0
+Employed,18-24,High School,Healthcare,Rural,105600.0
+Unemployed,18 To 24,Bachelor'S,Retail,Mumbai,139800.0
+Employed,45-54,Diploma,Education,Urban,85400.0
+Unemployed,18-24,Bachelor'S,Retail,Urban,58300.0
+Employed,55+,High School,Healthcare,Delhi,6100.0
+Employed,55+,Masters,Healthcare,Hyderabad,69300.0
+Unemployed,18-24,Diploma,Education,Mumbai,104700.0
+Unemployed,25-34,Diploma,Education,Delhi,101200.0
+Unemployed,25-34,Bachelors,Retail,Urban,56700.0
+Unemployed,25-34,Masters,Retail,Delhi,87600.0
+Unemployed,25_34,Ph.D,Finance,Delhi,49200.0
+Employed,25-34,High School,Tech,Urban,126300.0
+Unemployed,55+,Ph.D,Retail,Hyderabad,65800.0
+Employed,18-24,High School,Technology,Mumbai,51800.0
+Unemployed,25_34,High School,Retail,Urban,78100.0
+Unemployed,18-24,Bachelors,Fintech,Urban,100700.0
+Unemployed,25_34,Bachelor'S,Tech,Mumbai,92000.0
+Unemployed,55+,Ph.D,Education,Rural,12700.0
+Employed,45-54,Diploma,Technology,Suburban,44400.0
+Unemployed,18 To 24,Master,Healthcare,Rural,116200.0
+Unemployed,35 - 44,Master,Retail,Delhi,88100.0
+Unemployed,45-54,Bachelor'S,Healthcare,Rural,72700.0
+Employed,45-54,Masters,Healthcare,Delhi,27300.0
+Unemployed,18-24,Bachelors,Retail,Urban,127000.0
+Unemployed,45-54,High School,Healthcare,Bangalore,42200.0
+Employed,25-34,Masters,Retail,Mumbai,19100.0
+Unemployed,18-24,Phd,Retail,Delhi,75900.0
+Employed,25_34,Master,Finance,Delhi,71500.0
+Unemployed,18 To 24,Bachelor'S,Tech,Delhi,39500.0
+Employed,18-24,Diploma,Education,Rural,96900.0
+Employed,25_34,High School,Retail,Mumbai,133700.0
+Employed,18 To 24,High School,Retail,Urban,15600.0
+Unemployed,18 To 24,High School,Technology,Suburban,52100.0
+Employed,25-34,Phd,Healthcare,Suburban,45700.0
+Unemployed,35 - 44,High School,Retail,Rural,63300.0
+Unemployed,18-24,Phd,Health,Rural,122900.0
+Unemployed,25_34,High School,Tech,Bangalore,103900.0
+Unemployed,25_34,High School,Finance,Suburban,19300.0
+Employed,45-54,Diploma,Technology,Bangalore,109500.0
+Employed,18-24,Diploma,Finance,Mumbai,124100.0
+Employed,45-54,High School,Retail,Urban,113500.0
+Employed,25-34,Bachelor'S,Technology,Delhi,146700.0
+Employed,25_34,Masters,Tech,Hyderabad,27900.0
+Employed,25-34,Master,Retail,Bangalore,97900.0
+Employed,18 To 24,Master,Fintech,Rural,61300.0
+Unemployed,18-24,Bachelor'S,Fintech,Suburban,119300.0
+Unemployed,25_34,High School,Retail,Suburban,114600.0
+Unemployed,45-54,Ph.D,Technology,Bangalore,112400.0
+Unemployed,25-34,High School,Healthcare,Mumbai,20700.0
+Employed,18 To 24,Bachelors,Finance,Rural,113400.0
+Employed,18-24,Bachelor'S,Retail,Delhi,136600.0
+Employed,25-34,Bachelors,Retail,Urban,143900.0
+Employed,35 - 44,Bachelors,Tech,Hyderabad,9400.0
+Unemployed,25_34,Masters,Retail,Urban,66000.0
+Unemployed,45-54,Ph.D,Retail,Rural,36100.0
+Unemployed,18-24,Master,Education,Urban,103200.0
+Unemployed,35 - 44,Bachelor'S,Tech,Mumbai,118800.0
+Employed,18-24,High School,Retail,Bangalore,85100.0
+Employed,18-24,Phd,Health,Rural,100800.0
+Unemployed,18-24,Diploma,Technology,Mumbai,51100.0
+Unemployed,55+,Bachelors,Fintech,Rural,79200.0
+Unemployed,55+,Phd,Tech,Hyderabad,138300.0
+Unemployed,45-54,Bachelor'S,Healthcare,Urban,79900.0
+Unemployed,25-34,High School,Technology,Hyderabad,46000.0
+Unemployed,25_34,Bachelor'S,Retail,Mumbai,83000.0
+Employed,18 To 24,Diploma,Tech,Suburban,21400.0
+Employed,25_34,High School,Fintech,Hyderabad,29900.0
+Unemployed,18-24,High School,Fintech,Hyderabad,138500.0
+Employed,18-24,High School,Education,Bangalore,12100.0
+Employed,25-34,Diploma,Technology,Mumbai,132900.0
+Unemployed,25_34,Ph.D,Healthcare,Suburban,68300.0
+Employed,35 - 44,High School,Retail,Bangalore,68700.0
+Unemployed,25_34,Phd,Healthcare,Urban,90800.0
+Employed,18-24,Bachelor'S,Retail,Urban,87200.0
+Unemployed,55+,Bachelor'S,Finance,Mumbai,123600.0
+Unemployed,25_34,High School,Education,Urban,43000.0
+Employed,25-34,Masters,Tech,Bangalore,122500.0
+Unemployed,25_34,Phd,Retail,Delhi,34700.0
+Employed,25-34,Bachelor'S,Technology,Hyderabad,82900.0
+Employed,45-54,Bachelors,Health,Rural,20200.0
+Employed,45-54,Diploma,Retail,Hyderabad,54800.0
+Employed,25-34,Phd,Finance,Bangalore,60300.0
+Employed,25-34,High School,Retail,Rural,26200.0
+Employed,45-54,Bachelor'S,Technology,Mumbai,16400.0
+Unemployed,35 - 44,Phd,Retail,Rural,142800.0
+Unemployed,25-34,Phd,Fintech,Rural,28500.0
+Employed,18-24,High School,Healthcare,Mumbai,37900.0
+Unemployed,35 - 44,High School,Retail,Hyderabad,32100.0
+Employed,45-54,Diploma,Finance,Delhi,89800.0
+Unemployed,35 - 44,Master,Technology,Suburban,72100.0
+Unemployed,25-34,Masters,Education,Mumbai,89300.0
+Unemployed,45-54,Ph.D,Fintech,Urban,132200.0
+Unemployed,18-24,Masters,Retail,Bangalore,139200.0
+Unemployed,55+,Master,Healthcare,Bangalore,34300.0
+Unemployed,18-24,High School,Retail,Delhi,133700.0
+Unemployed,55+,Phd,Retail,Suburban,125000.0
+Unemployed,45-54,Bachelor'S,Health,Rural,54900.0
+Employed,18-24,Ph.D,Technology,Urban,76300.0
+Unemployed,55+,Bachelor'S,Retail,Delhi,51700.0
+Unemployed,25-34,Master,Health,Mumbai,114200.0
+Unemployed,35 - 44,High School,Finance,Urban,65500.0
+Unemployed,25_34,Bachelors,Retail,Urban,15200.0
+Unemployed,55+,Master,Finance,Delhi,33200.0
+Unemployed,18 To 24,High School,Retail,Mumbai,25900.0
+Employed,25-34,Master,Health,Urban,133500.0
+Unemployed,45-54,Diploma,Retail,Suburban,12600.0
+Employed,25_34,Bachelor'S,Finance,Bangalore,142900.0
+Employed,35 - 44,Ph.D,Technology,Mumbai,129200.0
+Employed,18 To 24,Diploma,Tech,Urban,103300.0
+Unemployed,25-34,High School,Education,Urban,63800.0
+Unemployed,25_34,High School,Healthcare,Hyderabad,114500.0
+Employed,18-24,Diploma,Finance,Delhi,59500.0
+Unemployed,25_34,Bachelors,Technology,Hyderabad,34600.0
+Employed,55+,Bachelor'S,Technology,Urban,75100.0
+Unemployed,55+,Phd,Retail,Hyderabad,83600.0
+Unemployed,18 To 24,Bachelors,Fintech,Mumbai,146300.0
+Unemployed,18 To 24,Phd,Fintech,Urban,7200.0
+Unemployed,45-54,High School,Finance,Urban,77300.0
+Employed,25_34,Master,Retail,Bangalore,97500.0
+Employed,45-54,Bachelor'S,Education,Bangalore,133900.0
+Employed,45-54,Bachelors,Retail,Mumbai,58500.0
+Unemployed,45-54,Bachelors,Retail,Bangalore,34200.0
+Employed,25-34,Masters,Education,Suburban,10700.0
+Unemployed,55+,Ph.D,Finance,Hyderabad,46600.0
+Unemployed,25-34,Masters,Health,Hyderabad,140800.0
+Unemployed,35 - 44,High School,Tech,Rural,64600.0
+Employed,25-34,Phd,Finance,Mumbai,91700.0
+Unemployed,18 To 24,Bachelor'S,Retail,Urban,104600.0
+Unemployed,35 - 44,High School,Retail,Suburban,145300.0
+Employed,55+,Diploma,Technology,Bangalore,51100.0
+Unemployed,18-24,Phd,Finance,Rural,61500.0
+Employed,35 - 44,Diploma,Retail,Bangalore,56700.0
+Unemployed,25_34,Bachelors,Fintech,Delhi,24100.0
+Employed,25_34,Phd,Finance,Urban,124800.0
+Unemployed,25_34,Ph.D,Health,Urban,26900.0
+Unemployed,25_34,Diploma,Fintech,Urban,45100.0
+Employed,55+,Masters,Finance,Bangalore,127700.0
+Unemployed,18-24,Ph.D,Fintech,Urban,34900.0
+Unemployed,55+,Bachelor'S,Retail,Urban,74400.0
+Employed,25_34,Ph.D,Education,Urban,105600.0
+Employed,55+,Ph.D,Finance,Suburban,82800.0
+Employed,35 - 44,High School,Technology,Suburban,26000.0
+Unemployed,18 To 24,High School,Health,Bangalore,145000.0
+Unemployed,45-54,Phd,Retail,Delhi,43600.0
+Unemployed,55+,Bachelor'S,Education,Mumbai,97000.0
+Unemployed,18 To 24,Masters,Technology,Urban,92500.0
+Employed,45-54,Phd,Finance,Delhi,74700.0
+Unemployed,18 To 24,Bachelor'S,Tech,Suburban,27700.0
+Employed,35 - 44,Master,Retail,Rural,25500.0
+Employed,45-54,Ph.D,Retail,Suburban,143000.0
+Employed,18 To 24,Phd,Finance,Bangalore,106600.0
+Employed,25-34,Ph.D,Healthcare,Mumbai,49200.0
+Unemployed,18 To 24,Phd,Healthcare,Rural,146200.0
+Employed,25_34,High School,Retail,Mumbai,92500.0
