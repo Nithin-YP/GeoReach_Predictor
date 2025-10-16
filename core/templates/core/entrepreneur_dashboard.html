@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load form_extras %}
 
 {% block title %}Dashboard - GeoReach Predictor{% endblock %}
@@ -180,5 +181,28 @@
 
         marker.bindPopup(cluster.info);
     });
+
+    fetch("{% static 'geo/geojson/geoBoundaries-IND-ADM1.geojson' %}")
+        .then(response => response.json())
+        .then(data => {
+            L.geoJSON(data, {
+                style: function(feature) {
+                    return {
+                        color: "#3388ff",
+                        weight: 2,
+                        fillOpacity: 0.2
+                    };
+                },
+                onEachFeature: function(feature, layer) {
+                    layer.on('mouseover', function() {
+                        layer.setStyle({fillColor: 'yellow'});
+                    });
+                    layer.on('mouseout', function() {
+                        layer.setStyle({fillColor: '#3388ff'});
+                    });
+                    layer.bindPopup(feature.properties.shapeName); // or another property for state name
+                }
+            }).addTo(map);
+        });
 </script>
 {% endblock %}
