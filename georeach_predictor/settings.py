@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.gis",
     "core", # Our core app
+    "geo",  # Our custom app for GIS models
 ]
 
 # Database configuration

@@ -9,6 +9,7 @@ from .models import User, PredictionRequest, PredictionResult, Cluster, Dataset
 from .ml_pipeline import run_prediction_pipeline
 import os
 import logging
+from geo.utils import get_map_clusters
 
 logger = logging.getLogger(__name__)
 
@@ -119,6 +120,7 @@ def entrepreneur_dashboard(request):
         context = {
             'form': form,
             'past_predictions': past_predictions,
+            'clusters': get_map_clusters(),  # Add this line
         }
         return render(request, 'core/entrepreneur_dashboard.html', context)
     else:

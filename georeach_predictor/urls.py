@@ -27,4 +27,5 @@ urlpatterns = [
     path('', home_redirect, name='home'),
     path("admin/", admin.site.urls),
     path('core/', include('core.urls')),
+    path("geo/", include("geo.urls")),
 ]
