@@ -147,7 +147,7 @@
         <div class="card shadow-sm">
             <div class="card-header bg-info text-white">
                 <h5 class="mb-0">
-                    <i class="bi bi-map me-2"></i>Geographic Insights (Coming Soon)
+                    <i class="bi bi-map me-2"></i>Geographic Insights
                 </h5>
             </div>
             <div class="card-body">
@@ -156,132 +156,17 @@
         </div>
     </div>
 </div>
+
+<!-- Load geo app's JavaScript -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="{% static 'geo/js/map.js' %}"></script>
 <script>
-    var map = L.map('map').setView([20.5937, 78.9629], 5);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 18,
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-
-    var clusters = {{ clusters|safe }};
-    clusters.forEach(function(cluster) {
-        var color;
-        if (cluster.level === "high") color = "green";
-        else if (cluster.level === "medium") color = "yellow";
-        else color = "red";
-
-        var marker = L.circleMarker([cluster.lat, cluster.lng], {
-            color: color,
-            radius: 10,
-            fillOpacity: 0.7
-        }).addTo(map);
-
-        marker.bindPopup(cluster.info);
-    });
-
-    // Cache for GeoJSON data and layers
-    var geojsonDataCache = {};
-    var geojsonLayerCache = {};
-    var currentLayer = null;
-
-    function getGeoJsonFile(zoom) {
-        if (zoom < 7) {
-            return "{% static 'geo/geojson/geoBoundaries-IND-ADM1.geojson' %}";
-        } else {
-            return "{% static 'geo/geojson/geoBoundaries-IND-ADM2.geojson' %}";
-        }
-    }
-
-    function showGeoJsonLayer(zoom) {
-        var geojsonFile = getGeoJsonFile(zoom);
-
-        // Remove all active boundary layers
-        Object.values(geojsonLayerCache).forEach(function(layer) {
-            if (map.hasLayer(layer)) map.removeLayer(layer);
-        });
-
-        // Drop detail when zoomed out (remove districts)
-        if (zoom < 6 && geojsonLayerCache["{% static 'geo/geojson/geoBoundaries-IND-ADM2.geojson' %}"]) {
-            map.removeLayer(geojsonLayerCache["{% static 'geo/geojson/geoBoundaries-IND-ADM2.geojson' %}"]);
-        }
-
-        // If layer is cached, just add it
-        if (geojsonLayerCache[geojsonFile]) {
-            currentLayer = geojsonLayerCache[geojsonFile];
-            currentLayer.addTo(map);
-            return;
-        }
-
-        // If data is cached, create layer and cache it
-        if (geojsonDataCache[geojsonFile]) {
-            var layer = L.geoJSON(geojsonDataCache[geojsonFile], {
-                style: function(feature) {
-                    return {
-                        color: "#3388ff",
-                        weight: 2,
-                        fillOpacity: 0.2
-                    };
-                },
-                onEachFeature: function(feature, layer) {
-                    layer.on('mouseover', function() {
-                        layer.setStyle({fillColor: 'yellow'});
-                    });
-                    layer.on('mouseout', function() {
-                        layer.setStyle({fillColor: '#3388ff'});
-                    });
-                    var name = feature.properties.shapeName || feature.properties.DISTRICT || "Unknown";
-                    layer.bindPopup(name);
-                }
-            });
-            geojsonLayerCache[geojsonFile] = layer;
-            currentLayer = layer;
-            layer.addTo(map);
-            return;
-        }
-
-        // Otherwise, fetch and cache
-        fetch(geojsonFile)
-            .then(response => response.json())
-            .then(data => {
-                geojsonDataCache[geojsonFile] = data;
-                var layer = L.geoJSON(data, {
-                    style: function(feature) {
-                        return {
-                            color: "#3388ff",
-                            weight: 2,
-                            fillOpacity: 0.2
-                        };
-                    },
-                    onEachFeature: function(feature, layer) {
-                        layer.on('mouseover', function() {
-                            layer.setStyle({fillColor: 'yellow'});
-                        });
-                        layer.on('mouseout', function() {
-                            layer.setStyle({fillColor: '#3388ff'});
-                        });
-                        var name = feature.properties.shapeName || feature.properties.DISTRICT || "Unknown";
-                        layer.bindPopup(name);
-                    }
-                });
-                geojsonLayerCache[geojsonFile] = layer;
-                currentLayer = layer;
-                layer.addTo(map);
-            });
-    }
-
-    // Initial load
-    showGeoJsonLayer(map.getZoom());
-
-    // Throttle zoom redraws so layers swap only after zoom settling
-    var zoomTimeout = null;
-    map.on('zoomend', function () {
-        clearTimeout(zoomTimeout);
-        zoomTimeout = setTimeout(function () {
-            showGeoJsonLayer(map.getZoom());
-        }, 300);
+    // Initialize map with data from geo app
+    document.addEventListener('DOMContentLoaded', function() {
+        const mapConfig = {{ map_config|safe }};
+        const clusters = {{ clusters|safe }};
+        new GeoReachMap('map', mapConfig, clusters);
     });
 </script>
 {% endblock %}
