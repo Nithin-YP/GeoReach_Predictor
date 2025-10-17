@@ -32,30 +32,49 @@
                     
                     <div class="mb-3">
                         <label for="{{ form.product_type.id_for_label }}" class="form-label">Product Type</label>
-                        {{ form.product_type|add_class:"form-control" }}
+                        {{ form.product_type|add_class:"form-select" }}
                     </div>
                     
+                    <div class="mb-3">
+                        <label for="{{ form.product_category.id_for_label }}" class="form-label">Product Category</label>
+                        {{ form.product_category|add_class:"form-select" }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.sector.id_for_label }}" class="form-label">Sector</label>
+                        {{ form.sector|add_class:"form-select" }}
+                    </div>
+
                     <div class="mb-3">
                         <label for="{{ form.product_luxury.id_for_label }}" class="form-label">Luxury Level</label>
                         {{ form.product_luxury|add_class:"form-select" }}
                     </div>
                     
                     <div class="mb-3">
-                        <label for="{{ form.target_audience.id_for_label }}" class="form-label">Target Audience</label>
-                        {{ form.target_audience|add_class:"form-control" }}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.price.id_for_label }}" class="form-label">Price (INR)</label>
-                        <div class="input-group">
-                            <span class="input-group-text">₹</span>
-                            {{ form.price|add_class:"form-control" }}
+                        <label class="form-label">Target Audience</label>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.age_group.id_for_label }}" class="form-label visually-hidden">Age Group</label>
+                                {{ form.age_group|add_class:"form-select" }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.gender.id_for_label }}" class="form-label visually-hidden">Gender</label>
+                                {{ form.gender|add_class:"form-select" }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.income_range.id_for_label }}" class="form-label visually-hidden">Income Range</label>
+                                {{ form.income_range|add_class:"form-select" }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.education_level.id_for_label }}" class="form-label visually-hidden">Education Level</label>
+                                {{ form.education_level|add_class:"form-select" }}
+                            </div>
                         </div>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="{{ form.region.id_for_label }}" class="form-label">Region</label>
-                        {{ form.region|add_class:"form-select" }}
+                        <label for="{{ form.price.id_for_label }}" class="form-label">Price</label>
+                        {{ form.price|add_class:"form-control" }}
                     </div>
                     
                     <div class="d-grid">
@@ -85,8 +104,6 @@
                                     <th>Luxury</th>
                                     <th>Target</th>
                                     <th>Price</th>
-                                    <th>Region</th>
-                                    <th>Date</th>
                                     <th>Reach</th>
                                     <th>Probability</th>
                                 </tr>
@@ -102,7 +119,6 @@
                                         </td>
                                         <td>{{ prediction.target_audience }}</td>
                                         <td>₹{{ prediction.price|floatformat:0 }}</td>
-                                        <td>{{ prediction.region }}</td>
                                         <td>
                                             <small class="text-muted">{{ prediction.request_timestamp|date:"M d, Y" }}</small>
                                         </td>
@@ -162,11 +178,82 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="{% static 'geo/js/map.js' %}"></script>
 <script>
-    // Initialize map with data from geo app
+
+    const productTypeSelect = document.getElementById('id_product_type');
+    // Initialize map with safe data from geo app (guarded to avoid parse errors and redeclaration)
     document.addEventListener('DOMContentLoaded', function() {
-        const mapConfig = {{ map_config|safe }};
-        const clusters = {{ clusters|safe }};
+        window.GeoReachData = window.GeoReachData || {};
+
+        // Parse (or provide defaults) safely and cache on window.GeoReachData to avoid redeclaration
+        if (!window.GeoReachData.mapConfig) {
+            try {
+                window.GeoReachData.mapConfig = JSON.parse('{{ map_config|default:"{}"|escapejs }}');
+            } catch (e) {
+                window.GeoReachData.mapConfig = {};
+            }
+        }
+        if (!window.GeoReachData.clusters) {
+            try {
+                window.GeoReachData.clusters = JSON.parse('{{ clusters|default:"[]"|escapejs }}');
+            } catch (e) {
+                window.GeoReachData.clusters = [];
+            }
+        }
+        if (!window.GeoReachData.productDependencies) {
+            try {
+                window.GeoReachData.productDependencies = JSON.parse('{{ product_dependencies_json|default:"{}"|escapejs }}');
+            } catch (e) {
+                window.GeoReachData.productDependencies = {};
+            }
+        }
+
+        const mapConfig = window.GeoReachData.mapConfig;
+        const clusters = window.GeoReachData.clusters;
         new GeoReachMap('map', mapConfig, clusters);
+
+        // Dynamic dropdown logic
+        const productTypeSelect = document.getElementById('id_product_type');
+        const productCategorySelect = document.getElementById('id_product_category');
+        const sectorSelect = document.getElementById('id_sector');
+        const productDependencies = window.GeoReachData.productDependencies;
+
+        function updateDependentDropdowns() {
+            const selectedProductType = productTypeSelect ? productTypeSelect.value : '';
+            const dependentData = productDependencies[selectedProductType];
+
+            // Clear and populate productCategorySelect
+            if (productCategorySelect) {
+                productCategorySelect.innerHTML = '<option value="">---------</option>'; // Add a default blank option
+                if (dependentData && dependentData.categories) {
+                    dependentData.categories.forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category;
+                        option.textContent = category;
+                        productCategorySelect.appendChild(option);
+                    });
+                }
+            }
+
+            // Clear and populate sectorSelect
+            if (sectorSelect) {
+                sectorSelect.innerHTML = '<option value="">---------</option>'; // Add a default blank option
+                if (dependentData && dependentData.sectors) {
+                    dependentData.sectors.forEach(sector => {
+                        const option = document.createElement('option');
+                        option.value = sector;
+                        option.textContent = sector;
+                        sectorSelect.appendChild(option);
+                    });
+                }
+            }
+        }
+
+        // Attach event listener
+        if (productTypeSelect) {
+            productTypeSelect.addEventListener('change', updateDependentDropdowns);
+            // Initial update in case a product type is pre-selected (e.g., on form error)
+            updateDependentDropdowns();
+        }
     });
 </script>
 {% endblock %}
