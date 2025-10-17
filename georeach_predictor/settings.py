@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     "core", # Our core app
     "geo",  # Our custom app for GIS models
+    "charts", # App for charts and visualizations
 ]
 
 # Database configuration

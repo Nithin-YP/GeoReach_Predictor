@@ -157,6 +157,29 @@
     </div>
 </div>
 
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Success by Category</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="successByCategoryChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Success Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="successDistributionChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Load geo app's JavaScript -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -167,6 +190,16 @@
         const mapConfig = {{ map_config|safe }};
         const clusters = {{ clusters|safe }};
         new GeoReachMap('map', mapConfig, clusters);
+    });
+</script>
+
+<!-- Load Chart.js and charts script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'charts/js/entrepreneur-charts.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chartData = {{ entrepreneur_charts|safe }};
+        new EntrepreneurCharts(chartData);
     });
 </script>
 {% endblock %}

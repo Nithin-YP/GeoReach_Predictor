@@ -10,6 +10,7 @@ from .ml_pipeline import run_prediction_pipeline
 import os
 import logging
 from geo.views import get_map_context
+from charts.views import get_entrepreneur_charts_context, get_admin_charts_context
 
 logger = logging.getLogger(__name__)
 
@@ -118,12 +119,14 @@ def entrepreneur_dashboard(request):
             messages.warning(request, 'Could not load past predictions.')
 
         map_context = get_map_context(request.GET)  # Get enhanced map data from geo app
+        charts_context = get_entrepreneur_charts_context()
         
         context = {
             'form': form,
             'past_predictions': past_predictions,
         }
         context.update(map_context)  # Add map data (clusters + config)
+        context.update(charts_context)
         
         return render(request, 'core/entrepreneur_dashboard.html', context)
     else:
