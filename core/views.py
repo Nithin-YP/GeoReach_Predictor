@@ -3,7 +3,7 @@ from django.contrib.auth import login, logout, authenticate  # type: ignore
 from django.contrib.auth.forms import AuthenticationForm  # type: ignore
 from django.contrib.auth.decorators import login_required, user_passes_test  # type: ignore
 from django.contrib import messages  # type: ignore
-from django.db.models import Count  # type: ignore
+from django.db.models import Count, Avg  # type: ignore
 from .forms import EntrepreneurRegistrationForm, PredictionRequestForm
 from .models import User, PredictionRequest, PredictionResult, Cluster, Dataset
 from .ml_pipeline import run_prediction_pipeline
@@ -120,7 +120,7 @@ def entrepreneur_dashboard(request):
             # Calculate success metrics from past predictions
             if total_predictions > 0:
                 avg_success_rate = past_predictions.aggregate(
-                    avg_success=models.Avg('predictionresult__success_probability')
+                    avg_success=Avg('predictionresult__success_probability')
                 )['avg_success'] or 0
                 
                 high_potential_count = past_predictions.filter(
