@@ -1,9 +1,17 @@
 from django.urls import path
+from django.shortcuts import redirect
 from . import views
 
 app_name = 'geo'
 
+def geo_home(request):
+    """Redirect /geo/ to /geo/map/"""
+    return redirect('geo:map')
+
 urlpatterns = [
+    # Root geo endpoint - redirects to map
+    path('', geo_home, name='geo_home'),
+    
     # Main map view
     path('map/', views.map_view, name='map'),
     
