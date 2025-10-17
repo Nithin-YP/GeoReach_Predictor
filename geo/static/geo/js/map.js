@@ -64,35 +64,39 @@ class GeoReachMap {
         });
     }
 
-    getGeoJsonFile(zoom) {
+    getApiEndpoint(zoom) {
+        // Use PostGIS API endpoints instead of static files
         if (zoom < this.mapConfig.zoom_thresholds.state_to_district) {
-            return this.mapConfig.geojson_paths.adm1;
+            return '/geo/api/states/geojson/';
         } else {
-            return this.mapConfig.geojson_paths.adm2;
+            return '/geo/api/districts/geojson/';
         }
     }
 
     showGeoJsonLayer(zoom) {
-        const geojsonFile = this.getGeoJsonFile(zoom);
+        const apiEndpoint = this.getApiEndpoint(zoom);
 
         // Remove all active boundary layers
         Object.values(this.geojsonLayerCache).forEach(layer => {
             if (this.map.hasLayer(layer)) this.map.removeLayer(layer);
         });
 
-        // Don't show boundaries only when zoomed too far OUT (but still show states)
-        if (zoom < 4) {  // Only hide when REALLY zoomed out
+        // Don't show boundaries when zoomed too far OUT
+        if (zoom < 4) {
             return;
         }
 
-        if (this.geojsonLayerCache[geojsonFile]) {
-            this.currentLayer = this.geojsonLayerCache[geojsonFile];
+        // Use cached layer if available
+        if (this.geojsonLayerCache[apiEndpoint]) {
+            this.currentLayer = this.geojsonLayerCache[apiEndpoint];
             this.currentLayer.addTo(this.map);
             return;
         }
 
-        // Add error handling for fetch
-        fetch(`/static/${geojsonFile}`)
+        // Fetch from PostGIS API endpoint
+        console.log('Loading from PostGIS API:', apiEndpoint);
+        
+        fetch(apiEndpoint)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -100,34 +104,58 @@ class GeoReachMap {
                 return response.json();
             })
             .then(data => {
-                console.log('GeoJSON loaded:', geojsonFile, 'Features:', data.features?.length); // Debug log
+                console.log('GeoJSON loaded from API:', apiEndpoint, 'Features:', data.features?.length);
+                
+                const isStateLevel = apiEndpoint.includes('states');
+                
                 const layer = L.geoJSON(data, {
                     style: () => ({
-                        color: "#3388ff",
-                        weight: 2,
-                        fillOpacity: 0.2,
-                        fillColor: "#3388ff"  // Add explicit fill color
+                        color: isStateLevel ? "#2c7fb8" : "#3388ff",
+                        weight: isStateLevel ? 3 : 2,
+                        fillOpacity: isStateLevel ? 0.15 : 0.2,
+                        fillColor: isStateLevel ? "#2c7fb8" : "#3388ff"
                     }),
                     onEachFeature: (feature, layer) => {
-                        layer.on('mouseover', () => layer.setStyle({fillColor: 'yellow'}));
-                        layer.on('mouseout', () => layer.setStyle({fillColor: '#3388ff'}));
+                        layer.on('mouseover', () => {
+                            layer.setStyle({
+                                fillColor: 'yellow',
+                                fillOpacity: 0.5
+                            });
+                        });
+                        layer.on('mouseout', () => {
+                            layer.setStyle({
+                                fillColor: isStateLevel ? "#2c7fb8" : "#3388ff",
+                                fillOpacity: isStateLevel ? 0.15 : 0.2
+                            });
+                        });
                         
-                        const name = feature.properties.shapeName || feature.properties.DISTRICT || feature.properties.NAME_1 || "Unknown";
-                        const popupContent = `<b>${name}</b><br>
-                            Average Income: ₹${Math.floor(Math.random() * 100000 + 80000)}<br>
-                            Employment Rate: ${Math.floor(Math.random() * 20 + 70)}%<br>
-                            Population Density: ${Math.floor(Math.random() * 900 + 100)}/km²<br>
-                            Interest Index: ${Math.floor(Math.random() * 45 + 40)}`;
+                        // Get properties from API response
+                        const props = feature.properties;
+                        const name = props.name || "Unknown";
+                        const population = props.population ? props.population.toLocaleString() : "N/A";
+                        const state = props.state || "";
+                        
+                        let popupContent = `<b>${name}</b>`;
+                        if (state) popupContent += ` (${state})`;
+                        popupContent += `<br>Population: ${population}`;
+                        
+                        if (props.literacy_rate) {
+                            popupContent += `<br>Literacy Rate: ${props.literacy_rate}%`;
+                        }
+                        if (props.area_km2) {
+                            popupContent += `<br>Area: ${props.area_km2.toLocaleString()} km²`;
+                        }
                         
                         layer.bindPopup(popupContent);
                     }
                 });
-                this.geojsonLayerCache[geojsonFile] = layer;
+                
+                this.geojsonLayerCache[apiEndpoint] = layer;
                 this.currentLayer = layer;
                 layer.addTo(this.map);
             })
             .catch(error => {
-                console.error('Error loading GeoJSON:', error, 'File:', geojsonFile);
+                console.error('Error loading from PostGIS API:', error, 'Endpoint:', apiEndpoint);
             });
     }
 }
