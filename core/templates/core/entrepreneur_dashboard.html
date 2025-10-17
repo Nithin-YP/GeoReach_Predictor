@@ -5,6 +5,10 @@
 {% block title %}Dashboard - GeoReach Predictor{% endblock %}
 
 {% block content %}
+
+<!-- ========================================
+     HEADER SECTION
+     ======================================== -->
 <div class="row">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -18,7 +22,11 @@
     </div>
 </div>
 
+<!-- ========================================
+     PREDICTION FORM & PAST PREDICTIONS
+     ======================================== -->
 <div class="row">
+    <!-- New Prediction Request Form -->
     <div class="col-lg-4 mb-4">
         <div class="card shadow-sm h-100">
             <div class="card-header bg-success text-white">
@@ -68,6 +76,7 @@
         </div>
     </div>
     
+    <!-- Past Predictions Table -->
     <div class="col-lg-8">
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white">
@@ -94,32 +103,22 @@
                             <tbody>
                                 {% for prediction in past_predictions %}
                                     <tr>
-                                        <td>
-                                            <strong>{{ prediction.product_type }}</strong>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-secondary">{{ prediction.product_luxury }}</span>
-                                        </td>
+                                        <td><strong>{{ prediction.product_type }}</strong></td>
+                                        <td><span class="badge bg-secondary">{{ prediction.product_luxury }}</span></td>
                                         <td>{{ prediction.target_audience }}</td>
                                         <td>₹{{ prediction.price|floatformat:0 }}</td>
                                         <td>{{ prediction.region }}</td>
-                                        <td>
-                                            <small class="text-muted">{{ prediction.request_timestamp|date:"M d, Y" }}</small>
-                                        </td>
+                                        <td><small class="text-muted">{{ prediction.request_timestamp|date:"M d, Y" }}</small></td>
                                         <td>
                                             {% if prediction.predictionresult %}
-                                                <span class="badge bg-success">
-                                                    {{ prediction.predictionresult.predicted_reach|floatformat:1 }}%
-                                                </span>
+                                                <span class="badge bg-success">{{ prediction.predictionresult.predicted_reach|floatformat:1 }}%</span>
                                             {% else %}
                                                 <span class="badge bg-warning">Processing</span>
                                             {% endif %}
                                         </td>
                                         <td>
                                             {% if prediction.predictionresult %}
-                                                <span class="badge bg-info">
-                                                    {{ prediction.predictionresult.success_probability|floatformat:3 }}
-                                                </span>
+                                                <span class="badge bg-info">{{ prediction.predictionresult.success_probability|floatformat:3 }}</span>
                                             {% else %}
                                                 <span class="badge bg-warning">-</span>
                                             {% endif %}
@@ -141,7 +140,9 @@
     </div>
 </div>
 
-<!-- Placeholder for future map visualization -->
+<!-- ========================================
+     GEOGRAPHIC INSIGHTS MAP
+     ======================================== -->
 <div class="row mt-4">
     <div class="col-12">
         <div class="card shadow-sm">
@@ -157,6 +158,9 @@
     </div>
 </div>
 
+<!-- ========================================
+     STATISTICS CARDS
+     ======================================== -->
 <div class="row mt-4">
     <div class="col-md-3">
         <div class="card shadow-sm border-primary">
@@ -192,17 +196,20 @@
     </div>
 </div>
 
+<!-- ========================================
+     CHART.JS VISUALIZATIONS
+     ======================================== -->
+
+<!-- Success by Category & Distribution -->
 <div class="row mt-4">
     <div class="col-md-6">
         <div class="card shadow-sm">
-            <!-- Success by Category Chart -->
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="bi bi-bar-chart-fill me-2"></i>Success by Category</h5>
                 <button class="btn btn-sm btn-light" onclick="exportChart('successByCategory')">
                     <i class="bi bi-download"></i> Export
                 </button>
             </div>
-
             <div class="card-body">
                 <canvas id="successByCategoryChart" height="300"></canvas>
             </div>
@@ -210,7 +217,6 @@
     </div>
     <div class="col-md-6">
         <div class="card shadow-sm">
-            <!-- Success Distribution Chart -->
             <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="bi bi-pie-chart-fill me-2"></i>Success Distribution</h5>
                 <button class="btn btn-sm btn-light" onclick="exportChart('successDistribution')">
@@ -224,6 +230,7 @@
     </div>
 </div>
 
+<!-- Trend Over Time -->
 <div class="row mt-4">
     <div class="col-md-12">
         <div class="card shadow-sm">
@@ -248,7 +255,7 @@
     </div>
 </div>
 
-<!-- Product Metrics (Radar)-->
+<!-- Product Metrics (Radar) & Investment vs Returns (Bubble) -->
 <div class="row mt-4">
     <div class="col-md-6">
         <div class="card shadow-sm">
@@ -278,56 +285,69 @@
     </div>
 </div>
 
-<!-- Load geo app's JavaScript -->
+{% endblock %}
+
+<!-- ========================================
+     SCRIPTS SECTION
+     ======================================== -->
+{% block extra_scripts %}
+<!-- Leaflet CSS & JS for Maps -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="{% static 'geo/js/map.js' %}"></script>
-<script>
-    // Initialize map with data from geo app
-    document.addEventListener('DOMContentLoaded', function() {
-        const mapConfig = {{ map_config|safe }};
-        const clusters = {{ clusters|safe }};
-        new GeoReachMap('map', mapConfig, clusters);
-    });
-</script>
 
-<!-- Load Chart.js and charts script -->
+<!-- Chart.js Library -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Custom JavaScript Files -->
+<script src="{% static 'geo/js/map.js' %}"></script>
 <script src="{% static 'charts/js/entrepreneur-charts.js' %}"></script>
+
+<!-- Initialization Scripts -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const chartData = {{ entrepreneur_charts|safe }};
-        // Store globally for export and real-time features
-        window.entrepreneurCharts = new EntrepreneurCharts(chartData);
+document.addEventListener('DOMContentLoaded', function() {
+    // ========================================
+    // Initialize Map
+    // ========================================
+    const mapConfig = {{ map_config|safe }};
+    const clusters = {{ clusters|safe }};
+    new GeoReachMap('map', mapConfig, clusters);
 
-        // Radar chart - now from chartData
-        if (chartData.radar_chart) {
-            window.entrepreneurCharts.renderRadarChart('radarChartCanvas', {
-                labels: chartData.radar_chart.labels,
-                data: chartData.radar_chart.data
-            });
-        }
+    // ========================================
+    // Initialize Charts
+    // ========================================
+    const chartData = {{ entrepreneur_charts|safe }};
+    window.entrepreneurCharts = new EntrepreneurCharts(chartData);
 
-        // Bubble chart - now from chartData
-        if (chartData.bubble_chart) {
-            window.entrepreneurCharts.renderBubbleChart('bubbleChartCanvas', {
-                data: chartData.bubble_chart.data,
-                xLabel: chartData.bubble_chart.xLabel,
-                yLabel: chartData.bubble_chart.yLabel
-            });
-        }
-    });
-</script>
+    // Render Radar Chart
+    if (chartData.radar_chart) {
+        window.entrepreneurCharts.renderRadarChart('radarChartCanvas', {
+            labels: chartData.radar_chart.labels,
+            data: chartData.radar_chart.data
+        });
+    }
 
-<script>
+    // Render Bubble Chart
+    if (chartData.bubble_chart) {
+        window.entrepreneurCharts.renderBubbleChart('bubbleChartCanvas', {
+            data: chartData.bubble_chart.data,
+            xLabel: chartData.bubble_chart.xLabel,
+            yLabel: chartData.bubble_chart.yLabel
+        });
+    }
+});
+
+// ========================================
+// Chart Export Function
+// ========================================
 function exportChart(chartName) {
     if (window.entrepreneurCharts) {
         window.entrepreneurCharts.exportChartAsImage(chartName, `${chartName}-chart.png`);
     }
 }
-</script>
 
-<script>
+// ========================================
+// Real-Time Chart Update Functions
+// ========================================
 let isRealTimeActive = false;
 
 function startRealTime() {
@@ -353,5 +373,4 @@ function stopRealTime() {
     }
 }
 </script>
-
 {% endblock %}
