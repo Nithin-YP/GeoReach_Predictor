@@ -158,11 +158,51 @@
 </div>
 
 <div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm border-primary">
+            <div class="card-body text-center">
+                <h5 class="card-title text-primary">Total Predictions</h5>
+                <h2 class="display-4">{{ total_predictions }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-success">
+            <div class="card-body text-center">
+                <h5 class="card-title text-success">Avg Success Rate</h5>
+                <h2 class="display-4">{{ avg_success_rate }}%</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-warning">
+            <div class="card-body text-center">
+                <h5 class="card-title text-warning">High Potential</h5>
+                <h2 class="display-4">{{ high_potential_count }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-info">
+            <div class="card-body text-center">
+                <h5 class="card-title text-info">Medium Potential</h5>
+                <h2 class="display-4">{{ medium_potential_count }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
     <div class="col-md-6">
         <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Success by Category</h5>
+            <!-- Success by Category Chart -->
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-bar-chart-fill me-2"></i>Success by Category</h5>
+                <button class="btn btn-sm btn-light" onclick="exportChart('successByCategory')">
+                    <i class="bi bi-download"></i> Export
+                </button>
             </div>
+
             <div class="card-body">
                 <canvas id="successByCategoryChart" height="300"></canvas>
             </div>
@@ -170,11 +210,69 @@
     </div>
     <div class="col-md-6">
         <div class="card shadow-sm">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0">Success Distribution</h5>
+            <!-- Success Distribution Chart -->
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-pie-chart-fill me-2"></i>Success Distribution</h5>
+                <button class="btn btn-sm btn-light" onclick="exportChart('successDistribution')">
+                    <i class="bi bi-download"></i> Export
+                </button>
             </div>
             <div class="card-body">
                 <canvas id="successDistributionChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-graph-up-arrow me-2"></i>Trend Over Time</h5>
+                <div>
+                    <button class="btn btn-sm btn-light" id="startRealTimeBtn" onclick="startRealTime()">
+                        <i class="bi bi-play-fill"></i> Live
+                    </button>
+                    <button class="btn btn-sm btn-light" id="stopRealTimeBtn" onclick="stopRealTime()" style="display:none;">
+                        <i class="bi bi-pause-fill"></i> Stop
+                    </button>
+                    <button class="btn btn-sm btn-light" onclick="exportChart('trendOverTime')">
+                        <i class="bi bi-download"></i> Export
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <canvas id="trendOverTimeChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Product Metrics (Radar)-->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-activity me-2"></i>Product Metrics (Radar)</h5>
+                <button class="btn btn-sm btn-light" onclick="exportChart('radar')">
+                    <i class="bi bi-download"></i> Export
+                </button>
+            </div>
+            <div class="card-body">
+                <canvas id="radarChartCanvas" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-bounding-box-circles me-2"></i>Investment vs Returns (Bubble)</h5>
+                <button class="btn btn-sm btn-light" onclick="exportChart('bubble')">
+                    <i class="bi bi-download"></i> Export
+                </button>
+            </div>
+            <div class="card-body">
+                <canvas id="bubbleChartCanvas" height="300"></canvas>
             </div>
         </div>
     </div>
@@ -199,7 +297,61 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const chartData = {{ entrepreneur_charts|safe }};
-        new EntrepreneurCharts(chartData);
+        // Store globally for export and real-time features
+        window.entrepreneurCharts = new EntrepreneurCharts(chartData);
+
+        // Radar chart - now from chartData
+        if (chartData.radar_chart) {
+            window.entrepreneurCharts.renderRadarChart('radarChartCanvas', {
+                labels: chartData.radar_chart.labels,
+                data: chartData.radar_chart.data
+            });
+        }
+
+        // Bubble chart - now from chartData
+        if (chartData.bubble_chart) {
+            window.entrepreneurCharts.renderBubbleChart('bubbleChartCanvas', {
+                data: chartData.bubble_chart.data,
+                xLabel: chartData.bubble_chart.xLabel,
+                yLabel: chartData.bubble_chart.yLabel
+            });
+        }
     });
 </script>
+
+<script>
+function exportChart(chartName) {
+    if (window.entrepreneurCharts) {
+        window.entrepreneurCharts.exportChartAsImage(chartName, `${chartName}-chart.png`);
+    }
+}
+</script>
+
+<script>
+let isRealTimeActive = false;
+
+function startRealTime() {
+    if (window.entrepreneurCharts && !isRealTimeActive) {
+        window.entrepreneurCharts.startRealTimeUpdate('trendOverTime', 3000, () => {
+            return {
+                label: new Date().toLocaleTimeString(),
+                value: Math.floor(Math.random() * 40 + 60)
+            };
+        });
+        isRealTimeActive = true;
+        document.getElementById('startRealTimeBtn').style.display = 'none';
+        document.getElementById('stopRealTimeBtn').style.display = 'inline-block';
+    }
+}
+
+function stopRealTime() {
+    if (window.entrepreneurCharts && isRealTimeActive) {
+        window.entrepreneurCharts.stopRealTimeUpdate('trendOverTime');
+        isRealTimeActive = false;
+        document.getElementById('startRealTimeBtn').style.display = 'inline-block';
+        document.getElementById('stopRealTimeBtn').style.display = 'none';
+    }
+}
+</script>
+
 {% endblock %}

@@ -1,8 +1,14 @@
 import random
 from datetime import datetime, timedelta
+# from core.models import PredictionRequest  # Uncomment when ready to use real data
 
-def get_entrepreneur_chart_data():
+def get_entrepreneur_chart_data(user=None):
     """Generate chart data for entrepreneur dashboard"""
+    
+    # TODO: Replace with actual database queries when ready
+    # if user:
+    #     predictions = PredictionRequest.objects.filter(user=user)
+    #     # Process predictions for charts
     
     # Bar Chart: Success by Category
     categories = ['Electronics', 'Fashion', 'Food', 'Services', 'Education']
@@ -30,19 +36,48 @@ def get_entrepreneur_chart_data():
         'labels': dates,
         'data': [random.randint(50, 90) for _ in dates]
     }
+
+    # Radar Chart: Product Metrics
+    radar_chart = {
+        'labels': ['Speed', 'Quality', 'Cost', 'Time', 'Risk'],
+        'data': [80, 70, 90, 85, 75]
+    }
     
+    # Bubble Chart: Investment vs Returns
+    bubble_chart = {
+        'data': [
+            {'x': 100, 'y': 80, 'r': 10},
+            {'x': 200, 'y': 60, 'r': 15},
+            {'x': 150, 'y': 70, 'r': 12},
+            {'x': 250, 'y': 85, 'r': 18}
+        ],
+        'xLabel': 'Investment',
+        'yLabel': 'Returns'
+    }
+
     return {
         'success_by_category': success_by_category,
         'success_distribution': success_distribution,
         'price_vs_success': scatter_data,
-        'trend_over_time': trend_data
+        'trend_over_time': trend_data,
+        'radar_chart': radar_chart,
+        'bubble_chart': bubble_chart
+
     }
 
-def get_admin_chart_data():
+def get_admin_chart_data(date_range=None):
     """Generate chart data for admin dashboard"""
     
+    # TODO: Replace with actual database queries when ready
+    # if date_range:
+    #     start_date, end_date = date_range
+    #     predictions = PredictionRequest.objects.filter(
+    #         request_timestamp__range=(start_date, end_date)
+    #     )
+    
     # Line Chart: Predictions Over Time
-    dates = [(datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d') for i in range(29, -1, -1)]
+    days = 30
+    dates = [(datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d') for i in range(days - 1, -1, -1)]
     predictions_trend = {
         'labels': dates,
         'data': [random.randint(10, 100) for _ in dates]

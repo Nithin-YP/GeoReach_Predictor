@@ -113,19 +113,59 @@ def entrepreneur_dashboard(request):
 
         try:
             past_predictions = PredictionRequest.objects.filter(user=request.user).order_by('-request_timestamp')
+            
+            # Add statistics for the entrepreneur
+            total_predictions = past_predictions.count()
+            
+            # Calculate success metrics from past predictions
+            if total_predictions > 0:
+                avg_success_rate = past_predictions.aggregate(
+                    avg_success=models.Avg('predictionresult__success_probability')
+                )['avg_success'] or 0
+                
+                high_potential_count = past_predictions.filter(
+                    predictionresult__success_probability__gte=70
+                ).count()
+                
+                medium_potential_count = past_predictions.filter(
+                    predictionresult__success_probability__gte=40,
+                    predictionresult__success_probability__lt=70
+                ).count()
+                
+                low_potential_count = past_predictions.filter(
+                    predictionresult__success_probability__lt=40
+                ).count()
+            else:
+                avg_success_rate = 0
+                high_potential_count = 0
+                medium_potential_count = 0
+                low_potential_count = 0
+                
         except Exception as e:
             logger.error(f"Error fetching past predictions: {e}")
             past_predictions = []
+            total_predictions = 0
+            avg_success_rate = 0
+            high_potential_count = 0
+            medium_potential_count = 0
+            low_potential_count = 0
             messages.warning(request, 'Could not load past predictions.')
 
-        map_context = get_map_context(request.GET)  # Get enhanced map data from geo app
-        charts_context = get_entrepreneur_charts_context()
+        # Get map and chart contexts
+        map_context = get_map_context(request.GET)
+        charts_context = get_entrepreneur_charts_context(user=request.user)
         
         context = {
             'form': form,
             'past_predictions': past_predictions,
+            # Add statistics for display
+            'total_predictions': total_predictions,
+            'avg_success_rate': round(avg_success_rate, 1),
+            'high_potential_count': high_potential_count,
+            'medium_potential_count': medium_potential_count,
+            'low_potential_count': low_potential_count,
         }
-        context.update(map_context)  # Add map data (clusters + config)
+        context.update(map_context)
         context.update(charts_context)
         
         return render(request, 'core/entrepreneur_dashboard.html', context)

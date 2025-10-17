@@ -2,7 +2,7 @@ from django.shortcuts import render
 from .utils import get_entrepreneur_chart_data, get_admin_chart_data
 import json
 
-def get_entrepreneur_charts_context():
+def get_entrepreneur_charts_context(user=None):
     """Get chart data for entrepreneur dashboard"""
     chart_data = get_entrepreneur_chart_data()
     return {
