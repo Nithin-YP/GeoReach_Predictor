@@ -179,10 +179,10 @@ class GeoReachMap {
                     },
                     onEachFeature: (feature, layer) => {
                         const name = feature.properties.shapeName || 
-                                   feature.properties.shapeGroup ||
-                                   feature.properties.DISTRICT || 
-                                   feature.properties.NAME_1 || 
-                                   "Unknown";
+                                feature.properties.shapeGroup ||
+                                feature.properties.DISTRICT || 
+                                feature.properties.NAME_1 || 
+                                "Unknown";
                         
                         // Hover effects
                         layer.on('mouseover', (e) => {
@@ -208,73 +208,149 @@ class GeoReachMap {
                         });
                         
                         // Create popup with data
-                        let popupContent = `<div style="font-family: Arial, sans-serif;"><b>${name}</b><br>`;
+                        let popupContent = `<div style="font-family: Arial, sans-serif; min-width: 250px;"><b style="font-size: 1.1em;">${name}</b><br><hr style="margin: 8px 0;">`;
                         
                         if (isStateLevel) {
                             const stateData = this.stateMetrics[name];
                             
-                            // Show predicted success if available
-                            if (stateData && stateData.avg_predicted_success !== null && stateData.avg_predicted_success !== undefined) {
-                                const successPercent = (stateData.avg_predicted_success * 100).toFixed(1);
-                                popupContent += `<strong style="color: ${this.getColorByScore(successPercent)};">Predicted Success: ${successPercent}%</strong><br>`;
-                                
-                                if (stateData.confidence_score) {
-                                    popupContent += `Confidence: ${(stateData.confidence_score * 100).toFixed(0)}%<br>`;
-                                }
-                            }
-                            
                             if (stateData) {
-                                if (stateData.avg_income) popupContent += `Avg Income: ₹${parseInt(stateData.avg_income).toLocaleString()}<br>`;
-                                if (stateData.employment_rate) popupContent += `Employment Rate: ${stateData.employment_rate}%<br>`;
-                                if (stateData.literacy_rate) popupContent += `Literacy Rate: ${stateData.literacy_rate}%<br>`;
-                                if (stateData.population_density) popupContent += `Population Density: ${stateData.population_density}/km²<br>`;
+                                // Predicted Success
+                                if (stateData.avg_predicted_success !== null && stateData.avg_predicted_success !== undefined) {
+                                    const successPercent = (stateData.avg_predicted_success * 100).toFixed(1);
+                                    popupContent += `<strong>🎯 Predicted Success:</strong> <span style="color: ${this.getColorByScore(successPercent)}; font-weight: bold;">${successPercent}%</span><br>`;
+                                } else {
+                                    popupContent += `<strong>🎯 Predicted Success:</strong> <span style="color: #999;">N/A</span><br>`;
+                                }
                                 
-                                // Show top drivers if available
-                                if (stateData.top_drivers) {
-                                    popupContent += `<br><strong>Top Drivers:</strong><br>`;
+                                // Confidence Score
+                                if (stateData.confidence_score !== null && stateData.confidence_score !== undefined) {
+                                    const confidencePercent = (stateData.confidence_score * 100).toFixed(0);
+                                    const confidenceColor = stateData.confidence_score >= 0.7 ? '#28a745' : stateData.confidence_score >= 0.5 ? '#ffc107' : '#dc3545';
+                                    popupContent += `<strong>📊 Confidence:</strong> <span style="color: ${confidenceColor};">${confidencePercent}%</span><br>`;
+                                }
+                                
+                                // Spending Index
+                                if (stateData.spending_index !== null && stateData.spending_index !== undefined) {
+                                    const spendingPercent = (stateData.spending_index * 100).toFixed(1);
+                                    popupContent += `<strong>💰 Spending Index:</strong> ${spendingPercent}%<br>`;
+                                } else {
+                                    popupContent += `<strong>💰 Spending Index:</strong> <span style="color: #999;">N/A</span><br>`;
+                                }
+                                
+                                popupContent += `<hr style="margin: 8px 0;">`;
+                                
+                                // Economic Indicators
+                                popupContent += `<strong style="color: #17a2b8;">💼 Economic Indicators:</strong><br>`;
+                                if (stateData.avg_income) {
+                                    popupContent += `• Avg Income: ₹${parseInt(stateData.avg_income).toLocaleString()}<br>`;
+                                }
+                                if (stateData.avg_spending) {
+                                    popupContent += `• Avg Spending: ₹${parseInt(stateData.avg_spending).toLocaleString()}<br>`;
+                                }
+                                if (stateData.employment_rate) {
+                                    popupContent += `• Employment Rate: ${stateData.employment_rate}%<br>`;
+                                }
+                                
+                                popupContent += `<hr style="margin: 8px 0;">`;
+                                
+                                // Demographics
+                                popupContent += `<strong style="color: #6c757d;">📍 Demographics:</strong><br>`;
+                                if (stateData.population_density) {
+                                    popupContent += `• Population Density: ${parseFloat(stateData.population_density).toFixed(1)}/km²<br>`;
+                                }
+                                if (stateData.literacy_rate) {
+                                    popupContent += `• Literacy Rate: ${stateData.literacy_rate}%<br>`;
+                                }
+                                
+                                // Top Drivers (if available)
+                                if (stateData.top_drivers && stateData.top_drivers.length > 0) {
+                                    popupContent += `<hr style="margin: 8px 0;">`;
+                                    popupContent += `<strong style="color: #28a745;">🎯 Top Drivers:</strong><br>`;
                                     stateData.top_drivers.forEach(driver => {
                                         popupContent += `• ${driver.feature}: ${(driver.weight * 100).toFixed(0)}%<br>`;
                                     });
                                 }
                             } else {
-                                popupContent += '<i>No data available</i>';
+                                popupContent += '<i style="color: #999;">No data available</i>';
                             }
+                            
                         } else {
                             // DISTRICT POPUP
                             const districtData = this.districtMetrics[name];
                             
-                            if (districtData && districtData.avg_predicted_success !== null && districtData.avg_predicted_success !== undefined) {
-                                const successPercent = (districtData.avg_predicted_success * 100).toFixed(1);
-                                popupContent += `<strong style="color: ${this.getColorByScore(successPercent)};">Predicted Success: ${successPercent}%</strong><br>`;
-                            }
-                            
                             if (districtData) {
-                                popupContent += `
-                                    <strong>📍 Location Details:</strong><br>
-                                    ${districtData.population_density ? `Population Density: ${districtData.population_density}/km²<br>` : ''}
-                                    <br>
-                                    <strong>📊 Market Indicators:</strong><br>
-                                    Literacy Rate: ${districtData.literacy_rate || 'N/A'}% 
-                                    ${districtData.literacy_rate >= 80 ? '🟢' : districtData.literacy_rate >= 70 ? '🟡' : districtData.literacy_rate >= 60 ? '🟠' : '🔴'}<br>
-                                    ${districtData.employment_rate ? `Employment Rate: ${districtData.employment_rate}%<br>` : ''}
-                                    ${districtData.avg_income ? `Avg Income: ₹${parseInt(districtData.avg_income).toLocaleString()}<br>` : ''}
-                                    ${districtData.avg_spending ? `Avg Spending: ₹${parseInt(districtData.avg_spending).toLocaleString()}<br>` : ''}
-                                    <br>
-                                    <em style="color: #666; font-size: 0.9em;">
-                                    ${districtData.literacy_rate >= 80 && districtData.employment_rate >= 70 
-                                        ? '✅ Strong market potential' 
+                                // Predicted Success
+                                if (districtData.avg_predicted_success !== null && districtData.avg_predicted_success !== undefined) {
+                                    const successPercent = (districtData.avg_predicted_success * 100).toFixed(1);
+                                    popupContent += `<strong>🎯 Predicted Success:</strong> <span style="color: ${this.getColorByScore(successPercent)}; font-weight: bold;">${successPercent}%</span><br>`;
+                                } else {
+                                    popupContent += `<strong>🎯 Predicted Success:</strong> <span style="color: #999;">N/A</span><br>`;
+                                }
+                                
+                                // Spending Index
+                                if (districtData.spending_index !== null && districtData.spending_index !== undefined) {
+                                    const spendingPercent = (districtData.spending_index * 100).toFixed(1);
+                                    popupContent += `<strong>💰 Spending Index:</strong> ${spendingPercent}%<br>`;
+                                } else {
+                                    popupContent += `<strong>💰 Spending Index:</strong> <span style="color: #999;">N/A</span><br>`;
+                                }
+                                
+                                popupContent += `<hr style="margin: 8px 0;">`;
+                                
+                                // Market Indicators
+                                popupContent += `<strong style="color: #17a2b8;">📊 Market Indicators:</strong><br>`;
+                                
+                                // Literacy Rate with emoji indicator
+                                if (districtData.literacy_rate !== null && districtData.literacy_rate !== undefined) {
+                                    const literacyEmoji = districtData.literacy_rate >= 80 ? '🟢' : 
+                                                        districtData.literacy_rate >= 70 ? '🟡' : 
+                                                        districtData.literacy_rate >= 60 ? '🟠' : '🔴';
+                                    popupContent += `• Literacy Rate: ${districtData.literacy_rate}% ${literacyEmoji}<br>`;
+                                }
+                                
+                                if (districtData.employment_rate) {
+                                    popupContent += `• Employment Rate: ${districtData.employment_rate}%<br>`;
+                                }
+                                
+                                if (districtData.population_density) {
+                                    popupContent += `• Population Density: ${parseFloat(districtData.population_density).toFixed(1)}/km²<br>`;
+                                }
+                                
+                                // Economic Indicators (if available)
+                                if (districtData.avg_income || districtData.avg_spending) {
+                                    popupContent += `<hr style="margin: 8px 0;">`;
+                                    popupContent += `<strong style="color: #28a745;">💼 Economic Indicators:</strong><br>`;
+                                    
+                                    if (districtData.avg_income) {
+                                        popupContent += `• Avg Income: ₹${parseInt(districtData.avg_income).toLocaleString()}<br>`;
+                                    }
+                                    if (districtData.avg_spending) {
+                                        popupContent += `• Avg Spending: ₹${parseInt(districtData.avg_spending).toLocaleString()}<br>`;
+                                    }
+                                }
+                                
+                                popupContent += `<hr style="margin: 8px 0;">`;
+                                
+                                // Market Assessment
+                                const marketAssessment = 
+                                    districtData.literacy_rate >= 80 && districtData.employment_rate >= 70 
+                                        ? '<span style="color: #28a745;">✅ Strong market potential</span>' 
                                         : districtData.literacy_rate >= 70 
-                                        ? '⚠️ Moderate market potential' 
-                                        : '❌ Challenging market'}
-                                    </em>
-                                `;
+                                        ? '<span style="color: #ffc107;">⚠️ Moderate market potential</span>' 
+                                        : '<span style="color: #dc3545;">❌ Challenging market</span>';
+                                
+                                popupContent += `<em>${marketAssessment}</em>`;
+                                
                             } else {
-                                popupContent += '<i>No data available</i>';
+                                popupContent += '<i style="color: #999;">No data available</i>';
                             }
                         }
                         
                         popupContent += '</div>';
-                        layer.bindPopup(popupContent);
+                        layer.bindPopup(popupContent, {
+                            maxWidth: 350,
+                            className: 'custom-popup'
+                        });
                     }
                 });
                 

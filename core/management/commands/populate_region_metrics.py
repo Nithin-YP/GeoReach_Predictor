@@ -30,13 +30,15 @@ class Command(BaseCommand):
                 s.area_type,
                 ROUND((s.est_employed::numeric / NULLIF(s.population, 0)::numeric * 100), 2) as employment_rate,
                 c.avg_income,
-                c.avg_spending
+                c.avg_spending,
+                c.customer_count
             FROM states s
             LEFT JOIN (
                 SELECT 
                     location,
                     AVG(income) as avg_income,
-                    AVG(spending) as avg_spending
+                    AVG(spending) as avg_spending,
+                    COUNT(*) as customer_count
                 FROM customers
                 WHERE location IS NOT NULL
                 GROUP BY location
@@ -48,13 +50,19 @@ class Command(BaseCommand):
             cursor.execute(query)
             columns = [col[0] for col in cursor.description]
             
+            count = 0
+            states_with_spending = 0
             for row in cursor.fetchall():
                 data = dict(zip(columns, row))
                 
                 # Calculate spending index if data available
                 spending_index = None
                 if data.get('avg_income') and data.get('avg_spending'):
-                    spending_index = float(data['avg_spending']) / float(data['avg_income']) if float(data['avg_income']) > 0 else None
+                    avg_income = float(data['avg_income'])
+                    avg_spending = float(data['avg_spending'])
+                    if avg_income > 0:
+                        spending_index = avg_spending / avg_income
+                        states_with_spending += 1
                 
                 RegionMetrics.objects.update_or_create(
                     region_type='state',
@@ -68,11 +76,12 @@ class Command(BaseCommand):
                         'spending_index': spending_index,
                     }
                 )
+                count += 1
         
-        self.stdout.write(self.style.SUCCESS('✅ State metrics populated'))
+        self.stdout.write(self.style.SUCCESS(f'✅ State metrics populated: {count} states ({states_with_spending} with spending_index)'))
 
     def populate_district_metrics(self):
-        """Populate metrics for all districts"""
+        """Populate metrics for all districts WITH spending index"""
         query = """
             SELECT 
                 d.district_id,
@@ -82,9 +91,22 @@ class Command(BaseCommand):
                 d.literacy_rate,
                 s.population_density,
                 ROUND((s.est_employed::numeric / NULLIF(s.population, 0)::numeric * 100), 2) as employment_rate,
-                s.area_type
+                s.area_type,
+                c.avg_income,
+                c.avg_spending,
+                c.customer_count
             FROM districts d
             LEFT JOIN states s ON d.state_id = s.state_id
+            LEFT JOIN (
+                SELECT 
+                    location,
+                    AVG(income) as avg_income,
+                    AVG(spending) as avg_spending,
+                    COUNT(*) as customer_count
+                FROM customers
+                WHERE location IS NOT NULL
+                GROUP BY location
+            ) c ON d.district_name = c.location
             WHERE d.district_name IS NOT NULL
         """
         
@@ -92,8 +114,32 @@ class Command(BaseCommand):
             cursor.execute(query)
             columns = [col[0] for col in cursor.description]
             
+            count = 0
+            districts_with_spending = 0
+            
+            # DEBUG: Print first 5 districts to see what data looks like
+            first_five = []
+            
             for row in cursor.fetchall():
                 data = dict(zip(columns, row))
+                
+                # DEBUG: Collect first 5 districts
+                if count < 5:
+                    first_five.append({
+                        'name': data['district_name'],
+                        'avg_income': data.get('avg_income'),
+                        'avg_spending': data.get('avg_spending'),
+                        'customer_count': data.get('customer_count')
+                    })
+                
+                # Calculate spending index for districts too
+                spending_index = None
+                if data.get('avg_income') and data.get('avg_spending'):
+                    avg_income = float(data['avg_income'])
+                    avg_spending = float(data['avg_spending'])
+                    if avg_income > 0:
+                        spending_index = avg_spending / avg_income
+                        districts_with_spending += 1
                 
                 RegionMetrics.objects.update_or_create(
                     region_type='district',
@@ -103,7 +149,16 @@ class Command(BaseCommand):
                         'population_density': data.get('population_density'),
                         'literacy_rate': data.get('literacy_rate'),
                         'employment_rate': data.get('employment_rate'),
+                        'avg_income': data.get('avg_income'),
+                        'avg_spending': data.get('avg_spending'),
+                        'spending_index': spending_index,
                     }
                 )
+                count += 1
+            
+            # DEBUG OUTPUT
+            self.stdout.write(self.style.WARNING('📊 Sample of first 5 districts:'))
+            for d in first_five:
+                self.stdout.write(f"  - {d['name']}: income={d['avg_income']}, spending={d['avg_spending']}, customers={d['customer_count']}")
         
-        self.stdout.write(self.style.SUCCESS('✅ District metrics populated'))
+        self.stdout.write(self.style.SUCCESS(f'✅ District metrics populated: {count} districts ({districts_with_spending} with spending_index)'))
