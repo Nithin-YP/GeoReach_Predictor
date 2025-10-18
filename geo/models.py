@@ -117,12 +117,6 @@ class EconomicIndicator(gis_models.Model):
 
 class DemographicProfile(gis_models.Model):
     """Demographic and spending profiles by location"""
-    CITY_TIER_CHOICES = [
-        ('TIER_1', 'Tier 1'),
-        ('TIER_2', 'Tier 2'),
-        ('TIER_3', 'Tier 3'),
-    ]
-    
     AGE_GROUP_CHOICES = [
         ('18-24', '18-24'),
         ('25-34', '25-34'),
@@ -145,7 +139,6 @@ class DemographicProfile(gis_models.Model):
     # Demographics
     age_group = models.CharField(max_length=20, choices=AGE_GROUP_CHOICES, null=True, blank=True)
     education_level = models.CharField(max_length=50, choices=EDUCATION_CHOICES, null=True, blank=True)
-    city_tier = models.CharField(max_length=20, choices=CITY_TIER_CHOICES, null=True, blank=True)
     occupation = models.CharField(max_length=100, null=True, blank=True)
     
     # Income & Spending
@@ -170,12 +163,13 @@ class DemographicProfile(gis_models.Model):
     class Meta:
         ordering = ['state__name', 'age_group']
         indexes = [
-            models.Index(fields=['state', 'age_group', 'city_tier']),
+            models.Index(fields=['state', 'age_group', 'education_level']),
             models.Index(fields=['district', 'age_group']),
         ]
     
     def __str__(self):
-        return f"{self.state.name} - {self.age_group or 'All Ages'} - {self.city_tier or 'All Tiers'}"
+        location = f"{self.district.name}, " if self.district else ""
+        return f"{location}{self.state.name} - {self.age_group or 'All Ages'}"
 
 
 class IndustryEmployment(gis_models.Model):

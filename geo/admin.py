@@ -45,8 +45,8 @@ class EconomicIndicatorAdmin(admin.ModelAdmin):
 
 @admin.register(DemographicProfile)
 class DemographicProfileAdmin(admin.ModelAdmin):
-    list_display = ['state', 'district', 'age_group', 'city_tier', 'avg_income', 'sample_size']
-    list_filter = ['age_group', 'city_tier', 'education_level', 'state']
+    list_display = ['state', 'district', 'age_group', 'education_level', 'avg_income', 'sample_size']
+    list_filter = ['age_group', 'education_level', 'state']
     search_fields = ['state__name', 'district__name', 'occupation']
     autocomplete_fields = ['state', 'district']
 
