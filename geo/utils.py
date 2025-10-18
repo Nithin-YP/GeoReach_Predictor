@@ -1,5 +1,7 @@
 import unicodedata
 from django.db import connection
+from django.db.models import Avg
+from core.models import RegionMetrics, ProductPrediction
 from decimal import Decimal
 
 def execute_query(query, params=None):
@@ -26,6 +28,131 @@ def normalize_state_name(name):
     normalized = unicodedata.normalize('NFD', name)
     without_diacritics = ''.join(char for char in normalized if unicodedata.category(char) != 'Mn')
     return without_diacritics.strip()
+
+def calculate_and_store_match_scores(user, product_type, luxury_level, target_audience, price):
+    """
+    Calculate match scores and store them in ProductPrediction and RegionMetrics
+    """
+    # Get all states
+    states = RegionMetrics.objects.filter(region_type='state')
+    
+    luxury_multiplier = {
+        'Basic': 0.5,
+        'Standard': 1.0,
+        'Premium': 1.5,
+        'Luxury': 2.0
+    }.get(luxury_level, 1.0)
+    
+    min_income = price * 10 * luxury_multiplier
+    max_income = price * 50 * luxury_multiplier
+    
+    predictions = []
+    
+    for state_metric in states:
+        score = 0.0
+        factors = 0
+        feature_importance = {}
+        
+        # Factor 1: Income match (40% weight)
+        if state_metric.avg_income:
+            avg_income = float(state_metric.avg_income)
+            if min_income <= avg_income <= max_income:
+                income_score = 100
+            elif avg_income > max_income:
+                income_score = 80
+            else:
+                income_score = max(0, (avg_income / min_income) * 60)
+            
+            score += income_score * 0.4
+            factors += 0.4
+            feature_importance['income'] = round(income_score * 0.4 / 100, 2)
+        
+        # Factor 2: Employment rate (20% weight)
+        if state_metric.employment_rate:
+            employment_score = float(state_metric.employment_rate)
+            score += employment_score * 0.2
+            factors += 0.2
+            feature_importance['employment'] = round(employment_score * 0.2 / 100, 2)
+        
+        # Factor 3: Literacy (20% weight)
+        if state_metric.literacy_rate:
+            literacy_score = float(state_metric.literacy_rate)
+            score += literacy_score * 0.2
+            factors += 0.2
+            feature_importance['education'] = round(literacy_score * 0.2 / 100, 2)
+        
+        # Factor 4: Population density / market size (20% weight)
+        if state_metric.population_density:
+            density_score = min(100, float(state_metric.population_density) / 10)
+            score += density_score * 0.2
+            factors += 0.2
+            feature_importance['market_size'] = round(density_score * 0.2 / 100, 2)
+        
+        # Normalize
+        final_score = (score / factors) if factors > 0 else 0
+        predicted_success = final_score / 100  # Convert to 0-1
+        
+        # Store prediction
+        prediction = ProductPrediction.objects.create(
+            user=user,
+            product_type=product_type,
+            luxury_level=luxury_level,
+            target_audience=target_audience,
+            price=price,
+            region_type='state',
+            region_id=state_metric.region_id,
+            region_name=state_metric.region_name,
+            predicted_success=predicted_success,
+            predicted_reach=predicted_success * 0.8,  # Simple estimate
+            confidence=0.7 if factors >= 3 else 0.5,
+            feature_importance=feature_importance,
+            model_version='business_rules_v1.0'
+        )
+        predictions.append(prediction)
+    
+    # Update RegionMetrics with aggregated predictions
+    for state_metric in states:
+        avg_pred = ProductPrediction.objects.filter(
+            region_type='state',
+            region_id=state_metric.region_id
+        ).aggregate(Avg('predicted_success'))['predicted_success__avg']
+        
+        if avg_pred:
+            state_metric.avg_predicted_success = avg_pred
+            state_metric.model_version = 'business_rules_v1.0'
+            state_metric.save()
+    
+    return predictions
+
+def get_region_metrics_for_map(region_type='state'):
+    """
+    Get region metrics for map visualization
+    Returns dict: {region_name: {metrics...}}
+    """
+    metrics = RegionMetrics.objects.filter(region_type=region_type)
+    
+    result = {}
+    for metric in metrics:
+        result[metric.region_name] = {
+            'region_id': metric.region_id,
+            'avg_predicted_success': float(metric.avg_predicted_success) if metric.avg_predicted_success else None,
+            'avg_predicted_reach': float(metric.avg_predicted_reach) if metric.avg_predicted_reach else None,
+            'confidence_score': float(metric.confidence_score) if metric.confidence_score else None,
+            'spending_index': float(metric.spending_index) if metric.spending_index else None,
+            'avg_income': float(metric.avg_income) if metric.avg_income else None,
+            'avg_spending': float(metric.avg_spending) if metric.avg_spending else None,
+            'population_density': float(metric.population_density) if metric.population_density else None,
+            'literacy_rate': float(metric.literacy_rate) if metric.literacy_rate else None,
+            'employment_rate': float(metric.employment_rate) if metric.employment_rate else None,
+            'data_coverage': float(metric.data_coverage) if metric.data_coverage else None,
+            'top_drivers': metric.top_drivers,
+        }
+        
+        # Also add normalized version of name
+        normalized_name = normalize_state_name(metric.region_name)
+        result[normalized_name] = result[metric.region_name]
+    
+    return result
 
 def calculate_region_match_scores(product_type, luxury_level, target_audience, price):
     """

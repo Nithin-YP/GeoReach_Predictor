@@ -309,12 +309,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize Map With match Scores
     // ========================================
     const mapConfig = {{ map_config|safe }};
-    const clusters = {{ clusters|safe }};
-    const stateDemographics = {{ state_demographics|safe }};
-    const districtDemographics = {{ district_demographics|safe }};
+    const stateMetrics = {{ state_demographics|safe }};      // Using state_demographics from backend
+    const districtMetrics = {{ district_demographics|safe }}; // Using district_demographics from backend
     const matchScores = {{ match_scores|safe }};
-    new GeoReachMap('map', mapConfig, clusters, stateDemographics, districtDemographics, matchScores);
-
+    
+    new GeoReachMap('map', mapConfig, stateMetrics, districtMetrics, matchScores);
 
     // ========================================
     // Initialize Charts

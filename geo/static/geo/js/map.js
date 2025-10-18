@@ -1,10 +1,9 @@
 class GeoReachMap {
-    constructor(mapElementId, config, clusters, stateDemographics, districtDemographics, matchScores) {
+    constructor(mapElementId, config, stateMetrics, districtMetrics, matchScores) {
         this.mapConfig = config;
-        this.clusters = clusters;
-        this.stateDemographics = stateDemographics || {};
-        this.districtDemographics = districtDemographics || {};
-        this.matchScores = matchScores || {};
+        this.stateMetrics = stateMetrics || {};
+        this.districtMetrics = districtMetrics || {};
+        this.matchScores = matchScores || {};  // Keep for backward compatibility
         this.map = L.map(mapElementId).setView([config.center_lat, config.center_lng], config.initial_zoom);
         this.geojsonLayerCache = {};
         this.currentLayer = null;
@@ -12,8 +11,8 @@ class GeoReachMap {
         
         console.log("🗺️ Map initialized with:", {
             matchScores: Object.keys(this.matchScores).length,
-            states: Object.keys(this.stateDemographics).length,
-            districts: Object.keys(this.districtDemographics).length
+            states: Object.keys(this.stateMetrics).length,
+            districts: Object.keys(this.districtMetrics).length
         });
         
         this.initBaseMaps();
@@ -36,6 +35,36 @@ class GeoReachMap {
         if (score >= 50) return '#ffc107';  // Yellow - Medium match
         if (score >= 30) return '#fd7e14';  // Orange - Low-medium match
         return '#dc3545';                    // Red - Low match
+    }
+
+    /**
+     * Get color with fallback logic:
+     * 1. Use avg_predicted_success if available
+     * 2. Fallback to spending_index
+     * 3. Fallback to literacy_rate
+     * 4. Default to light blue
+     */
+    getColorForRegion(regionData) {
+        let score = null;
+        
+        // Priority 1: ML/Business rule prediction
+        if (regionData.avg_predicted_success !== null && regionData.avg_predicted_success !== undefined) {
+            score = regionData.avg_predicted_success * 100;
+        }
+        // Priority 2: Spending index
+        else if (regionData.spending_index !== null && regionData.spending_index !== undefined) {
+            score = regionData.spending_index * 100;
+        }
+        // Priority 3: Literacy rate
+        else if (regionData.literacy_rate !== null && regionData.literacy_rate !== undefined) {
+            score = regionData.literacy_rate;
+        }
+        // Default: light blue
+        else {
+            return '#ADD8E6';
+        }
+        
+        return this.getColorByScore(score);
     }
 
     setupBoundaryLayers() {
@@ -111,48 +140,49 @@ class GeoReachMap {
                 const layer = L.geoJSON(data, {
                     style: (feature) => {
                         const name = feature.properties.shapeName || 
-                                feature.properties.shapeGroup ||
-                                feature.properties.DISTRICT || 
-                                feature.properties.NAME_1 || 
-                                "Unknown";
+                                   feature.properties.shapeGroup ||
+                                   feature.properties.DISTRICT || 
+                                   feature.properties.NAME_1 || 
+                                   "Unknown";
                         
                         let fillColor = '#ADD8E6';  // Light blue default
+                        let opacity = 0.6;
                         
                         if (isStateLevel) {
-                            // Check if we have match scores
-                            const hasMatchScores = Object.keys(this.matchScores).length > 0;
-                            
-                            if (hasMatchScores) {
-                                const score = this.matchScores[name];
-                                if (score !== undefined && score !== null) {
-                                    fillColor = this.getColorByScore(score);
+                            const stateData = this.stateMetrics[name];
+                            if (stateData) {
+                                fillColor = this.getColorForRegion(stateData);
+                                
+                                // Lower opacity if low confidence
+                                if (stateData.confidence_score && stateData.confidence_score < 0.5) {
+                                    opacity = 0.4;
                                 }
                             }
                         } else {
-                            // District level - color by literacy rate
-                            const districtData = this.districtDemographics[name];
-                            if (districtData && districtData.literacy_rate !== null && districtData.literacy_rate !== undefined) {
-                                const rate = parseFloat(districtData.literacy_rate);
-                                if (rate >= 80) fillColor = '#28a745';      // Green
-                                else if (rate >= 70) fillColor = '#ffc107'; // Yellow
-                                else if (rate >= 60) fillColor = '#fd7e14'; // Orange
-                                else fillColor = '#dc3545';                 // Red
+                            const districtData = this.districtMetrics[name];
+                            if (districtData) {
+                                fillColor = this.getColorForRegion(districtData);
+                                
+                                // Lower opacity if low confidence
+                                if (districtData.confidence_score && districtData.confidence_score < 0.5) {
+                                    opacity = 0.4;
+                                }
                             }
                         }
                         
                         return {
                             color: "#2196F3",      // Blue border
                             weight: 1.5,
-                            fillOpacity: 0.6,
+                            fillOpacity: opacity,
                             fillColor: fillColor
                         };
                     },
                     onEachFeature: (feature, layer) => {
                         const name = feature.properties.shapeName || 
-                                feature.properties.shapeGroup ||
-                                feature.properties.DISTRICT || 
-                                feature.properties.NAME_1 || 
-                                "Unknown";
+                                   feature.properties.shapeGroup ||
+                                   feature.properties.DISTRICT || 
+                                   feature.properties.NAME_1 || 
+                                   "Unknown";
                         
                         // Hover effects
                         layer.on('mouseover', (e) => {
@@ -181,42 +211,52 @@ class GeoReachMap {
                         let popupContent = `<div style="font-family: Arial, sans-serif;"><b>${name}</b><br>`;
                         
                         if (isStateLevel) {
-                            const stateData = this.stateDemographics[name];
-                            const matchScore = this.matchScores[name];
+                            const stateData = this.stateMetrics[name];
                             
-                            if (matchScore !== undefined && matchScore !== null) {
-                                popupContent += `<strong style="color: ${this.getColorByScore(matchScore)};">Match Score: ${matchScore.toFixed(1)}%</strong><br>`;
+                            // Show predicted success if available
+                            if (stateData && stateData.avg_predicted_success !== null && stateData.avg_predicted_success !== undefined) {
+                                const successPercent = (stateData.avg_predicted_success * 100).toFixed(1);
+                                popupContent += `<strong style="color: ${this.getColorByScore(successPercent)};">Predicted Success: ${successPercent}%</strong><br>`;
+                                
+                                if (stateData.confidence_score) {
+                                    popupContent += `Confidence: ${(stateData.confidence_score * 100).toFixed(0)}%<br>`;
+                                }
                             }
                             
                             if (stateData) {
-                                popupContent += `
-                                    Population: ${parseInt(stateData.population).toLocaleString()}<br>
-                                    Employment Rate: ${stateData.employment_rate || 'N/A'}%<br>
-                                    Population Density: ${stateData.population_density || 'N/A'}/km²<br>
-                                    Unemployment Rate: ${stateData.est_unemployment_rate || 'N/A'}%<br>
-                                    Area Type: ${stateData.area_type || 'N/A'}
-                                `;
+                                if (stateData.avg_income) popupContent += `Avg Income: ₹${parseInt(stateData.avg_income).toLocaleString()}<br>`;
+                                if (stateData.employment_rate) popupContent += `Employment Rate: ${stateData.employment_rate}%<br>`;
+                                if (stateData.literacy_rate) popupContent += `Literacy Rate: ${stateData.literacy_rate}%<br>`;
+                                if (stateData.population_density) popupContent += `Population Density: ${stateData.population_density}/km²<br>`;
+                                
+                                // Show top drivers if available
+                                if (stateData.top_drivers) {
+                                    popupContent += `<br><strong>Top Drivers:</strong><br>`;
+                                    stateData.top_drivers.forEach(driver => {
+                                        popupContent += `• ${driver.feature}: ${(driver.weight * 100).toFixed(0)}%<br>`;
+                                    });
+                                }
                             } else {
                                 popupContent += '<i>No data available</i>';
                             }
                         } else {
-                            // DISTRICT POPUP - Enhanced with entrepreneur-relevant metrics
-                            const districtData = this.districtDemographics[name];
+                            // DISTRICT POPUP
+                            const districtData = this.districtMetrics[name];
+                            
+                            if (districtData && districtData.avg_predicted_success !== null && districtData.avg_predicted_success !== undefined) {
+                                const successPercent = (districtData.avg_predicted_success * 100).toFixed(1);
+                                popupContent += `<strong style="color: ${this.getColorByScore(successPercent)};">Predicted Success: ${successPercent}%</strong><br>`;
+                            }
+                            
                             if (districtData) {
                                 popupContent += `
                                     <strong>📍 Location Details:</strong><br>
-                                    State: ${districtData.state_name || 'N/A'}<br>
-                                    District Population: ${districtData.population_district ? parseInt(districtData.population_district).toLocaleString() : 'N/A'}<br>
+                                    ${districtData.population_density ? `Population Density: ${districtData.population_density}/km²<br>` : ''}
                                     <br>
                                     <strong>📊 Market Indicators:</strong><br>
                                     Literacy Rate: ${districtData.literacy_rate || 'N/A'}% 
                                     ${districtData.literacy_rate >= 80 ? '🟢' : districtData.literacy_rate >= 70 ? '🟡' : districtData.literacy_rate >= 60 ? '🟠' : '🔴'}<br>
-                                    Area Type: ${districtData.area_type || 'N/A'}<br>
-                                    Population Density: ${districtData.population_density || 'N/A'}/km²<br>
-                                    <br>
-                                    <strong>💼 Economic Indicators:</strong><br>
-                                    Employment Rate: ${districtData.employment_rate || 'N/A'}%<br>
-                                    Unemployment Rate: ${districtData.est_unemployment_rate || 'N/A'}%<br>
+                                    ${districtData.employment_rate ? `Employment Rate: ${districtData.employment_rate}%<br>` : ''}
                                     ${districtData.avg_income ? `Avg Income: ₹${parseInt(districtData.avg_income).toLocaleString()}<br>` : ''}
                                     ${districtData.avg_spending ? `Avg Spending: ₹${parseInt(districtData.avg_spending).toLocaleString()}<br>` : ''}
                                     <br>

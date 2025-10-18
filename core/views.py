@@ -62,7 +62,7 @@ def user_logout(request):
 @login_required
 def entrepreneur_dashboard(request):
     if not request.user.is_superuser:
-        form_data = None  # Initialize form_data for map context
+        form_data = None
         
         if request.method == 'POST':
             form = PredictionRequestForm(request.POST)
@@ -72,15 +72,15 @@ def entrepreneur_dashboard(request):
                     prediction_request.user = request.user
                     prediction_request.save()
 
-                    # Extract form data for map scoring BEFORE running ML pipeline
+                    # Extract form data for map scoring
                     form_data = {
                         'product_type': prediction_request.product_type,
-                        'luxury_level': prediction_request.product_luxury,  # Note: using product_luxury field
+                        'luxury_level': prediction_request.product_luxury,
                         'target_audience': prediction_request.target_audience,
                         'price': float(prediction_request.price)
                     }
 
-                    # Run ML prediction pipeline
+                    # Run ML prediction pipeline (existing code)
                     ml_output = run_prediction_pipeline(
                         product_type=prediction_request.product_type,
                         product_luxury=prediction_request.product_luxury,
@@ -89,7 +89,6 @@ def entrepreneur_dashboard(request):
                         region=prediction_request.region
                     )
 
-                    # Save PredictionResult
                     prediction_result = PredictionResult.objects.create(
                         prediction_request=prediction_request,
                         predicted_reach=ml_output['predicted_reach'],
@@ -97,7 +96,6 @@ def entrepreneur_dashboard(request):
                         model_confidence=ml_output.get('model_confidence', 0.8)
                     )
 
-                    # Save Clusters
                     for cluster_data in ml_output['clusters']:
                         Cluster.objects.create(
                             prediction_result=prediction_result,
@@ -122,11 +120,8 @@ def entrepreneur_dashboard(request):
 
         try:
             past_predictions = PredictionRequest.objects.filter(user=request.user).order_by('-request_timestamp')
-            
-            # Add statistics for the entrepreneur
             total_predictions = past_predictions.count()
             
-            # Calculate success metrics from past predictions
             if total_predictions > 0:
                 avg_success_rate = past_predictions.aggregate(
                     avg_success=Avg('predictionresult__success_probability')
@@ -160,14 +155,13 @@ def entrepreneur_dashboard(request):
             low_potential_count = 0
             messages.warning(request, 'Could not load past predictions.')
 
-        # Get map and chart contexts - PASS form_data here
-        map_context = get_map_context(form_data)  # Changed from request.POST
+        # Get map context - PASS user AND form_data
+        map_context = get_map_context(user=request.user, form_data=form_data)
         charts_context = get_entrepreneur_charts_context(user=request.user)
         
         context = {
             'form': form,
             'past_predictions': past_predictions,
-            # Add statistics for display
             'total_predictions': total_predictions,
             'avg_success_rate': round(avg_success_rate, 1),
             'high_potential_count': high_potential_count,
