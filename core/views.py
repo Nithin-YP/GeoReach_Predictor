@@ -62,6 +62,8 @@ def user_logout(request):
 @login_required
 def entrepreneur_dashboard(request):
     if not request.user.is_superuser:
+        form_data = None  # Initialize form_data for map context
+        
         if request.method == 'POST':
             form = PredictionRequestForm(request.POST)
             if form.is_valid():
@@ -69,6 +71,14 @@ def entrepreneur_dashboard(request):
                     prediction_request = form.save(commit=False)
                     prediction_request.user = request.user
                     prediction_request.save()
+
+                    # Extract form data for map scoring BEFORE running ML pipeline
+                    form_data = {
+                        'product_type': prediction_request.product_type,
+                        'luxury_level': prediction_request.product_luxury,  # Note: using product_luxury field
+                        'target_audience': prediction_request.target_audience,
+                        'price': float(prediction_request.price)
+                    }
 
                     # Run ML prediction pipeline
                     ml_output = run_prediction_pipeline(
@@ -101,7 +111,6 @@ def entrepreneur_dashboard(request):
                         )
 
                     messages.success(request, 'Prediction generated successfully!')
-                    return redirect('core:entrepreneur_dashboard')
                     
                 except Exception as e:
                     logger.error(f"Error generating prediction: {e}")
@@ -151,8 +160,8 @@ def entrepreneur_dashboard(request):
             low_potential_count = 0
             messages.warning(request, 'Could not load past predictions.')
 
-        # Get map and chart contexts
-        map_context = get_map_context(request.GET)
+        # Get map and chart contexts - PASS form_data here
+        map_context = get_map_context(form_data)  # Changed from request.POST
         charts_context = get_entrepreneur_charts_context(user=request.user)
         
         context = {

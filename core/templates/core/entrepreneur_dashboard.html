@@ -306,11 +306,15 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // ========================================
-    // Initialize Map
+    // Initialize Map With match Scores
     // ========================================
     const mapConfig = {{ map_config|safe }};
     const clusters = {{ clusters|safe }};
-    new GeoReachMap('map', mapConfig, clusters);
+    const stateDemographics = {{ state_demographics|safe }};
+    const districtDemographics = {{ district_demographics|safe }};
+    const matchScores = {{ match_scores|safe }};
+    new GeoReachMap('map', mapConfig, clusters, stateDemographics, districtDemographics, matchScores);
+
 
     // ========================================
     // Initialize Charts
