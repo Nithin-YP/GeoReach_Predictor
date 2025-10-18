@@ -143,7 +143,7 @@
 <!-- ========================================
      GEOGRAPHIC INSIGHTS MAP
      ======================================== -->
-<div class="row mt-4">
+<div class="row mt-5">
     <div class="col-12">
         <div class="card shadow-sm">
             <div class="card-header bg-info text-white">
@@ -151,8 +151,141 @@
                     <i class="bi bi-map me-2"></i>Geographic Insights
                 </h5>
             </div>
-            <div class="card-body">
-                <div id="map" style="height: 400px;"></div>
+
+            <div class="card-body" style="position: relative; padding-top: 115px;">
+                <!-- ========================================
+                     KEY PERFORMANCE INDICATORS (MOVED INSIDE)
+                     ======================================== -->
+                <div class="kpi-header" style="position: absolute; top: 15px; left: 15px; right: 15px; display: flex; gap: 15px; z-index: 500;">
+                    <div class="kpi-card" style="flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="font-size: 12px; opacity: 0.9;">🌎 Highest Potential</div>
+                        <div style="font-size: 20px; font-weight: bold; margin-top: 5px;" id="highest-region">Loading...</div>
+                    </div>
+                    
+                    <div class="kpi-card" style="flex: 1; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="font-size: 12px; opacity: 0.9;">📈 Avg Success</div>
+                        <div style="font-size: 20px; font-weight: bold; margin-top: 5px;" id="avg-success">N/A</div>
+                    </div>
+                    
+                    <div class="kpi-card" style="flex: 1; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="font-size: 12px; opacity: 0.9;">🔍 Data Coverage</div>
+                        <div style="font-size: 20px; font-weight: bold; margin-top: 5px;" id="data-coverage">95%</div>
+                    </div>
+                </div>
+
+                <!-- ========================================
+                     MAP CONTROLS PANEL (INSIDE MAP CARD)
+                     ======================================== -->
+                <div id="map-controls" class="map-control-panel">
+                    <button id="toggle-panel" class="control-toggle">⚙️</button>
+                    <div id="control-content" class="control-content hidden">
+                        <h4 style="margin: 0 0 15px 0; color: #667eea;">🎛️ Map Controls</h4>
+                        
+                        <!-- FILTERS SECTION -->
+                        <div style="margin-bottom: 20px; padding: 12px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #667eea;">
+                            <h5 style="margin: 0 0 12px 0; font-size: 14px; color: #495057;">
+                                <i class="bi bi-funnel"></i> Filters
+                            </h5>
+                            
+                            <!-- Price Range -->
+                            <div style="margin-bottom: 12px;">
+                                <label style="font-size: 12px; color: #6c757d; display: block; margin-bottom: 4px;">💰 Price Range (INR)</label>
+                                <div style="display: flex; gap: 8px;">
+                                    <input type="number" id="filter-price-min" placeholder="Min" 
+                                        style="width: 50%; padding: 6px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px;">
+                                    <input type="number" id="filter-price-max" placeholder="Max" 
+                                        style="width: 50%; padding: 6px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px;">
+                                </div>
+                            </div>
+                            
+                            <!-- Category -->
+                            <div style="margin-bottom: 12px;">
+                                <label style="font-size: 12px; color: #6c757d; display: block; margin-bottom: 4px;">📦 Product Category</label>
+                                <select id="filter-category" style="width: 100%; padding: 6px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px;">
+                                    <option value="all">All Categories</option>
+                                    <option value="electronics">Electronics</option>
+                                    <option value="clothing">Clothing</option>
+                                    <option value="food">Food & Beverages</option>
+                                    <option value="home">Home & Garden</option>
+                                    <option value="sports">Sports & Fitness</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Target Audience -->
+                            <div style="margin-bottom: 12px;">
+                                <label style="font-size: 12px; color: #6c757d; display: block; margin-bottom: 4px;">👥 Target Audience</label>
+                                <select id="filter-audience" style="width: 100%; padding: 6px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px;">
+                                    <option value="all">All Audiences</option>
+                                    <option value="youth">Youth (18-25)</option>
+                                    <option value="adults">Adults (26-45)</option>
+                                    <option value="seniors">Seniors (45+)</option>
+                                    <option value="families">Families</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Filter Buttons -->
+                            <div style="display: flex; gap: 6px; margin-top: 12px;">
+                                <button id="apply-filters" 
+                                        style="flex: 1; padding: 8px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600;">
+                                    Apply
+                                </button>
+                                <button id="reset-filters" 
+                                        style="flex: 1; padding: 8px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600;">
+                                    Reset
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- LAYER TOGGLES SECTION -->
+                        <div style="margin-bottom: 20px; padding: 12px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">
+                            <h5 style="margin: 0 0 12px 0; font-size: 14px; color: #495057;">
+                                <i class="bi bi-layers"></i> Data Layers
+                            </h5>
+                            <label style="display: flex; align-items: center; margin: 8px 0; cursor: pointer; font-size: 13px;">
+                                <input type="checkbox" id="toggle-success" checked style="margin-right: 8px;"> 
+                                <span>🎯 Success Predictions</span>
+                            </label>
+                            <label style="display: flex; align-items: center; margin: 8px 0; cursor: pointer; font-size: 13px;">
+                                <input type="checkbox" id="toggle-literacy" checked style="margin-right: 8px;"> 
+                                <span>📚 Literacy Rate</span>
+                            </label>
+                            <label style="display: flex; align-items: center; margin: 8px 0; cursor: pointer; font-size: 13px;">
+                                <input type="checkbox" id="toggle-density" checked style="margin-right: 8px;"> 
+                                <span>👥 Population Density</span>
+                            </label>
+                        </div>
+                        
+                        <!-- LEGEND SECTION -->
+                        <div style="padding: 12px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #ffc107;">
+                            <h5 style="margin: 0 0 10px 0; font-size: 14px; color: #495057;">
+                                <i class="bi bi-palette"></i> Color Legend
+                            </h5>
+                            <div style="display: flex; align-items: center; margin: 6px 0; font-size: 12px;">
+                                <span style="width: 20px; height: 15px; background: #28a745; display: inline-block; margin-right: 8px; border-radius: 2px;"></span>
+                                High (70-100%)
+                            </div>
+                            <div style="display: flex; align-items: center; margin: 6px 0; font-size: 12px;">
+                                <span style="width: 20px; height: 15px; background: #ffc107; display: inline-block; margin-right: 8px; border-radius: 2px;"></span>
+                                Good (50-69%)
+                            </div>
+                            <div style="display: flex; align-items: center; margin: 6px 0; font-size: 12px;">
+                                <span style="width: 20px; height: 15px; background: #fd7e14; display: inline-block; margin-right: 8px; border-radius: 2px;"></span>
+                                Moderate (30-49%)
+                            </div>
+                            <div style="display: flex; align-items: center; margin: 6px 0; font-size: 12px;">
+                                <span style="width: 20px; height: 15px; background: #dc3545; display: inline-block; margin-right: 8px; border-radius: 2px;"></span>
+                                Low (0-29%)
+                            </div>
+                            <div style="display: flex; align-items: center; margin: 6px 0; font-size: 12px;">
+                                <span style="width: 20px; height: 15px; background: #ADD8E6; display: inline-block; margin-right: 8px; border-radius: 2px;"></span>
+                                No Data
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- The Map -->
+                <div id="map" style="height: 500px; border-radius: 8px;"></div> <!-- INCREASED height from 400px to 500px -->
             </div>
         </div>
     </div>
@@ -311,6 +444,145 @@
     border: 0;
     border-top: 1px solid #e9ecef;
 }
+
+.map-control-panel {
+    position: absolute;
+    top: 90px;
+    right: 15px;
+    z-index: 600;
+}
+
+.control-toggle {
+    background: white;
+    border: 2px solid rgba(0,0,0,0.2);
+    border-radius: 8px;
+    padding: 10px 15px;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+.control-toggle:hover {
+    background: #f8f9fa;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.control-content {
+    position: absolute;
+    right: 0;
+    top: 50px;
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    width: 250px;
+    max-height: 400px;   /* ADDED */
+    overflow-y: auto;    /* ADDED */
+    transition: all 0.3s ease;
+}
+
+.control-content.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(20px);
+}
+
+.custom-tooltip {
+    background: rgba(0, 0, 0, 0.85) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+}
+
+.leaflet-interactive:focus {
+    outline: none !important;
+}
+
+.leaflet-container svg path {
+    outline: none !important;
+}
+
+.leaflet-control-layers {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #e9ecef;
+    padding: 8px 12px 8px 36px;
+    position: relative;
+    min-width: 120px;
+}
+
+.leaflet-control-layers::before {
+    content: "\f5fd"; /* Font Awesome layers icon (or use SVG below) */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    left: 10px;
+    top: 12px;
+    font-size: 18px;
+    color: #2196F3;
+}
+
+/* If you don't use Font Awesome, use an SVG icon: */
+.leaflet-control-layers::before {
+    content: "";
+    position: absolute;
+    left: 10px;
+    top: 12px;
+    width: 18px;
+    height: 18px;
+    background: url('data:image/svg+xml;utf8,<svg fill="none" stroke="blue" stroke-width="2" viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M3 7l9 6 9-6-9-6-9 6z"/><path d="M3 17l9 6 9-6"/><path d="M3 12l9 6 9-6"/></svg>') no-repeat center center;
+    background-size: contain;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutDown {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+}
+
 </style>
 
 <!-- Chart.js Library -->
@@ -322,16 +594,21 @@
 
 <!-- Initialization Scripts -->
 <script>
+// ========================================
+// GLOBAL VARIABLE FOR MAP INSTANCE
+// ========================================
+let georearchMap; // Global variable
+
 document.addEventListener('DOMContentLoaded', function() {
     // ========================================
     // Initialize Map With match Scores
     // ========================================
     const mapConfig = {{ map_config|safe }};
-    const stateMetrics = {{ state_demographics|safe }};      // Using state_demographics from backend
-    const districtMetrics = {{ district_demographics|safe }}; // Using district_demographics from backend
+    const stateMetrics = {{ state_demographics|safe }};
+    const districtMetrics = {{ district_demographics|safe }};
     const matchScores = {{ match_scores|safe }};
     
-    new GeoReachMap('map', mapConfig, stateMetrics, districtMetrics, matchScores);
+    georearchMap = new GeoReachMap('map', mapConfig, stateMetrics, districtMetrics, matchScores); // CHANGED: Assign to global variable
 
     // ========================================
     // Initialize Charts
@@ -393,5 +670,27 @@ function stopRealTime() {
         document.getElementById('stopRealTimeBtn').style.display = 'none';
     }
 }
+
+// ========================================
+// GLOBAL WRAPPER FUNCTIONS FOR ONCLICK
+// ========================================
+function viewDetailedInsights(regionName, regionType) {
+    if (georearchMap) {
+        georearchMap.viewDetailedInsights(regionName, regionType);
+    }
+}
+
+function compareRegion(regionName) {
+    if (georearchMap) {
+        georearchMap.compareRegion(regionName);
+    }
+}
+
+function viewChartForRegion(regionName) {
+    if (georearchMap) {
+        georearchMap.viewChartForRegion(regionName);
+    }
+}
+
 </script>
 {% endblock %}
