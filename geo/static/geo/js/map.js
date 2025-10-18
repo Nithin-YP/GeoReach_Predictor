@@ -18,7 +18,7 @@ class GeoReachMap {
         this.currentTheme = 'light'; 
         this.baseLayers = {};
         this.initBaseMaps();
-        this.addThemeSelector();
+        // this.addThemeSelector();
         this.setupControlPanel();
         this.setupBoundaryLayers();
 
@@ -57,14 +57,26 @@ class GeoReachMap {
         this.baseLayers['Streets'].addTo(this.map);
     }
 
-    addThemeSelector() {
-        // Add Leaflet layer control for theme switching
-        L.control.layers(this.baseLayers, null, {
-            position: 'bottomright',
-            collapsed: false
-        }).addTo(this.map);
-    }
+    // addThemeSelector() {
+    //     // Add Leaflet layer control for theme switching
+    //     L.control.layers(this.baseLayers, null, {
+    //         position: 'bottomright',
+    //         collapsed: false
+    //     }).addTo(this.map);
+    // }
 
+    setBaseLayer(layerName) {
+        // Remove all base layers
+        Object.values(this.baseLayers).forEach(layer => {
+            if (this.map.hasLayer(layer)) {
+                this.map.removeLayer(layer);
+            }
+        });
+        // Add selected layer
+        const selected = this.baseLayers[layerName];
+        if (selected) selected.addTo(this.map);
+    }
+    
     // ========================================
     // CONTROL PANEL SETUP
     // ========================================
