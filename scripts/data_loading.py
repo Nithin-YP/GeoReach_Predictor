@@ -771,13 +771,20 @@ def resolve_granularity_foreign_keys(table_name):
         print(f"Foreign key resolution complete for {table_name}")
 
 
-def load_city_to_state_mapping():
+def load_city_to_state_mapping(buffer_km=5):
     """
     Create buffered polygon geometries for cities based on their point locations.
     This improves spatial joins by giving cities an area instead of just a point.
-    
-    buffer_km: Radius in kilometers to buffer around city center point
+
+    Parameters:
+        buffer_km (int|float): Radius in kilometers to buffer around city center point (default: 5)
     """
+    # ensure numeric buffer_km
+    try:
+        buffer_km = float(buffer_km)
+    except Exception:
+        buffer_km = 5.0
+
     with psycopg2.connect(**conn_params(dbname=CFG["dbname"])) as conn:
         cur = conn.cursor()
         
