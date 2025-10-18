@@ -40,11 +40,11 @@ CFG = {
     "pg_bin": os.environ.get("PG_BIN", r"C:\\Program Files\\PostgreSQL\\17\\bin"),
     # CSV files (example relative paths on Windows) - these can be overridden in .env
     "csv_states_1": os.environ.get("CSV_STATES_1", r"..\\datasets\\geodata\\dataset1.csv"),
-    "csv_states_4": os.environ.get("CSV_STATES_4", r"..\\datasets\\geodata\\dataset4.csv"),
     "csv_districts": os.environ.get("CSV_DISTRICTS", r"..\\datasets\\geodata\\dataset2.csv"),
     "csv_expenditures": os.environ.get("CSV_EXPENDITURES", r"..\\datasets\\geodata\\dataset3.csv"),
     "csv_employment": os.environ.get("CSV_EMPLOYMENT", r"..\\datasets\\geodata\\dataset5.csv"),
     "csv_customers": os.environ.get("CSV_CUSTOMERS", r"..\\datasets\\geodata\\dataset6.csv"),
+    "csv_city_to_state": os.environ.get("CSV_CITY_TO_STATE", r"..\\datasets\\city_to_state_mapping.csv"),
     # shapefile path (optional)
     "shp_states": os.environ.get("SHP_STATES", r"..\\datasets\\geodata\\india_states.shp"),
     "shp_districts": os.environ.get("SHP_DISTRICTS", r"..\\datasets\\geodata\\india_districts.shp"),
@@ -154,10 +154,15 @@ def create_core_tables():
 
     CREATE TABLE IF NOT EXISTS expenditures (
         id SERIAL PRIMARY KEY,
+        -- Granularity columns (STATE/DISTRICT only)
+        state_name VARCHAR(100),
+        district_name VARCHAR(100),
+        state_id INT,
+        district_id INT,
+        -- Original columns
         income NUMERIC,
         age INT,
         occupation VARCHAR(100),
-        city_tier VARCHAR(20),
         groceries_exp NUMERIC,
         transport_exp NUMERIC,
         eating_out_exp NUMERIC,
@@ -174,21 +179,37 @@ def create_core_tables():
         potential_savings_utilities NUMERIC,
         potential_savings_healthcare NUMERIC,
         potential_savings_education NUMERIC,
-        potential_savings_misc NUMERIC
+        potential_savings_misc NUMERIC,
+        FOREIGN KEY (state_id) REFERENCES states(state_id),
+        FOREIGN KEY (district_id) REFERENCES districts(district_id)
     );
 
     CREATE TABLE IF NOT EXISTS employment (
         id SERIAL PRIMARY KEY,
+        -- Granularity columns (STATE/DISTRICT only)
+        state_name VARCHAR(100),
+        district_name VARCHAR(100),
+        state_id INT,
+        district_id INT,
+        -- Original columns
         employment_status VARCHAR(100),
         age_group VARCHAR(50),
         education_level VARCHAR(50),
         industry VARCHAR(100),
         location VARCHAR(100),
-        monthly_salary_inr NUMERIC
+        monthly_salary_inr NUMERIC,
+        FOREIGN KEY (state_id) REFERENCES states(state_id),
+        FOREIGN KEY (district_id) REFERENCES districts(district_id)
     );
 
     CREATE TABLE IF NOT EXISTS customers (
         id SERIAL PRIMARY KEY,
+        -- Granularity columns (STATE/DISTRICT only)
+        state_name VARCHAR(100),
+        district_name VARCHAR(100),
+        state_id INT,
+        district_id INT,
+        -- Original columns
         customer_name VARCHAR(100),
         age INT,
         gender VARCHAR(20),
@@ -196,8 +217,19 @@ def create_core_tables():
         income NUMERIC,
         purchase_frequency NUMERIC,
         spending NUMERIC,
-        location VARCHAR(100)
+        FOREIGN KEY (state_id) REFERENCES states(state_id),
+        FOREIGN KEY (district_id) REFERENCES districts(district_id)
     );
+
+    -- Create indices for better query performance
+    CREATE INDEX IF NOT EXISTS idx_expenditures_state ON expenditures(state_id);
+    CREATE INDEX IF NOT EXISTS idx_expenditures_district ON expenditures(district_id);
+    
+    CREATE INDEX IF NOT EXISTS idx_employment_state ON employment(state_id);
+    CREATE INDEX IF NOT EXISTS idx_employment_district ON employment(district_id);
+    
+    CREATE INDEX IF NOT EXISTS idx_customers_state ON customers(state_id);
+    CREATE INDEX IF NOT EXISTS idx_customers_district ON customers(district_id);
     """
     with psycopg2.connect(**conn_params(dbname=CFG["dbname"])) as conn:
         run_sql(conn, ddl)
@@ -239,11 +271,15 @@ HEADER_MAP = {
         "literacy_rate_percent": "literacy_rate",
     },
     "expenditures": {
+        # Granularity columns (STATE/DISTRICT only)
+        "state": "state_name",
+        "state_name": "state_name",
+        "district": "district_name",
+        "district_name": "district_name",
         # map common verbose headers to compact table columns
         "income": "income",
         "age": "age",
         "occupation": "occupation",
-        "city_tier": "city_tier",
         "groceries_expenditure": "groceries_exp",
         "groceries": "groceries_exp",
         "transport_expenditure": "transport_exp",
@@ -268,6 +304,12 @@ HEADER_MAP = {
         "potential_savings_miscellaneous": "potential_savings_misc",
     },
     "employment": {
+        # Granularity columns (STATE/DISTRICT only)
+        "state": "state_name",
+        "state_name": "state_name",
+        "district": "district_name",
+        "district_name": "district_name",
+        # Original columns
         "employment_status": "employment_status",
         "age_group": "age_group",
         "education_level": "education_level",
@@ -276,6 +318,12 @@ HEADER_MAP = {
         "monthly_salary_inr": "monthly_salary_inr",
     },
     "customers": {
+        # Granularity columns (STATE/DISTRICT only)
+        "state": "state_name",
+        "state_name": "state_name",
+        "district": "district_name",
+        "district_name": "district_name",
+        # Original columns
         "customer_name": "customer_name",
         "age": "age",
         "gender": "gender",
@@ -283,7 +331,6 @@ HEADER_MAP = {
         "income": "income",
         "purchase_frequency": "purchase_frequency",
         "spending": "spending",
-        "location": "location",
     }
 }
 
@@ -331,9 +378,20 @@ def infer_columns_for_table(table, csv_path):
     return cols if cols else None
 
 def copy_csv_to_table(table, csv_path, cols=None):
+    """
+    DEPRECATED: Use transform functions instead for better data quality.
+    Direct COPY can fail with numeric formatting, commas, nulls, etc.
+    This is kept for backwards compatibility but logs a warning.
+    """
     if not os.path.exists(csv_path):
         print(f"CSV not found: {csv_path}")
         return
+    
+    print(f"\n⚠️  WARNING: Using direct COPY for {table}")
+    print(f"   Recommended: Use transform functions for {table} instead")
+    print(f"   Direct COPY may fail with formatted numbers (e.g., '1,000' or '$50')")
+    print(f"   Continuing with direct COPY...\n")
+    
     # if no explicit cols provided, infer from CSV header and mapping
     if cols is None:
         inferred = infer_columns_for_table(table, csv_path)
@@ -353,10 +411,11 @@ def copy_csv_to_table(table, csv_path, cols=None):
         try:
             cur.copy_expert(copy_sql.as_string(conn), f)
             conn.commit()
-            print(f"Copied {csv_path} -> {table} (columns: {cols})")
+            print(f"✅ Copied {csv_path} -> {table} (columns: {cols})")
         except Exception as e:
             conn.rollback()
-            print(f"Error copying CSV to {table}: {e}")
+            print(f"❌ Error copying CSV to {table}: {e}")
+            print(f"   Consider creating a transform function for this table")
 
 def table_exists(conn, schema_table):
     with conn.cursor() as cur:
@@ -600,24 +659,42 @@ def update_states_geom_from_imported(table_geom):
 
 
 def import_shapefile_to_table(shp_path, target_table):
-    """Import a shapefile using shp2pgsql and psql (Windows-friendly)."""
+    """Import a shapefile using shp2pgsql and psql (Windows-friendly) with fallback guidance."""
     if not shp_path or not os.path.exists(shp_path):
-        print(f"Shapefile not found: {shp_path}")
-        return
+        print(f"\n⚠️  Shapefile not found: {shp_path}")
+        print(f"\n📥 SHAPEFILE DOWNLOAD GUIDE:")
+        print(f"   You can download Indian state/district shapefiles from:")
+        print(f"   1. GADM: https://gadm.org/download_country.html (Select India)")
+        print(f"   2. DataMeet: https://github.com/datameet/maps")
+        print(f"   3. Natural Earth: https://www.naturalearthdata.com/")
+        print(f"\n   Save to: datasets/geodata/")
+        print(f"   Expected files: india_states.shp, india_districts.shp")
+        print(f"   (+ associated .shx, .dbf, .prj files)")
+        print(f"\n   Continuing without shapefile geometry...\n")
+        return False
+    
     shp2pgsql = os.path.join(CFG["pg_bin"], "shp2pgsql.exe")
     psql = os.path.join(CFG["pg_bin"], "psql.exe")
     if not os.path.exists(shp2pgsql) or not os.path.exists(psql):
-        print("shp2pgsql or psql not found in pg_bin. Edit CFG['pg_bin'].")
-        return
+        print("\n⚠️  shp2pgsql or psql not found in pg_bin.")
+        print(f"   Current pg_bin: {CFG['pg_bin']}")
+        print(f"   Please install PostgreSQL with PostGIS or update CFG['pg_bin'].")
+        print(f"   Continuing without shapefile geometry...\n")
+        return False
+    
     env = os.environ.copy()
     env["PGPASSWORD"] = CFG["pg_password"]
     cmd = f'"{shp2pgsql}" -I -s 4326 "{shp_path}" public.{target_table} | "{psql}" -h {CFG["pg_host"]} -p {CFG["pg_port"]} -U {CFG["pg_user"]} -d {CFG["dbname"]}'
-    print("Running shapefile import:", cmd)
-    res = subprocess.run(cmd, shell=True, env=env)
+    print(f"Running shapefile import: {target_table}")
+    res = subprocess.run(cmd, shell=True, env=env, capture_output=True, text=True)
     if res.returncode == 0:
-        print(f"Shapefile {shp_path} imported as public.{target_table}")
+        print(f"✅ Shapefile imported as public.{target_table}")
+        return True
     else:
-        print(f"Error importing shapefile (returncode={res.returncode})")
+        print(f"❌ Error importing shapefile (returncode={res.returncode})")
+        if res.stderr:
+            print(f"   Error details: {res.stderr[:200]}")
+        return False
 
 
 def update_districts_geom_from_imported(table_geom):
@@ -634,7 +711,10 @@ def update_districts_geom_from_imported(table_geom):
             cols = [r[0] for r in cur.fetchall()]
         norm = {c.lower(): c for c in cols}
         # candidate names for district label fields
-        candidates = ['district', 'district_name', 'name', 'NAME_1', 'NAME', 'DISTRICT', 'dist_name', 'districtna']
+        if 'districts' in table_geom.lower():
+            candidates = ['name_2', 'district', 'district_name', 'name', 'NAME_1', 'NAME', 'DISTRICT', 'dist_name', 'districtna']
+        else:
+            candidates = ['district', 'district_name', 'name', 'NAME_1', 'NAME', 'DISTRICT', 'dist_name', 'districtna']
         chosen = None
         for cand in candidates:
             if cand.lower() in norm:
@@ -652,17 +732,241 @@ def update_districts_geom_from_imported(table_geom):
         conn.commit()
         print(f"Updated districts.geom from public.{table_geom}")
 
+
+def resolve_granularity_foreign_keys(table_name):
+    """
+    After loading data, resolve state_name/district_name to their IDs.
+    This enables proper foreign key relationships and aggregation queries.
+    (STATE/DISTRICT only - NO CITY)
+    """
+    with psycopg2.connect(**conn_params(dbname=CFG["dbname"])) as conn:
+        cur = conn.cursor()
+        
+        # Update state_id based on state_name
+        print(f"Resolving state_id for {table_name}...")
+        cur.execute(f"""
+            UPDATE {table_name} t
+            SET state_id = s.state_id
+            FROM states s
+            WHERE t.state_name IS NOT NULL 
+            AND t.state_id IS NULL
+            AND TRIM(LOWER(t.state_name)) = TRIM(LOWER(s.state_name))
+        """)
+        print(f"  Updated {cur.rowcount} rows with state_id")
+        
+        # Update district_id based on district_name and state_id
+        print(f"Resolving district_id for {table_name}...")
+        cur.execute(f"""
+            UPDATE {table_name} t
+            SET district_id = d.district_id
+            FROM districts d
+            WHERE t.district_name IS NOT NULL 
+            AND t.district_id IS NULL
+            AND t.state_id = d.state_id
+            AND TRIM(LOWER(t.district_name)) = TRIM(LOWER(d.district_name))
+        """)
+        print(f"  Updated {cur.rowcount} rows with district_id")
+        
+        conn.commit()
+        print(f"Foreign key resolution complete for {table_name}")
+
+
+def load_city_to_state_mapping():
+    """
+    Create buffered polygon geometries for cities based on their point locations.
+    This improves spatial joins by giving cities an area instead of just a point.
+    
+    buffer_km: Radius in kilometers to buffer around city center point
+    """
+    with psycopg2.connect(**conn_params(dbname=CFG["dbname"])) as conn:
+        cur = conn.cursor()
+        
+        # Check if cities have locations
+        cur.execute("SELECT COUNT(*) FROM cities WHERE location IS NOT NULL")
+        city_count = cur.fetchone()[0]
+        
+        if city_count == 0:
+            print("⚠️  No cities with location points found. Skipping buffer creation.")
+            return
+        
+        print(f"\n🗺️  Creating {buffer_km}km buffer polygons for {city_count} cities...")
+        
+        # Create buffered geometries from point locations
+        # ST_Buffer on geography gives us accurate metric buffers
+        buffer_sql = """
+            UPDATE cities
+            SET geom = ST_Multi(
+                ST_Transform(
+                    ST_Buffer(location::geography, %s)::geometry,
+                    4326
+                )
+            )
+            WHERE location IS NOT NULL AND geom IS NULL
+        """
+        
+        try:
+            buffer_meters = buffer_km * 1000
+            cur.execute(buffer_sql, (buffer_meters,))
+            updated_count = cur.rowcount
+            conn.commit()
+            print(f"✅ Created buffer polygons for {updated_count} cities")
+            print(f"   Buffer radius: {buffer_km}km")
+            print(f"   This enables better spatial joins and 'within city' queries")
+        except Exception as e:
+            conn.rollback()
+            print(f"❌ Error creating city buffers: {e}")
+
+
+def create_geo_hierarchy_view():
+    """
+    Create a materialized view that shows the geographic hierarchy (STATE/DISTRICT only).
+    Useful for debugging and visual inspection of relationships.
+    """
+    with psycopg2.connect(**conn_params(dbname=CFG["dbname"])) as conn:
+        cur = conn.cursor()
+        
+        print("\n📊 Creating geo_hierarchy materialized view...")
+        
+        view_sql = """
+            DROP MATERIALIZED VIEW IF EXISTS geo_hierarchy CASCADE;
+            
+            CREATE MATERIALIZED VIEW geo_hierarchy AS
+            SELECT 
+                -- State info
+                s.state_id,
+                s.state_name,
+                s.population as state_population,
+                s.area_km2 as state_area_km2,
+                s.population_density as state_density,
+                
+                -- District info
+                d.district_id,
+                d.district_name,
+                d.population_district,
+                d.literacy_rate as district_literacy_rate,
+                
+                -- Geometries (for GIS tools)
+                s.geom as state_geom,
+                d.geom as district_geom,
+                
+                -- Computed fields
+                CASE 
+                    WHEN d.district_id IS NOT NULL THEN 'district'
+                    ELSE 'state'
+                END as finest_granularity,
+                
+                -- Spatial relationships
+                CASE 
+                    WHEN d.geom IS NOT NULL AND s.geom IS NOT NULL THEN
+                        ST_Intersects(d.geom, s.geom)
+                    ELSE NULL
+                END as district_in_state_check
+                
+            FROM states s
+            LEFT JOIN districts d ON d.state_id = s.state_id;
+            
+            -- Create indices on the materialized view
+            CREATE INDEX idx_geo_hierarchy_state ON geo_hierarchy(state_id);
+            CREATE INDEX idx_geo_hierarchy_district ON geo_hierarchy(district_id);
+            CREATE INDEX idx_geo_hierarchy_granularity ON geo_hierarchy(finest_granularity);
+        """
+        
+        try:
+            cur.execute(view_sql)
+            conn.commit()
+            
+            # Get statistics
+            cur.execute("SELECT COUNT(*) FROM geo_hierarchy")
+            total_rows = cur.fetchone()[0]
+            
+            cur.execute("SELECT finest_granularity, COUNT(*) FROM geo_hierarchy GROUP BY finest_granularity ORDER BY finest_granularity")
+            granularity_stats = cur.fetchall()
+            
+            print(f"✅ Created geo_hierarchy view with {total_rows} rows")
+            print(f"\n   Granularity breakdown:")
+            for gran, count in granularity_stats:
+                print(f"   - {gran}: {count} records")
+            
+            print(f"\n   Usage:")
+            print(f"   SELECT * FROM geo_hierarchy WHERE state_name = 'Maharashtra';")
+            print(f"   SELECT * FROM geo_hierarchy WHERE district_name = 'Mumbai';")
+            print(f"   \n   To refresh: REFRESH MATERIALIZED VIEW geo_hierarchy;")
+            
+        except Exception as e:
+            conn.rollback()
+            print(f"❌ Error creating geo_hierarchy view: {e}")
+
+
 def run_test_spatial_queries(limit=5):
     with psycopg2.connect(**conn_params(dbname=CFG["dbname"])) as conn:
         cur = conn.cursor()
-        print("Sample ST_Centroid for states (first rows):")
+        print("\n=== SPATIAL QUERY TESTS (STATE/DISTRICT LEVEL) ===")
+        print("\nSample ST_Centroid for states (first rows):")
         cur.execute("SELECT state_name, ST_AsText(ST_Centroid(geom)) FROM states WHERE geom IS NOT NULL LIMIT %s", (limit,))
         for row in cur.fetchall():
-            print(row[0], row[1])
+            print(f"  {row[0]}: {row[1]}")
+        
         print("\nArea (ST_Area) for sample states:")
         cur.execute("SELECT state_name, ST_Area(geom::geography) AS area_m2 FROM states WHERE geom IS NOT NULL LIMIT %s", (limit,))
         for row in cur.fetchall():
-            print(row[0], f"{row[1]:,.0f} m2")
+            print(f"  {row[0]}: {row[1]:,.0f} m²")
+        
+        # Test granularity aggregation
+        print("\n=== GRANULARITY TEST: Employment by State ===")
+        cur.execute("""
+            SELECT s.state_name, COUNT(*) as records, 
+                   AVG(e.monthly_salary_inr) as avg_salary
+            FROM employment e
+            JOIN states s ON e.state_id = s.state_id
+            WHERE e.state_id IS NOT NULL
+            GROUP BY s.state_name
+            ORDER BY records DESC
+            LIMIT 5
+        """)
+        for row in cur.fetchall():
+            print(f"  {row[0]}: {row[1]} records, Avg Salary: ₹{row[2]:,.0f}" if row[2] else f"  {row[0]}: {row[1]} records")
+        
+        print("\n=== GRANULARITY TEST: Employment by District ===")
+        cur.execute("""
+            SELECT d.district_name, s.state_name, COUNT(*) as records, 
+                   AVG(e.monthly_salary_inr) as avg_salary
+            FROM employment e
+            JOIN districts d ON e.district_id = d.district_id
+            JOIN states s ON d.state_id = s.state_id
+            WHERE e.district_id IS NOT NULL
+            GROUP BY d.district_name, s.state_name
+            ORDER BY records DESC
+            LIMIT 5
+        """)
+        results = cur.fetchall()
+        if results:
+            for row in results:
+                print(f"  {row[0]}, {row[1]}: {row[2]} records, Avg Salary: ₹{row[3]:,.0f}" if row[3] else f"  {row[0]}, {row[1]}: {row[2]} records")
+        else:
+            print("  (No district-level employment data yet)")
+        
+        # Test geo_hierarchy view if it exists
+        print("\n=== GEO_HIERARCHY VIEW TEST ===")
+        try:
+            cur.execute("SELECT COUNT(*) FROM geo_hierarchy")
+            view_count = cur.fetchone()[0]
+            print(f"  geo_hierarchy view has {view_count} rows")
+            
+            cur.execute("""
+                SELECT state_name, COUNT(DISTINCT district_name) as district_count
+                FROM geo_hierarchy 
+                WHERE district_name IS NOT NULL
+                GROUP BY state_name
+                ORDER BY district_count DESC
+                LIMIT 5
+            """)
+            print("  Top states by district count:")
+            for row in cur.fetchall():
+                print(f"    {row[0]}: {row[1]} districts")
+        except Exception as e:
+            print(f"  geo_hierarchy view not available: {e}")
+        
+        print("\n=== DATA LOADING COMPLETE (STATE/DISTRICT LEVEL ONLY) ===\n")
 
 def main():
     # ensure pg_bin is valid or auto-detect it
@@ -672,6 +976,7 @@ def main():
     enable_postgis_extensions()
     create_core_tables()
 
+    print("\n=== LOADING STATES ===")
     s_header = None
     try:
         with open(CFG["csv_states_1"], 'r', encoding='utf-8') as fh:
@@ -688,7 +993,7 @@ def main():
     else:
         print("Could not read states CSV header; skipping states load.")
 
-    # DISTRICTS
+    print("\n=== LOADING DISTRICTS ===")
     d_header = None
     try:
         with open(CFG["csv_districts"], 'r', encoding='utf-8') as fh:
@@ -704,15 +1009,35 @@ def main():
         transform_districts_from_temp(temp_districts, sanitized_districts)
     else:
         print("Could not read districts CSV header; skipping districts load.")
+    
+    print("\n=== LOADING DATA TABLES (STATE/DISTRICT LEVEL) ===")
+    print("⚠️  Note: Using direct COPY. For production, consider transform functions.")
     copy_csv_to_table("expenditures", CFG["csv_expenditures"])
     copy_csv_to_table("employment", CFG["csv_employment"])
     copy_csv_to_table("customers", CFG["csv_customers"])
+    
+    print("\n=== MAPPING EMPLOYMENT LOCATIONS TO STATES ===")
+    # Load city-to-state mapping and use it to resolve employment locations
+    # city_to_state_map = load_city_to_state_mapping()
+    # map_employment_location_to_state(city_to_state_map)  # Function not defined, commenting out
+    
+    print("\n=== RESOLVING GRANULARITY FOREIGN KEYS (STATE/DISTRICT) ===")
+    # Resolve foreign keys for all data tables
+    resolve_granularity_foreign_keys("expenditures")
+    resolve_granularity_foreign_keys("employment")
+    resolve_granularity_foreign_keys("customers")
+    
+    print("\n=== LOADING SPATIAL GEOMETRIES ===")
+    states_imported = import_shapefile_to_table(CFG["shp_states"], "states_geom")
+    if states_imported:
+        update_states_geom_from_imported("states_geom")
 
-    import_shapefile_to_table(CFG["shp_states"], "states_geom")
-    update_states_geom_from_imported("states_geom")
-
-    import_shapefile_to_table(CFG.get("shp_districts"), "districts_geom")
-    update_districts_geom_from_imported("districts_geom")
+    districts_imported = import_shapefile_to_table(CFG.get("shp_districts"), "districts_geom")
+    if districts_imported:
+        update_districts_geom_from_imported("districts_geom")
+    
+    print("\n=== CREATING DEBUGGING VIEWS ===")
+    create_geo_hierarchy_view()
 
     run_test_spatial_queries()
 
