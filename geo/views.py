@@ -9,10 +9,12 @@ import json
 from decimal import Decimal
 
 class DecimalEncoder(json.JSONEncoder):
+    """Custom JSON encoder for Decimal types"""
     def default(self, obj):
         if isinstance(obj, Decimal):
             return float(obj)
         return super().default(obj)
+
 
 def get_map_context(user=None, form_data=None):
     """
@@ -21,12 +23,15 @@ def get_map_context(user=None, form_data=None):
     Args:
         user: Django user object
         form_data: Dictionary with keys: product_type, luxury_level, target_audience, price
+    
+    Returns:
+        Dictionary with map configuration and data
     """
     
     # If form data provided, calculate and store predictions
     if user and form_data and all(k in form_data for k in ['product_type', 'luxury_level', 'target_audience', 'price']):
         try:
-            calculate_and_store_match_scores(
+            utils.calculate_and_store_match_scores(
                 user=user,
                 product_type=form_data['product_type'],
                 luxury_level=form_data['luxury_level'],
@@ -37,8 +42,8 @@ def get_map_context(user=None, form_data=None):
             print(f"Error calculating match scores: {e}")
     
     # Get precomputed metrics from database
-    state_metrics = get_region_metrics_for_map('state')
-    district_metrics = get_region_metrics_for_map('district')
+    state_metrics = utils.get_region_metrics_for_map('state')
+    district_metrics = utils.get_region_metrics_for_map('district')
     
     # Extract match scores for backward compatibility
     match_scores = {}
@@ -46,22 +51,17 @@ def get_map_context(user=None, form_data=None):
         if metrics['avg_predicted_success'] is not None:
             match_scores[name] = metrics['avg_predicted_success'] * 100
     
-    # Get clusters (empty for now - will be populated by ML)
-    clusters = get_enhanced_clusters_data(match_scores)
+    # Get clusters with match scores
+    clusters = utils.get_enhanced_clusters_data(match_scores)
     
-    map_config = get_complete_map_config()
-
-
-def get_map_context(request_params=None):
-    """Generate context data for map visualization"""
-    clusters = utils.get_enhanced_clusters_data()
-    config = utils.get_complete_map_config()
+    # Get map configuration
+    map_config = utils.get_complete_map_config()
     
     return {
         'map_config': json.dumps(map_config, cls=DecimalEncoder),
         'clusters': json.dumps(clusters, cls=DecimalEncoder),
-        'state_demographics': json.dumps(state_metrics, cls=DecimalEncoder),  # Changed from state_metrics
-        'district_demographics': json.dumps(district_metrics, cls=DecimalEncoder),  # Changed from district_metrics
+        'state_demographics': json.dumps(state_metrics, cls=DecimalEncoder),
+        'district_demographics': json.dumps(district_metrics, cls=DecimalEncoder),
         'match_scores': json.dumps(match_scores, cls=DecimalEncoder)
     }
 
@@ -75,6 +75,7 @@ def map_view(request, context=None):
     states_count = State.objects.count()
     districts_count = District.objects.count()
     
+    # Get map context data
     map_context = get_map_context()
     context.update(map_context)
     context.update({
@@ -129,7 +130,7 @@ def api_districts_nearby(request):
     try:
         lat = float(request.GET.get('lat'))
         lng = float(request.GET.get('lng'))
-        radius_km = float(request.GET.get('radius', 50))
+        radius_km = int(float(request.GET.get('radius', 50)))
         
         districts = utils.get_districts_within_radius(lat, lng, radius_km)
         

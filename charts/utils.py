@@ -1,11 +1,11 @@
-import random
-from datetime import datetime, timedelta
 from django.db import connection
 
 def execute_query(query, params=None):
     """Execute a raw SQL query and return results as list of dicts."""
     with connection.cursor() as cursor:
         cursor.execute(query, params or [])
+        if cursor.description is None:
+            return []
         columns = [col[0] for col in cursor.description]
         return [dict(zip(columns, row)) for row in cursor.fetchall()]
 

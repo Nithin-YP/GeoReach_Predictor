@@ -9,6 +9,10 @@ class GeoReachMap {
         this.currentLayer = null;
         this.currentZoomLevel = null;
         
+        // Store GeoJSON features for neighbor detection
+        this.stateFeatures = {};
+        this.districtFeatures = {};
+        
         console.log("🗺️ Map initialized with:", {
             matchScores: Object.keys(this.matchScores).length,
             states: Object.keys(this.stateMetrics).length,
@@ -18,17 +22,16 @@ class GeoReachMap {
         this.currentTheme = 'light'; 
         this.baseLayers = {};
         this.initBaseMaps();
-        // this.addThemeSelector();
         this.setupControlPanel();
         this.setupBoundaryLayers();
 
+        // Prevent browser context menu on map
         document.getElementById(mapElementId).addEventListener('contextmenu', function(e) {
             e.preventDefault();
         });
     }
 
     initBaseMaps() {
-
         // Streets (OSM default)
         this.baseLayers['Streets'] = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -56,14 +59,6 @@ class GeoReachMap {
         // Add default layer
         this.baseLayers['Streets'].addTo(this.map);
     }
-
-    // addThemeSelector() {
-    //     // Add Leaflet layer control for theme switching
-    //     L.control.layers(this.baseLayers, null, {
-    //         position: 'bottomright',
-    //         collapsed: false
-    //     }).addTo(this.map);
-    // }
 
     setBaseLayer(layerName) {
         // Remove all base layers
@@ -189,11 +184,6 @@ class GeoReachMap {
                     }
                 }
 
-                // Category filter (placeholder - you can add product_type matching)
-                // if (filters.category !== 'all') {
-                //     // Add logic to match against prediction data
-                // }
-
                 // Update layer visibility/opacity
                 if (passes) {
                     // Determine which metric to show based on toggles
@@ -224,9 +214,6 @@ class GeoReachMap {
         }
     }
 
-    /**
-     * Get color based on match score (0-100)
-     */
     getColorByScore(score) {
         if (score === null || score === undefined || score === 0) return '#ADD8E6';
         if (score >= 70) return '#28a745';
@@ -235,35 +222,25 @@ class GeoReachMap {
         return '#dc3545';
     }
 
-    /**
-     * Get color with fallback logic:
-     * 1. Use avg_predicted_success if available
-     * 2. Fallback to spending_index
-     * 3. Fallback to literacy_rate
-     * 4. Default to light blue
-     */
     getColorForRegion(regionData) {
         let score = null;
         
-        // Priority 1: ML/Business rule prediction
         if (regionData.avg_predicted_success !== null && regionData.avg_predicted_success !== undefined) {
             score = regionData.avg_predicted_success * 100;
         }
-        // Priority 2: Spending index
         else if (regionData.spending_index !== null && regionData.spending_index !== undefined) {
             score = regionData.spending_index * 100;
         }
-        // Priority 3: Literacy rate
         else if (regionData.literacy_rate !== null && regionData.literacy_rate !== undefined) {
             score = regionData.literacy_rate;
         }
-        // Default: light blue
         else {
             return '#ADD8E6';
         }
         
         return this.getColorByScore(score);
     }
+
     // ========================================
     // CONTEXT MENU ACTION METHODS
     // ========================================
@@ -271,7 +248,6 @@ class GeoReachMap {
     viewDetailedInsights(regionName, regionType) {
         console.log('View insights:', regionName, regionType);
         
-        // Get region data
         const regionData = regionType === 'state' 
             ? this.stateMetrics[regionName] 
             : this.districtMetrics[regionName];
@@ -281,21 +257,16 @@ class GeoReachMap {
             return;
         }
 
-        // Create detailed modal/popup content
         const detailsHtml = this.generateDetailedInsightsHtml(regionName, regionData, regionType);
-        
-        // Show in a Bootstrap modal
         this.showModal('Detailed Insights: ' + regionName, detailsHtml);
     }
 
     compareRegion(regionName) {
         console.log('Compare region:', regionName);
         
-        // Determine if it's state or district
         const isState = this.stateMetrics.hasOwnProperty(regionName);
         const regionType = isState ? 'state' : 'district';
         
-        // Get neighboring regions using spatial analysis
         const neighbors = this.getNeighboringRegions(regionName, regionType);
         
         if (neighbors.length === 0) {
@@ -303,29 +274,20 @@ class GeoReachMap {
             return;
         }
 
-        // Get current region data
         const currentData = isState ? this.stateMetrics[regionName] : this.districtMetrics[regionName];
-        
-        // Create comparison content
         const comparisonHtml = this.generateComparisonHtml(regionName, currentData, neighbors, regionType);
         
-        // Show comparison
         this.showModal('Compare ' + regionName + ' with Neighbors', comparisonHtml);
     }
 
     viewChartForRegion(regionName) {
         console.log('View charts for:', regionName);
         
-        // Smooth scroll to charts section
         const chartsSection = document.querySelector('.row.mt-4');
         if (chartsSection) {
             chartsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            
-            // Show notification with region name
             this.highlightRegionInCharts(regionName);
             
-            // Optional: Filter charts to show only this region's data
-            // You can emit a custom event that your charts listen to
             const event = new CustomEvent('regionSelected', { 
                 detail: { regionName: regionName } 
             });
@@ -341,7 +303,6 @@ class GeoReachMap {
             duration: 1.0
         });
         
-        // Show subtle animation
         this.showToast('Map centered', 'success');
     }
 
@@ -350,7 +311,6 @@ class GeoReachMap {
     // ========================================
 
     generateDetailedInsightsHtml(regionName, regionData, regionType) {
-        // Calculate market score
         let marketScore = 0;
         let scoreFactors = [];
         
@@ -371,7 +331,6 @@ class GeoReachMap {
         
         return `
             <div style="font-family: Arial, sans-serif;">
-                <!-- Header with Score -->
                 <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; margin-bottom: 20px;">
                     <h3 style="margin: 0;">${regionName}</h3>
                     <p style="margin: 5px 0; opacity: 0.9; text-transform: capitalize;">${regionType}</p>
@@ -379,7 +338,6 @@ class GeoReachMap {
                     <div style="opacity: 0.9;">Market Potential Score</div>
                 </div>
                 
-                <!-- Key Metrics Grid -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
                     <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
                         <div style="font-size: 12px; color: #6c757d; margin-bottom: 5px;">PREDICTED SUCCESS</div>
@@ -407,7 +365,6 @@ class GeoReachMap {
                     </div>
                 </div>
 
-                <!-- Detailed Tables -->
                 <h5 style="color: #17a2b8; border-bottom: 2px solid #17a2b8; padding-bottom: 5px;">💼 Economic Indicators</h5>
                 <table class="table table-sm table-hover">
                     <tbody>
@@ -463,7 +420,6 @@ class GeoReachMap {
                 </div>
                 ` : ''}
 
-                <!-- Market Assessment -->
                 <div style="margin-top: 20px; padding: 15px; background: ${marketScore >= 70 ? '#d4edda' : marketScore >= 50 ? '#fff3cd' : '#f8d7da'}; border-left: 4px solid ${marketScore >= 70 ? '#28a745' : marketScore >= 50 ? '#ffc107' : '#dc3545'}; border-radius: 4px;">
                     <strong style="color: ${marketScore >= 70 ? '#155724' : marketScore >= 50 ? '#856404' : '#721c24'};">
                         ${marketScore >= 70 ? '✅ Excellent Market' : marketScore >= 50 ? '⚠️ Moderate Market' : '❌ Challenging Market'}
@@ -477,11 +433,10 @@ class GeoReachMap {
     }
 
     generateComparisonHtml(regionName, currentData, neighbors, regionType) {
-        // Calculate averages for comparison
         const neighborData = neighbors.map(n => {
             const data = regionType === 'state' ? this.stateMetrics[n.name] : this.districtMetrics[n.name];
             return { name: n.name, data: data, distance: n.distance };
-        }).filter(n => n.data); // Only include neighbors with data
+        }).filter(n => n.data);
 
         const avgLiteracy = neighborData.length > 0 
             ? neighborData.reduce((sum, n) => sum + (n.data.literacy_rate || 0), 0) / neighborData.length 
@@ -493,13 +448,11 @@ class GeoReachMap {
 
         return `
             <div style="font-family: Arial, sans-serif;">
-                <!-- Comparison Header -->
                 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                     <h4 style="margin: 0;">Regional Comparison Analysis</h4>
                     <p style="margin: 5px 0 0 0; opacity: 0.9;">Comparing ${regionName} with ${neighborData.length} neighboring ${regionType}s</p>
                 </div>
 
-                <!-- Quick Stats Comparison -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;">
                     <div style="text-align: center; padding: 10px; background: #f8f9fa; border-radius: 8px;">
                         <div style="font-size: 11px; color: #6c757d;">YOUR REGION</div>
@@ -529,7 +482,6 @@ class GeoReachMap {
                     </div>
                 </div>
 
-                <!-- Detailed Comparison Table -->
                 <h5 style="color: #17a2b8; border-bottom: 2px solid #17a2b8; padding-bottom: 5px;">Neighboring Regions</h5>
                 <div style="max-height: 300px; overflow-y: auto;">
                     <table class="table table-sm table-hover">
@@ -574,7 +526,6 @@ class GeoReachMap {
                     </table>
                 </div>
 
-                <!-- Regional Average Summary -->
                 <div style="margin-top: 20px; padding: 15px; background: #e7f3ff; border-radius: 8px;">
                     <h6 style="margin: 0 0 10px 0;">📊 Regional Averages</h6>
                     <div style="display: flex; justify-content: space-around;">
@@ -595,7 +546,6 @@ class GeoReachMap {
                     </div>
                 </div>
 
-                <!-- Competitive Analysis -->
                 <div style="margin-top: 15px; padding: 15px; background: ${currentData.literacy_rate > avgLiteracy && currentData.employment_rate > avgEmployment ? '#d4edda' : '#fff3cd'}; border-radius: 8px;">
                     <strong style="color: ${currentData.literacy_rate > avgLiteracy && currentData.employment_rate > avgEmployment ? '#155724' : '#856404'};">
                         ${currentData.literacy_rate > avgLiteracy && currentData.employment_rate > avgEmployment 
@@ -621,7 +571,6 @@ class GeoReachMap {
     }
 
     getNeighboringRegions(regionName, regionType) {
-        // Get the feature collection for the appropriate level
         const features = regionType === 'state' ? this.stateFeatures : this.districtFeatures;
         
         if (!features || Object.keys(features).length === 0) {
@@ -635,19 +584,15 @@ class GeoReachMap {
             return [];
         }
 
-        // Calculate centroid of target region
         const targetCentroid = this.calculateCentroid(targetFeature.geometry);
         
-        // Find neighbors by checking distance to centroids
         const neighbors = [];
         for (const [name, feature] of Object.entries(features)) {
-            if (name === regionName) continue; // Skip self
+            if (name === regionName) continue;
             
             const centroid = this.calculateCentroid(feature.geometry);
             const distance = this.calculateDistance(targetCentroid, centroid);
             
-            // Consider as neighbor if within reasonable distance
-            // For states: within 500km, for districts: within 200km
             const maxDistance = regionType === 'state' ? 500 : 200;
             
             if (distance < maxDistance) {
@@ -655,12 +600,10 @@ class GeoReachMap {
             }
         }
         
-        // Sort by distance and return top 5
         return neighbors.sort((a, b) => a.distance - b.distance).slice(0, 5);
     }
 
     calculateCentroid(geometry) {
-        // Simple centroid calculation for polygons
         if (geometry.type === 'Polygon') {
             const coords = geometry.coordinates[0];
             const sum = coords.reduce((acc, coord) => {
@@ -668,7 +611,6 @@ class GeoReachMap {
             }, [0, 0]);
             return [sum[0] / coords.length, sum[1] / coords.length];
         } else if (geometry.type === 'MultiPolygon') {
-            // Use first polygon's centroid for simplicity
             const coords = geometry.coordinates[0][0];
             const sum = coords.reduce((acc, coord) => {
                 return [acc[0] + coord[0], acc[1] + coord[1]];
@@ -679,8 +621,7 @@ class GeoReachMap {
     }
 
     calculateDistance(coord1, coord2) {
-        // Haversine formula for distance between two lat/lng points
-        const R = 6371; // Earth's radius in km
+        const R = 6371;
         const dLat = this.toRad(coord2[1] - coord1[1]);
         const dLon = this.toRad(coord2[0] - coord1[0]);
         const lat1 = this.toRad(coord1[1]);
@@ -699,7 +640,6 @@ class GeoReachMap {
     highlightRegionOnMap(regionName) {
         console.log('Highlighting region on map:', regionName);
         
-        // Find the layer and highlight it temporarily
         if (this.currentLayer) {
             this.currentLayer.eachLayer((layer) => {
                 const name = layer.feature.properties.shapeName || 
@@ -708,18 +648,15 @@ class GeoReachMap {
                             layer.feature.properties.NAME_1;
                 
                 if (name === regionName) {
-                    // Highlight the region
                     layer.setStyle({
                         weight: 4,
                         color: '#FF5722',
                         fillOpacity: 0.8
                     });
                     
-                    // Center on the region
                     const bounds = layer.getBounds();
                     this.map.fitBounds(bounds);
                     
-                    // Reset style after 2 seconds
                     setTimeout(() => {
                         layer.setStyle({
                             weight: 1.5,
@@ -728,7 +665,6 @@ class GeoReachMap {
                         });
                     }, 2000);
                     
-                    // Open popup
                     layer.openPopup();
                 }
             });
@@ -738,7 +674,6 @@ class GeoReachMap {
     highlightRegionInCharts(regionName) {
         console.log('Highlighting region in charts:', regionName);
         
-        // Create toast notification
         const toast = document.createElement('div');
         toast.className = 'alert alert-info position-fixed';
         toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.3); animation: slideIn 0.3s ease-out;';
@@ -760,7 +695,6 @@ class GeoReachMap {
     }
 
     showModal(title, content) {
-        // Create Bootstrap modal dynamically
         const modalHtml = `
             <div class="modal fade" id="regionModal" tabindex="-1">
                 <div class="modal-dialog modal-xl modal-dialog-scrollable">
@@ -787,7 +721,6 @@ class GeoReachMap {
             </div>
         `;
         
-        // Remove existing modal if any
         const existingModal = document.getElementById('regionModal');
         if (existingModal) {
             const bootstrapModal = bootstrap.Modal.getInstance(existingModal);
@@ -797,10 +730,8 @@ class GeoReachMap {
             existingModal.remove();
         }
         
-        // Add new modal
         document.body.insertAdjacentHTML('beforeend', modalHtml);
         
-        // Show modal
         const modal = new bootstrap.Modal(document.getElementById('regionModal'));
         modal.show();
     }
@@ -849,7 +780,6 @@ class GeoReachMap {
     }
 
     setupBoundaryLayers() {
-        // Debounced zoom handler to reduce lag
         let zoomTimeout;
         this.map.on('zoomend', () => {
             clearTimeout(zoomTimeout);
@@ -857,20 +787,17 @@ class GeoReachMap {
                 const zoom = this.map.getZoom();
                 console.log(`🔍 Zoom changed to: ${zoom}`);
                 this.showGeoJsonLayer(zoom);
-            }, 100); // 100ms debounce
+            }, 100);
         });
 
         const initialZoom = this.map.getZoom();
         this.showGeoJsonLayer(initialZoom);
     }
 
-    getApiEndpoint(zoom) {
-        // Use PostGIS API endpoints instead of static files
-        if (zoom < this.mapConfig.zoom_thresholds.state_to_district) {
-            return '/geo/api/states/geojson/';
-        } else {
-            return '/geo/api/districts/geojson/';
-        }
+    getGeoJsonFile(zoom) {
+        return zoom < this.mapConfig.zoom_thresholds.state_to_district 
+            ? this.mapConfig.geojson_paths.adm1 
+            : this.mapConfig.geojson_paths.adm2;
     }
 
     showGeoJsonLayer(zoom) {
@@ -878,15 +805,12 @@ class GeoReachMap {
         const isStateLevel = zoom < this.mapConfig.zoom_thresholds.state_to_district;
 
         console.log(`📍 Current zoom: ${zoom}, Loading: ${isStateLevel ? 'STATES' : 'DISTRICTS'}`);
-        console.log(`📂 GeoJSON file: ${geojsonFile}`);
 
-        // Don't reload if already showing the correct layer
         if (this.currentZoomLevel === (isStateLevel ? 'state' : 'district')) {
             console.log(`✅ Already showing ${isStateLevel ? 'STATE' : 'DISTRICT'} layer`);
             return;
         }
 
-        // Remove current layer
         if (this.currentLayer) {
             console.log(`🗑️ Removing old layer`);
             this.map.removeLayer(this.currentLayer);
@@ -895,22 +819,11 @@ class GeoReachMap {
 
         if (zoom < 4) {
             this.currentZoomLevel = null;
-        const apiEndpoint = this.getApiEndpoint(zoom);
-
-        // Remove all active boundary layers
-        Object.values(this.geojsonLayerCache).forEach(layer => {
-            if (this.map.hasLayer(layer)) this.map.removeLayer(layer);
-        });
-
-        // Don't show boundaries when zoomed too far OUT
-        if (zoom < 4) {
             return;
         }
 
-        // Use cached layer if available
-        // Use cached layer if available
-        if (this.geojsonLayerCache[apiEndpoint]) {
-            this.currentLayer = this.geojsonLayerCache[apiEndpoint];
+        if (this.geojsonLayerCache[geojsonFile]) {
+            this.currentLayer = this.geojsonLayerCache[geojsonFile];
             this.currentLayer.addTo(this.map);
             this.currentZoomLevel = isStateLevel ? 'state' : 'district';
             console.log(`✅ Loaded cached ${isStateLevel ? 'STATE' : 'DISTRICT'} layer`);
@@ -928,27 +841,12 @@ class GeoReachMap {
             </div>
         `;
         document.getElementById('map').appendChild(loadingSpinner);
-        
-        fetch(`/static/${geojsonFile}`)
-            .then(response => {
-                // Remove spinner
-                document.getElementById('map-loading')?.remove();
-                
-                // ...rest of existing code...
-            })
-            .catch(error => {
-                document.getElementById('map-loading')?.remove();
-                // ...existing error handling...
-            });
-        // Fetch and create new layer
+
         console.log(`📥 Fetching ${isStateLevel ? 'STATE' : 'DISTRICT'} GeoJSON from: /static/${geojsonFile}`);
         
         fetch(`/static/${geojsonFile}`)
-        // Fetch from PostGIS API endpoint
-        console.log('Loading from PostGIS API:', apiEndpoint);
-        
-        fetch(apiEndpoint)
             .then(response => {
+                document.getElementById('map-loading')?.remove();
                 console.log(`📡 Response status: ${response.status}`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -958,9 +856,17 @@ class GeoReachMap {
             .then(data => {
                 console.log(`✅ GeoJSON loaded: ${geojsonFile}, Features: ${data.features?.length}`);
                 
-                console.log('GeoJSON loaded from API:', apiEndpoint, 'Features:', data.features?.length);
-                
-                const isStateLevel = apiEndpoint.includes('states');
+                // Store features for neighbor detection
+                const featureStore = isStateLevel ? this.stateFeatures : this.districtFeatures;
+                data.features.forEach(feature => {
+                    const name = feature.properties.shapeName || 
+                               feature.properties.shapeGroup ||
+                               feature.properties.DISTRICT || 
+                               feature.properties.NAME_1;
+                    if (name) {
+                        featureStore[name] = feature;
+                    }
+                });
                 
                 const layer = L.geoJSON(data, {
                     style: (feature) => {
@@ -970,15 +876,13 @@ class GeoReachMap {
                                    feature.properties.NAME_1 || 
                                    "Unknown";
                         
-                        let fillColor = '#ADD8E6';  // Light blue default
+                        let fillColor = '#ADD8E6';
                         let opacity = 0.6;
                         
                         if (isStateLevel) {
                             const stateData = this.stateMetrics[name];
                             if (stateData) {
                                 fillColor = this.getColorForRegion(stateData);
-                                
-                                // Lower opacity if low confidence
                                 if (stateData.confidence_score && stateData.confidence_score < 0.5) {
                                     opacity = 0.4;
                                 }
@@ -987,8 +891,6 @@ class GeoReachMap {
                             const districtData = this.districtMetrics[name];
                             if (districtData) {
                                 fillColor = this.getColorForRegion(districtData);
-                                
-                                // Lower opacity if low confidence
                                 if (districtData.confidence_score && districtData.confidence_score < 0.5) {
                                     opacity = 0.4;
                                 }
@@ -996,18 +898,12 @@ class GeoReachMap {
                         }
                         
                         return {
-                            color: "#2196F3",      // Blue border
+                            color: "#2196F3",
                             weight: 1.5,
                             fillOpacity: opacity,
                             fillColor: fillColor
                         };
                     },
-                    style: () => ({
-                        color: isStateLevel ? "#2c7fb8" : "#3388ff",
-                        weight: isStateLevel ? 3 : 2,
-                        fillOpacity: isStateLevel ? 0.15 : 0.2,
-                        fillColor: isStateLevel ? "#2c7fb8" : "#3388ff"
-                    }),
                     onEachFeature: (feature, layer) => {
                         const name = feature.properties.shapeName || 
                                     feature.properties.shapeGroup ||
@@ -1015,7 +911,7 @@ class GeoReachMap {
                                     feature.properties.NAME_1 || 
                                     "Unknown";
                         
-                        // === Hover ToolTip ===
+                        // Hover Tooltip
                         let tooltipContent = `<b>${name}</b>`;
                         
                         if (isStateLevel) {
@@ -1047,6 +943,144 @@ class GeoReachMap {
                             sticky: true,
                             direction: 'top',
                             className: 'custom-tooltip'
+                        });
+
+                        // Hover effects
+                        layer.on('mouseover', (e) => {
+                            const hoveredLayer = e.target;
+                            hoveredLayer.setStyle({
+                                weight: 3,
+                                fillOpacity: 0.8,
+                                color: "#1976D2"
+                            });
+                            
+                            if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                                hoveredLayer.bringToFront();
+                            }
+                        });
+                        
+                        layer.on('mouseout', (e) => {
+                            const hoveredLayer = e.target;
+                            hoveredLayer.setStyle({
+                                weight: 1.5,
+                                fillOpacity: 0.6,
+                                color: "#2196F3"
+                            });
+                        });
+                        
+                        // Remove focus outline on click
+                        layer.on('click', (e) => {
+                            const target = e.target;
+                            if (target._path) {
+                                target._path.blur();
+                            }
+                        });
+                        
+                        // Create popup with data
+                        let popupContent = `<div style="font-family: Arial, sans-serif; min-width: 250px;"><b style="font-size: 1.1em;">${name}</b><br><hr style="margin: 8px 0;">`;
+                        
+                        if (isStateLevel) {
+                            const stateData = this.stateMetrics[name];
+                            
+                            if (stateData) {
+                                if (stateData.avg_predicted_success !== null && stateData.avg_predicted_success !== undefined) {
+                                    const successPercent = (stateData.avg_predicted_success * 100).toFixed(1);
+                                    popupContent += `<strong>🎯 Predicted Success:</strong> <span style="color: ${this.getColorByScore(successPercent)}; font-weight: bold;">${successPercent}%</span><br>`;
+                                } else {
+                                    popupContent += `<strong>🎯 Predicted Success:</strong> <span style="color: #999;">N/A</span><br>`;
+                                }
+                                
+                                if (stateData.confidence_score !== null && stateData.confidence_score !== undefined) {
+                                    const confidencePercent = (stateData.confidence_score * 100).toFixed(0);
+                                    const confidenceColor = stateData.confidence_score >= 0.7 ? '#28a745' : stateData.confidence_score >= 0.5 ? '#ffc107' : '#dc3545';
+                                    popupContent += `<strong>📊 Confidence:</strong> <span style="color: ${confidenceColor};">${confidencePercent}%</span><br>`;
+                                }
+                                
+                                if (stateData.spending_index !== null && stateData.spending_index !== undefined) {
+                                    const spendingPercent = (stateData.spending_index * 100).toFixed(1);
+                                    popupContent += `<strong>💰 Spending Index:</strong> ${spendingPercent}%<br>`;
+                                } else {
+                                    popupContent += `<strong>💰 Spending Index:</strong> <span style="color: #999;">N/A</span><br>`;
+                                }
+                                
+                                popupContent += `<hr style="margin: 8px 0;">`;
+                                popupContent += `<strong style="color: #17a2b8;">💼 Economic Indicators:</strong><br>`;
+                                if (stateData.avg_income) popupContent += `• Avg Income: ₹${parseInt(stateData.avg_income).toLocaleString()}<br>`;
+                                if (stateData.avg_spending) popupContent += `• Avg Spending: ₹${parseInt(stateData.avg_spending).toLocaleString()}<br>`;
+                                if (stateData.employment_rate) popupContent += `• Employment Rate: ${stateData.employment_rate}%<br>`;
+                                
+                                popupContent += `<hr style="margin: 8px 0;">`;
+                                popupContent += `<strong style="color: #6c757d;">📍 Demographics:</strong><br>`;
+                                if (stateData.population_density) popupContent += `• Population Density: ${parseFloat(stateData.population_density).toFixed(1)}/km²<br>`;
+                                if (stateData.literacy_rate) popupContent += `• Literacy Rate: ${stateData.literacy_rate}%<br>`;
+                                
+                                if (stateData.top_drivers && stateData.top_drivers.length > 0) {
+                                    popupContent += `<hr style="margin: 8px 0;">`;
+                                    popupContent += `<strong style="color: #28a745;">🎯 Top Drivers:</strong><br>`;
+                                    stateData.top_drivers.forEach(driver => {
+                                        popupContent += `• ${driver.feature}: ${(driver.weight * 100).toFixed(0)}%<br>`;
+                                    });
+                                }
+                            } else {
+                                popupContent += '<i style="color: #999;">No data available</i>';
+                            }
+                            
+                        } else {
+                            const districtData = this.districtMetrics[name];
+                            
+                            if (districtData) {
+                                if (districtData.avg_predicted_success !== null && districtData.avg_predicted_success !== undefined) {
+                                    const successPercent = (districtData.avg_predicted_success * 100).toFixed(1);
+                                    popupContent += `<strong>🎯 Predicted Success:</strong> <span style="color: ${this.getColorByScore(successPercent)}; font-weight: bold;">${successPercent}%</span><br>`;
+                                } else {
+                                    popupContent += `<strong>🎯 Predicted Success:</strong> <span style="color: #999;">N/A</span><br>`;
+                                }
+                                
+                                if (districtData.spending_index !== null && districtData.spending_index !== undefined) {
+                                    const spendingPercent = (districtData.spending_index * 100).toFixed(1);
+                                    popupContent += `<strong>💰 Spending Index:</strong> ${spendingPercent}%<br>`;
+                                } else {
+                                    popupContent += `<strong>💰 Spending Index:</strong> <span style="color: #999;">N/A</span><br>`;
+                                }
+                                
+                                popupContent += `<hr style="margin: 8px 0;">`;
+                                popupContent += `<strong style="color: #17a2b8;">📊 Market Indicators:</strong><br>`;
+                                
+                                if (districtData.literacy_rate !== null && districtData.literacy_rate !== undefined) {
+                                    const literacyEmoji = districtData.literacy_rate >= 80 ? '🟢' : 
+                                                        districtData.literacy_rate >= 70 ? '🟡' : 
+                                                        districtData.literacy_rate >= 60 ? '🟠' : '🔴';
+                                    popupContent += `• Literacy Rate: ${districtData.literacy_rate}% ${literacyEmoji}<br>`;
+                                }
+                                
+                                if (districtData.employment_rate) popupContent += `• Employment Rate: ${districtData.employment_rate}%<br>`;
+                                if (districtData.population_density) popupContent += `• Population Density: ${parseFloat(districtData.population_density).toFixed(1)}/km²<br>`;
+                                
+                                if (districtData.avg_income || districtData.avg_spending) {
+                                    popupContent += `<hr style="margin: 8px 0;">`;
+                                    popupContent += `<strong style="color: #28a745;">💼 Economic Indicators:</strong><br>`;
+                                    if (districtData.avg_income) popupContent += `• Avg Income: ₹${parseInt(districtData.avg_income).toLocaleString()}<br>`;
+                                    if (districtData.avg_spending) popupContent += `• Avg Spending: ₹${parseInt(districtData.avg_spending).toLocaleString()}<br>`;
+                                }
+                                
+                                popupContent += `<hr style="margin: 8px 0;">`;
+                                const marketAssessment = 
+                                    districtData.literacy_rate >= 80 && districtData.employment_rate >= 70 
+                                        ? '<span style="color: #28a745;">✅ Strong market potential</span>' 
+                                        : districtData.literacy_rate >= 70 
+                                        ? '<span style="color: #ffc107;">⚠️ Moderate market potential</span>' 
+                                        : '<span style="color: #dc3545;">❌ Challenging market</span>';
+                                popupContent += `<em>${marketAssessment}</em>`;
+                                
+                            } else {
+                                popupContent += '<i style="color: #999;">No data available</i>';
+                            }
+                        }
+                        
+                        popupContent += '</div>';
+                        layer.bindPopup(popupContent, {
+                            maxWidth: 350,
+                            className: 'custom-popup'
                         });
 
                         // Right-click context menu
@@ -1083,195 +1117,9 @@ class GeoReachMap {
                             
                             L.DomEvent.stopPropagation(e);
                         });
-                        
-                        layer.on('mouseout', (e) => {
-                            const hoveredLayer = e.target;
-                            hoveredLayer.setStyle({
-                                weight: 1.5,
-                                fillOpacity: 0.6,
-                                color: "#2196F3"
-                            });
-                        });
-                        
-                        // Create popup with data
-                        let popupContent = `<div style="font-family: Arial, sans-serif; min-width: 250px;"><b style="font-size: 1.1em;">${name}</b><br><hr style="margin: 8px 0;">`;
-                        
-                        if (isStateLevel) {
-                            const stateData = this.stateMetrics[name];
-                            
-                            if (stateData) {
-                                // Predicted Success
-                                if (stateData.avg_predicted_success !== null && stateData.avg_predicted_success !== undefined) {
-                                    const successPercent = (stateData.avg_predicted_success * 100).toFixed(1);
-                                    popupContent += `<strong>🎯 Predicted Success:</strong> <span style="color: ${this.getColorByScore(successPercent)}; font-weight: bold;">${successPercent}%</span><br>`;
-                                } else {
-                                    popupContent += `<strong>🎯 Predicted Success:</strong> <span style="color: #999;">N/A</span><br>`;
-                                }
-                                
-                                // Confidence Score
-                                if (stateData.confidence_score !== null && stateData.confidence_score !== undefined) {
-                                    const confidencePercent = (stateData.confidence_score * 100).toFixed(0);
-                                    const confidenceColor = stateData.confidence_score >= 0.7 ? '#28a745' : stateData.confidence_score >= 0.5 ? '#ffc107' : '#dc3545';
-                                    popupContent += `<strong>📊 Confidence:</strong> <span style="color: ${confidenceColor};">${confidencePercent}%</span><br>`;
-                                }
-                                
-                                // Spending Index
-                                if (stateData.spending_index !== null && stateData.spending_index !== undefined) {
-                                    const spendingPercent = (stateData.spending_index * 100).toFixed(1);
-                                    popupContent += `<strong>💰 Spending Index:</strong> ${spendingPercent}%<br>`;
-                                } else {
-                                    popupContent += `<strong>💰 Spending Index:</strong> <span style="color: #999;">N/A</span><br>`;
-                                }
-                                
-                                popupContent += `<hr style="margin: 8px 0;">`;
-                                
-                                // Economic Indicators
-                                popupContent += `<strong style="color: #17a2b8;">💼 Economic Indicators:</strong><br>`;
-                                if (stateData.avg_income) {
-                                    popupContent += `• Avg Income: ₹${parseInt(stateData.avg_income).toLocaleString()}<br>`;
-                                }
-                                if (stateData.avg_spending) {
-                                    popupContent += `• Avg Spending: ₹${parseInt(stateData.avg_spending).toLocaleString()}<br>`;
-                                }
-                                if (stateData.employment_rate) {
-                                    popupContent += `• Employment Rate: ${stateData.employment_rate}%<br>`;
-                                }
-                                
-                                popupContent += `<hr style="margin: 8px 0;">`;
-                                
-                                // Demographics
-                                popupContent += `<strong style="color: #6c757d;">📍 Demographics:</strong><br>`;
-                                if (stateData.population_density) {
-                                    popupContent += `• Population Density: ${parseFloat(stateData.population_density).toFixed(1)}/km²<br>`;
-                                }
-                                if (stateData.literacy_rate) {
-                                    popupContent += `• Literacy Rate: ${stateData.literacy_rate}%<br>`;
-                                }
-                                
-                                // Top Drivers (if available)
-                                if (stateData.top_drivers && stateData.top_drivers.length > 0) {
-                                    popupContent += `<hr style="margin: 8px 0;">`;
-                                    popupContent += `<strong style="color: #28a745;">🎯 Top Drivers:</strong><br>`;
-                                    stateData.top_drivers.forEach(driver => {
-                                        popupContent += `• ${driver.feature}: ${(driver.weight * 100).toFixed(0)}%<br>`;
-                                    });
-                                }
-                            } else {
-                                popupContent += '<i style="color: #999;">No data available</i>';
-                            }
-                            
-                        } else {
-                            // DISTRICT POPUP
-                            const districtData = this.districtMetrics[name];
-                            
-                            if (districtData) {
-                                // Predicted Success
-                                if (districtData.avg_predicted_success !== null && districtData.avg_predicted_success !== undefined) {
-                                    const successPercent = (districtData.avg_predicted_success * 100).toFixed(1);
-                                    popupContent += `<strong>🎯 Predicted Success:</strong> <span style="color: ${this.getColorByScore(successPercent)}; font-weight: bold;">${successPercent}%</span><br>`;
-                                } else {
-                                    popupContent += `<strong>🎯 Predicted Success:</strong> <span style="color: #999;">N/A</span><br>`;
-                                }
-                                
-                                // Spending Index
-                                if (districtData.spending_index !== null && districtData.spending_index !== undefined) {
-                                    const spendingPercent = (districtData.spending_index * 100).toFixed(1);
-                                    popupContent += `<strong>💰 Spending Index:</strong> ${spendingPercent}%<br>`;
-                                } else {
-                                    popupContent += `<strong>💰 Spending Index:</strong> <span style="color: #999;">N/A</span><br>`;
-                                }
-                                
-                                popupContent += `<hr style="margin: 8px 0;">`;
-                                
-                                // Market Indicators
-                                popupContent += `<strong style="color: #17a2b8;">📊 Market Indicators:</strong><br>`;
-                                
-                                // Literacy Rate with emoji indicator
-                                if (districtData.literacy_rate !== null && districtData.literacy_rate !== undefined) {
-                                    const literacyEmoji = districtData.literacy_rate >= 80 ? '🟢' : 
-                                                        districtData.literacy_rate >= 70 ? '🟡' : 
-                                                        districtData.literacy_rate >= 60 ? '🟠' : '🔴';
-                                    popupContent += `• Literacy Rate: ${districtData.literacy_rate}% ${literacyEmoji}<br>`;
-                                }
-                                
-                                if (districtData.employment_rate) {
-                                    popupContent += `• Employment Rate: ${districtData.employment_rate}%<br>`;
-                                }
-                                
-                                if (districtData.population_density) {
-                                    popupContent += `• Population Density: ${parseFloat(districtData.population_density).toFixed(1)}/km²<br>`;
-                                }
-                                
-                                // Economic Indicators (if available)
-                                if (districtData.avg_income || districtData.avg_spending) {
-                                    popupContent += `<hr style="margin: 8px 0;">`;
-                                    popupContent += `<strong style="color: #28a745;">💼 Economic Indicators:</strong><br>`;
-                                    
-                                    if (districtData.avg_income) {
-                                        popupContent += `• Avg Income: ₹${parseInt(districtData.avg_income).toLocaleString()}<br>`;
-                                    }
-                                    if (districtData.avg_spending) {
-                                        popupContent += `• Avg Spending: ₹${parseInt(districtData.avg_spending).toLocaleString()}<br>`;
-                                    }
-                                }
-                                
-                                popupContent += `<hr style="margin: 8px 0;">`;
-                                
-                                // Market Assessment
-                                const marketAssessment = 
-                                    districtData.literacy_rate >= 80 && districtData.employment_rate >= 70 
-                                        ? '<span style="color: #28a745;">✅ Strong market potential</span>' 
-                                        : districtData.literacy_rate >= 70 
-                                        ? '<span style="color: #ffc107;">⚠️ Moderate market potential</span>' 
-                                        : '<span style="color: #dc3545;">❌ Challenging market</span>';
-                                
-                                popupContent += `<em>${marketAssessment}</em>`;
-                                
-                            } else {
-                                popupContent += '<i style="color: #999;">No data available</i>';
-                            }
-                        }
-                        
-                        popupContent += '</div>';
-                        layer.bindPopup(popupContent, {
-                            maxWidth: 350,
-                            className: 'custom-popup'
-                        });
-
-                        // === Context Menu on Right-Click ===
-                        layer.on('contextmenu', (e) => {
-                            L.popup()
-                                .setLatLng(e.latlng)
-                                .setContent(`
-                                    <div style="font-family: Arial; min-width: 180px;">
-                                        <b>${name}</b>
-                                        <hr style="margin: 5px 0;">
-                                        <button onclick="viewDetailedInsights('${name}', '${isStateLevel ? 'state' : 'district'}')" 
-                                                style="width: 100%; margin: 3px 0; padding: 5px; cursor: pointer; border: 1px solid #ddd; background: #f8f9fa; border-radius: 4px;">
-                                            🧾 View Detailed Insights
-                                        </button>
-                                        <button onclick="compareRegion('${name}')" 
-                                                style="width: 100%; margin: 3px 0; padding: 5px; cursor: pointer; border: 1px solid #ddd; background: #f8f9fa; border-radius: 4px;">
-                                            💬 Compare with Neighbors
-                                        </button>
-                                        <button onclick="viewChartForRegion('${name}')" 
-                                                style="width: 100%; margin: 3px 0; padding: 5px; cursor: pointer; border: 1px solid #ddd; background: #f8f9fa; border-radius: 4px;">
-                                            📊 View Charts
-                                        </button>
-                                        <button onclick="georearchMap.map.setView([${e.latlng.lat}, ${e.latlng.lng}], 8)" 
-                                                style="width: 100%; margin: 3px 0; padding: 5px; cursor: pointer; border: 1px solid #ddd; background: #f8f9fa; border-radius: 4px;">
-                                            📍 Center & Zoom Here
-                                        </button>
-                                    </div>
-                                `)
-                                .openOn(this.map);
-                            
-                            L.DomEvent.stopPropagation(e);
-                        });
                     }
                 });
                 
-                // Cache and display the layer
                 this.geojsonLayerCache[geojsonFile] = layer;
                 this.currentLayer = layer;
                 this.currentZoomLevel = isStateLevel ? 'state' : 'district';
@@ -1279,10 +1127,9 @@ class GeoReachMap {
                 
                 console.log(`✅ ${isStateLevel ? 'STATE' : 'DISTRICT'} layer added to map`);
             })
-            .catch(error => {
-                console.error('Error loading from PostGIS API:', error, 'Endpoint:', apiEndpoint);
-                console.error('❌ Error loading GeoJSON:', error, 'File:', geojsonFile);
-                console.error('Full path attempted:', `/static/${geojsonFile}`);
-            });
+                .catch(error => {
+                    document.getElementById('map-loading')?.remove();
+                    console.error('❌ Error loading GeoJSON:', error, 'File:', geojsonFile);
+                });
+        }
     }
-}

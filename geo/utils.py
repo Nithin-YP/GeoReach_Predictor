@@ -5,6 +5,43 @@ from django.db.models import Avg, Sum, Count, Q, F
 from .models import (State, District, EconomicIndicator, DemographicProfile, 
                      IndustryEmployment, MarketPotentialZone)
 import json
+import unicodedata
+from django.db import connection
+from core.models import RegionMetrics, ProductPrediction
+from decimal import Decimal
+
+
+# ==================== UTILITY FUNCTIONS ====================
+
+def execute_query(query, params=None):
+    """Execute a raw SQL query and return results as list of dicts."""
+    with connection.cursor() as cursor:
+        cursor.execute(query, params or [])
+        # If the query does not return rows (e.g., INSERT/UPDATE/DELETE), description will be None
+        if cursor.description is None:
+            return []
+        columns = [col[0] for col in cursor.description]
+        results = []
+        rows = cursor.fetchall()
+        for row in rows:
+            row_dict = {}
+            for col, val in zip(columns, row):
+                if isinstance(val, Decimal):
+                    row_dict[col] = float(val)
+                else:
+                    row_dict[col] = val
+            results.append(row_dict)
+        return results
+
+
+def normalize_state_name(name):
+    """Normalize state names by removing diacritics and special characters"""
+    if not name:
+        return name
+    # Remove accents/diacritics (ā → a, ī → i, etc.)
+    normalized = unicodedata.normalize('NFD', name)
+    without_diacritics = ''.join(char for char in normalized if unicodedata.category(char) != 'Mn')
+    return without_diacritics.strip()
 
 
 # ==================== BASIC SPATIAL QUERIES ====================
@@ -424,61 +461,7 @@ def export_market_zones_geojson(product_type=None):
     }
 
 
-# ==================== LEGACY FUNCTIONS (Keep for backward compatibility) ====================
-
-def get_enhanced_clusters_data():
-    """Generate enhanced cluster data - now pulls from database"""
-    # Return market zones as clusters
-    zones = MarketPotentialZone.objects.select_related('state', 'district').order_by('-market_score')[:10]
-    
-    clusters = []
-    for zone in zones:
-        if zone.district and zone.district.centroid:
-            level = zone.potential_level.lower()
-            clusters.append({
-                "lat": zone.district.centroid.y,
-                "lng": zone.district.centroid.x,
-                "level": level,
-                "info": str(zone.district),
-                "demographics": {
-                    "income": f"₹{zone.district.population or 0:,}",
-                    "employment_rate": "N/A",
-                    "population_density": str(zone.district.population or 0),
-                    "interest_index": str(int(zone.market_score))
-                }
-            })
-    
-    # If no zones, return empty list (instead of hardcoded data)
-import unicodedata
-from django.db import connection
-from django.db.models import Avg
-from core.models import RegionMetrics, ProductPrediction
-from decimal import Decimal
-
-def execute_query(query, params=None):
-    """Execute a raw SQL query and return results as list of dicts."""
-    with connection.cursor() as cursor:
-        cursor.execute(query, params or [])
-        columns = [col[0] for col in cursor.description]
-        results = []
-        for row in cursor.fetchall():
-            row_dict = {}
-            for col, val in zip(columns, row):
-                if isinstance(val, Decimal):
-                    row_dict[col] = float(val)
-                else:
-                    row_dict[col] = val
-            results.append(row_dict)
-        return results
-
-def normalize_state_name(name):
-    """Normalize state names by removing diacritics and special characters"""
-    if not name:
-        return name
-    # Remove accents/diacritics (ā → a, ī → i, etc.)
-    normalized = unicodedata.normalize('NFD', name)
-    without_diacritics = ''.join(char for char in normalized if unicodedata.category(char) != 'Mn')
-    return without_diacritics.strip()
+# ==================== PREDICTION & SCORING ====================
 
 def calculate_and_store_match_scores(user, product_type, luxury_level, target_audience, price):
     """
@@ -575,35 +558,6 @@ def calculate_and_store_match_scores(user, product_type, luxury_level, target_au
     
     return predictions
 
-def get_region_metrics_for_map(region_type='state'):
-    """
-    Get region metrics for map visualization
-    Returns dict: {region_name: {metrics...}}
-    """
-    metrics = RegionMetrics.objects.filter(region_type=region_type)
-    
-    result = {}
-    for metric in metrics:
-        result[metric.region_name] = {
-            'region_id': metric.region_id,
-            'avg_predicted_success': float(metric.avg_predicted_success) if metric.avg_predicted_success else None,
-            'avg_predicted_reach': float(metric.avg_predicted_reach) if metric.avg_predicted_reach else None,
-            'confidence_score': float(metric.confidence_score) if metric.confidence_score else None,
-            'spending_index': float(metric.spending_index) if metric.spending_index else None,
-            'avg_income': float(metric.avg_income) if metric.avg_income else None,
-            'avg_spending': float(metric.avg_spending) if metric.avg_spending else None,
-            'population_density': float(metric.population_density) if metric.population_density else None,
-            'literacy_rate': float(metric.literacy_rate) if metric.literacy_rate else None,
-            'employment_rate': float(metric.employment_rate) if metric.employment_rate else None,
-            'data_coverage': float(metric.data_coverage) if metric.data_coverage else None,
-            'top_drivers': metric.top_drivers,
-        }
-        
-        # Also add normalized version of name
-        normalized_name = normalize_state_name(metric.region_name)
-        result[normalized_name] = result[metric.region_name]
-    
-    return result
 
 def calculate_region_match_scores(product_type, luxury_level, target_audience, price):
     """
@@ -713,7 +667,6 @@ def calculate_region_match_scores(product_type, luxury_level, target_audience, p
         # Factor 3: Education level (20% weight) - higher for premium/luxury products
         if employment_info and employment_info['total_count'] > 0:
             education_rate = (employment_info['educated_count'] / employment_info['total_count']) * 100
-            education_weight = 0.2 * luxury_multiplier
             score += education_rate * 0.2
             factors += 0.2
         
@@ -739,11 +692,45 @@ def calculate_region_match_scores(product_type, luxury_level, target_audience, p
         if factors > 0:
             final_score = (score / factors) if factors < 1 else score
             scores[state_name] = round(final_score, 2)
+            scores[normalized_name] = round(final_score, 2)
         else:
             scores[state_name] = 0.0
             scores[normalized_name] = 0.0
     
     return scores
+
+
+def get_region_metrics_for_map(region_type='state'):
+    """
+    Get region metrics for map visualization
+    Returns dict: {region_name: {metrics...}}
+    """
+    metrics = RegionMetrics.objects.filter(region_type=region_type)
+    
+    result = {}
+    for metric in metrics:
+        metric_data = {
+            'region_id': metric.region_id,
+            'avg_predicted_success': float(metric.avg_predicted_success) if metric.avg_predicted_success else None,
+            'avg_predicted_reach': float(metric.avg_predicted_reach) if metric.avg_predicted_reach else None,
+            'confidence_score': float(metric.confidence_score) if metric.confidence_score else None,
+            'spending_index': float(metric.spending_index) if metric.spending_index else None,
+            'avg_income': float(metric.avg_income) if metric.avg_income else None,
+            'avg_spending': float(metric.avg_spending) if metric.avg_spending else None,
+            'population_density': float(metric.population_density) if metric.population_density else None,
+            'literacy_rate': float(metric.literacy_rate) if metric.literacy_rate else None,
+            'employment_rate': float(metric.employment_rate) if metric.employment_rate else None,
+            'data_coverage': float(metric.data_coverage) if metric.data_coverage else None,
+            'top_drivers': metric.top_drivers,
+        }
+        
+        # Store with both original and normalized names
+        result[metric.region_name] = metric_data
+        normalized_name = normalize_state_name(metric.region_name)
+        result[normalized_name] = metric_data
+    
+    return result
+
 
 def get_state_demographics():
     """Get demographic data for all states"""
@@ -770,6 +757,7 @@ def get_state_demographics():
         result[normalized_name] = row  # Allows lookup by normalized name
     
     return result
+
 
 def get_district_demographics():
     """Get demographic data for all districts with entrepreneur-relevant metrics"""
@@ -822,9 +810,12 @@ def get_district_demographics():
     
     return result
 
+
 def get_enhanced_clusters_data(match_scores=None):
-    """Returns list of clusters with demographic data from database"""
-    
+    """
+    Returns list of clusters with demographic data from database.
+    Can optionally use match_scores to highlight regions.
+    """
     # Get top employment states for high-level clusters
     query = """
         SELECT 
@@ -842,7 +833,7 @@ def get_enhanced_clusters_data(match_scores=None):
     """
     top_states = execute_query(query)
     
-    # Map states to coordinates
+    # Map states to coordinates (major cities as reference points)
     state_coords = {
         'Delhi': {'lat': 28.7041, 'lng': 77.1025},
         'Maharashtra': {'lat': 19.0760, 'lng': 72.8777},
@@ -894,9 +885,9 @@ def get_enhanced_clusters_data(match_scores=None):
                 "match_score": score,
                 "demographics": {
                     "population": f"{int(state['population']):,}",
-                    "employment_rate": f"{float(state['employment_rate']):.2f}",
+                    "employment_rate": f"{float(state['employment_rate']):.2f}%",
                     "population_density": f"{int(state['population_density'])}/km²",
-                    "unemployment_rate": f"{float(state['est_unemployment_rate']):.2f}"
+                    "unemployment_rate": f"{float(state['est_unemployment_rate']):.2f}%"
                 }
             })
     

@@ -48,7 +48,7 @@ class Command(BaseCommand):
         
         with connection.cursor() as cursor:
             cursor.execute(query)
-            columns = [col[0] for col in cursor.description]
+            columns = [col[0] for col in cursor.description] if cursor.description else []
             
             count = 0
             states_with_spending = 0
@@ -112,7 +112,7 @@ class Command(BaseCommand):
         
         with connection.cursor() as cursor:
             cursor.execute(query)
-            columns = [col[0] for col in cursor.description]
+            columns = [col[0] for col in cursor.description] if cursor.description else []
             
             count = 0
             districts_with_spending = 0

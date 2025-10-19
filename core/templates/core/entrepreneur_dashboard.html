@@ -4,6 +4,11 @@
 
 {% block title %}Dashboard - GeoReach Predictor{% endblock %}
 
+{% block extra_styles %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<link rel="stylesheet" href="{% static 'core/css/dashboard.css' %}">
+{% endblock %}
+
 {% block content %}
 
 <!-- ========================================
@@ -38,24 +43,70 @@
                 <form method="post">
                     {% csrf_token %}
                     
+                    <!-- Display all form errors at the top -->
+                    {% if form.errors %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <h6 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Please fix the following errors:</h6>
+                            <ul class="mb-0">
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+                    
                     <div class="mb-3">
                         <label for="{{ form.product_type.id_for_label }}" class="form-label">Product Type</label>
                         {{ form.product_type|add_class:"form-select" }}
+                        {% if form.product_type.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.product_type.errors %}
+                                    <i class="bi bi-exclamation-circle"></i> {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
                     
                     <div class="mb-3">
                         <label for="{{ form.product_category.id_for_label }}" class="form-label">Product Category</label>
                         {{ form.product_category|add_class:"form-select" }}
+                        {% if form.product_category.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.product_category.errors %}
+                                    <i class="bi bi-exclamation-circle"></i> {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
 
                     <div class="mb-3">
                         <label for="{{ form.sector.id_for_label }}" class="form-label">Sector</label>
                         {{ form.sector|add_class:"form-select" }}
+                        {% if form.sector.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.sector.errors %}
+                                    <i class="bi bi-exclamation-circle"></i> {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
 
                     <div class="mb-3">
                         <label for="{{ form.product_luxury.id_for_label }}" class="form-label">Luxury Level</label>
                         {{ form.product_luxury|add_class:"form-select" }}
+                        {% if form.product_luxury.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.product_luxury.errors %}
+                                    <i class="bi bi-exclamation-circle"></i> {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
                     
                     <div class="mb-3">
@@ -64,18 +115,46 @@
                             <div class="col-md-6 mb-3">
                                 <label for="{{ form.age_group.id_for_label }}" class="form-label visually-hidden">Age Group</label>
                                 {{ form.age_group|add_class:"form-select" }}
+                                {% if form.age_group.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.age_group.errors %}
+                                            <i class="bi bi-exclamation-circle"></i> {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="{{ form.gender.id_for_label }}" class="form-label visually-hidden">Gender</label>
                                 {{ form.gender|add_class:"form-select" }}
+                                {% if form.gender.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.gender.errors %}
+                                            <i class="bi bi-exclamation-circle"></i> {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="{{ form.income_range.id_for_label }}" class="form-label visually-hidden">Income Range</label>
                                 {{ form.income_range|add_class:"form-select" }}
+                                {% if form.income_range.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.income_range.errors %}
+                                            <i class="bi bi-exclamation-circle"></i> {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="{{ form.education_level.id_for_label }}" class="form-label visually-hidden">Education Level</label>
                                 {{ form.education_level|add_class:"form-select" }}
+                                {% if form.education_level.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.education_level.errors %}
+                                            <i class="bi bi-exclamation-circle"></i> {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -83,6 +162,13 @@
                     <div class="mb-3">
                         <label for="{{ form.price.id_for_label }}" class="form-label">Price</label>
                         {{ form.price|add_class:"form-control" }}
+                        {% if form.price.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.price.errors %}
+                                    <i class="bi bi-exclamation-circle"></i> {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
                     
                     <div class="d-grid">
@@ -113,7 +199,8 @@
                                     <th>Luxury</th>
                                     <th>Target</th>
                                     <th>Price</th>
-                                    <th>Reach</th>
+                                    <th>Date</th>
+                                    <th>Success Rate</th>
                                     <th>Probability</th>
                                 </tr>
                             </thead>
@@ -124,7 +211,6 @@
                                         <td><span class="badge bg-secondary">{{ prediction.product_luxury }}</span></td>
                                         <td>{{ prediction.target_audience }}</td>
                                         <td>₹{{ prediction.price|floatformat:0 }}</td>
-                                        <td>{{ prediction.region }}</td>
                                         <td><small class="text-muted">{{ prediction.request_timestamp|date:"M d, Y" }}</small></td>
                                         <td>
                                             {% if prediction.predictionresult %}
@@ -171,7 +257,7 @@
 
             <div class="card-body" style="position: relative; padding-top: 115px;">
                 <!-- ========================================
-                     KEY PERFORMANCE INDICATORS (MOVED INSIDE)
+                     KEY PERFORMANCE INDICATORS (INSIDE MAP CARD)
                      ======================================== -->
                 <div class="kpi-header" style="position: absolute; top: 15px; left: 15px; right: 15px; display: flex; gap: 15px; z-index: 500;">
                     <div class="kpi-card" style="flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
@@ -302,7 +388,7 @@
                 </div>
 
                 <!-- The Map -->
-                <div id="map" style="height: 500px; border-radius: 8px;"></div> <!-- INCREASED height from 400px to 500px -->
+                <div id="map" style="height: 500px; border-radius: 8px;"></div>
 
                 <!-- Basemap Selector Box -->
                 <div id="basemap-box" class="basemap-box">
@@ -454,11 +540,8 @@
      SCRIPTS SECTION
      ======================================== -->
 {% block extra_scripts %}
-<!-- Leaflet CSS & JS for Maps -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<!-- Leaflet JS for Maps -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-<link rel="stylesheet" href="{% static 'core/css/dashboard.css' %}">
 
 <!-- Chart.js Library -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -472,18 +555,19 @@
 // ========================================
 // GLOBAL VARIABLE FOR MAP INSTANCE
 // ========================================
-let georearchMap; // Global variable
+let georearchMap;
 
 document.addEventListener('DOMContentLoaded', function() {
     // ========================================
-    // Initialize Map With match Scores
+    // Initialize Map With Match Scores
     // ========================================
     const mapConfig = {{ map_config|safe }};
     const stateMetrics = {{ state_demographics|safe }};
     const districtMetrics = {{ district_demographics|safe }};
     const matchScores = {{ match_scores|safe }};
     
-    georearchMap = new GeoReachMap('map', mapConfig, stateMetrics, districtMetrics, matchScores); // CHANGED: Assign to global variable
+    georearchMap = new GeoReachMap('map', mapConfig, stateMetrics, districtMetrics, matchScores);
+    window.georearchMap = georearchMap; // Make globally accessible
 
     // ========================================
     // Initialize Charts
@@ -508,6 +592,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ========================================
+    // Basemap Selector Toggle
+    // ========================================
     const basemapToggle = document.getElementById('basemap-toggle');
     const basemapContent = document.getElementById('basemap-content');
     if (basemapToggle && basemapContent) {
@@ -516,6 +603,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Basemap switching
     document.querySelectorAll('input[name="basemap"]').forEach(function(radio) {
         radio.addEventListener('change', function() {
             if (georearchMap) {
@@ -561,27 +649,5 @@ function stopRealTime() {
         document.getElementById('stopRealTimeBtn').style.display = 'none';
     }
 }
-
-// ========================================
-// GLOBAL WRAPPER FUNCTIONS FOR ONCLICK
-// ========================================
-function viewDetailedInsights(regionName, regionType) {
-    if (georearchMap) {
-        georearchMap.viewDetailedInsights(regionName, regionType);
-    }
-}
-
-function compareRegion(regionName) {
-    if (georearchMap) {
-        georearchMap.compareRegion(regionName);
-    }
-}
-
-function viewChartForRegion(regionName) {
-    if (georearchMap) {
-        georearchMap.viewChartForRegion(regionName);
-    }
-}
-
 </script>
 {% endblock %}

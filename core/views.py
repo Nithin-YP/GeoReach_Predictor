@@ -9,7 +9,7 @@ from .models import User, PredictionRequest, PredictionResult, Cluster, Dataset
 from .ml_pipeline import run_prediction_pipeline
 import os
 import logging
-import json # Import json to dump the dictionary
+import json
 from geo.views import get_map_context
 from charts.views import get_entrepreneur_charts_context, get_admin_charts_context
 
@@ -64,17 +64,22 @@ PRODUCT_DEPENDENCIES = {
 }
 
 def entrepreneur_register(request):
+    """Entrepreneur registration view"""
     if request.method == 'POST':
         form = EntrepreneurRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
+            messages.success(request, 'Registration successful! Welcome to GeoReach Predictor.')
             return redirect('core:entrepreneur_dashboard')
+        else:
+            messages.error(request, 'Please correct the errors below.')
     else:
         form = EntrepreneurRegistrationForm()
     return render(request, 'core/entrepreneur_register.html', {'form': form})
 
 def user_login(request):
+    """User login view"""
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
@@ -82,7 +87,6 @@ def user_login(request):
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
             if user is not None:
-                # Type hint to help VS Code recognize the custom User model
                 user_obj: User = user  # type: ignore
                 if user_obj.is_blocked:
                     messages.error(request, 'Your account has been blocked. Please contact an administrator.')
@@ -105,162 +109,181 @@ def user_login(request):
 
 @login_required
 def user_logout(request):
+    """User logout view"""
     logout(request)
+    messages.info(request, 'You have been logged out successfully.')
     return redirect('core:login')
 
 @login_required
 def entrepreneur_dashboard(request):
-    if not request.user.is_superuser:
-        form_data = None
-        
-        if request.method == 'POST':
-            form = PredictionRequestForm(request.POST)
-            if form.is_valid():
-                try:
-                    # Extract data from the form, including new dropdowns
-                    product_type = form.cleaned_data['product_type']
-                    product_luxury = form.cleaned_data['product_luxury']
-                    product_category = form.cleaned_data.get('product_category', '')
-                    sector = form.cleaned_data.get('sector', '')
-                    age_group = form.cleaned_data.get('age_group', '')
-                    gender = form.cleaned_data.get('gender', '')
-                    income_range = form.cleaned_data.get('income_range', '')
-                    education_level = form.cleaned_data.get('education_level', '')
-                    price = form.cleaned_data.get('price', 0.0) # Directly get price
+    """Entrepreneur dashboard with prediction form and map"""
+    if request.user.is_superuser:
+        return redirect('core:admin_dashboard')
+    
+    form_data = None
+    
+    if request.method == 'POST':
+        form = PredictionRequestForm(request.POST)
+        if form.is_valid():
+            try:
+                # Extract data from the form
+                product_type = form.cleaned_data['product_type']
+                product_luxury = form.cleaned_data['product_luxury']
+                product_category = form.cleaned_data.get('product_category', '')
+                sector = form.cleaned_data.get('sector', '')
+                age_group = form.cleaned_data.get('age_group', '')
+                gender = form.cleaned_data.get('gender', '')
+                income_range = form.cleaned_data.get('income_range', '')
+                education_level = form.cleaned_data.get('education_level', '')
+                price = form.cleaned_data.get('price', 0.0)
 
-                    # Combine audience-related fields into target_audience
-                    target_audience_parts = []
-                    if age_group: target_audience_parts.append(f"Age: {age_group}")
-                    if gender: target_audience_parts.append(f"Gender: {gender}")
-                    if income_range: target_audience_parts.append(f"Income: {income_range}")
-                    if education_level: target_audience_parts.append(f"Education: {education_level}")
-                    target_audience = ", ".join(target_audience_parts) if target_audience_parts else "General"
+                # Combine audience-related fields into target_audience
+                target_audience_parts = []
+                if age_group: 
+                    target_audience_parts.append(f"Age: {age_group}")
+                if gender: 
+                    target_audience_parts.append(f"Gender: {gender}")
+                if income_range: 
+                    target_audience_parts.append(f"Income: {income_range}")
+                if education_level: 
+                    target_audience_parts.append(f"Education: {education_level}")
+                target_audience = ", ".join(target_audience_parts) if target_audience_parts else "General"
 
-                    # Create PredictionRequest instance
-                    prediction_request = PredictionRequest(
-                        user=request.user,
-                        product_type=product_type,
-                        product_luxury=product_luxury,
-                        target_audience=target_audience,
-                        price=price,
+                # Create PredictionRequest instance
+                prediction_request = PredictionRequest.objects.create(
+                    user=request.user,
+                    product_type=product_type,
+                    product_luxury=product_luxury,
+                    target_audience=target_audience,
+                    price=price,
+                )
+
+                # Extract form data for map scoring
+                form_data = {
+                    'product_type': prediction_request.product_type,
+                    'luxury_level': prediction_request.product_luxury,
+                    'target_audience': prediction_request.target_audience,
+                    'price': float(prediction_request.price)
+                }
+
+                # Run ML prediction pipeline
+                ml_output = run_prediction_pipeline(
+                    product_type=prediction_request.product_type,
+                    product_luxury=prediction_request.product_luxury,
+                    target_audience=prediction_request.target_audience,
+                    price=float(prediction_request.price),
+                )
+
+                # Create prediction result
+                prediction_result = PredictionResult.objects.create(
+                    prediction_request=prediction_request,
+                    predicted_reach=ml_output['predicted_reach'],
+                    success_probability=ml_output['success_probability'],
+                    model_confidence=ml_output.get('model_confidence', 0.8)
+                )
+
+                # Create clusters
+                for cluster_data in ml_output['clusters']:
+                    Cluster.objects.create(
+                        prediction_result=prediction_result,
+                        latitude=cluster_data['lat'],
+                        longitude=cluster_data['lon'],
+                        cluster_label=cluster_data['label'],
+                        population_density=cluster_data.get('population_density', 0),
+                        avg_income=cluster_data.get('avg_income', 0),
+                        employment_rate=cluster_data.get('employment_rate', 0),
+                        interest_index=cluster_data.get('interest_index', 0)
                     )
-                    prediction_request.save()
 
-                    # Extract form data for map scoring
-                    form_data = {
-                        'product_type': prediction_request.product_type,
-                        'luxury_level': prediction_request.product_luxury,
-                        'target_audience': prediction_request.target_audience,
-                        'price': float(prediction_request.price)
-                    }
-
-                    # Run ML prediction pipeline (existing code)
-                    ml_output = run_prediction_pipeline(
-                        product_type=prediction_request.product_type,
-                        product_luxury=prediction_request.product_luxury,
-                        target_audience=prediction_request.target_audience,
-                        price=float(prediction_request.price),
-                    )
-
-                    prediction_result = PredictionResult.objects.create(
-                        prediction_request=prediction_request,
-                        predicted_reach=ml_output['predicted_reach'],
-                        success_probability=ml_output['success_probability'],
-                        model_confidence=ml_output.get('model_confidence', 0.8)
-                    )
-
-                    for cluster_data in ml_output['clusters']:
-                        Cluster.objects.create(
-                            prediction_result=prediction_result,
-                            latitude=cluster_data['lat'],
-                            longitude=cluster_data['lon'],
-                            cluster_label=cluster_data['label'],
-                            population_density=cluster_data.get('population_density', 0),
-                            avg_income=cluster_data.get('avg_income', 0),
-                            employment_rate=cluster_data.get('employment_rate', 0),
-                            interest_index=cluster_data.get('interest_index', 0)
-                        )
-
-                    messages.success(request, 'Prediction generated successfully!')
-                    
-                except Exception as e:
-                    logger.error(f"Error generating prediction: {e}")
-                    messages.error(request, 'An error occurred while generating the prediction. Please try again.')
-            else:
-                messages.error(request, 'Please correct the errors in the form.')
+                messages.success(request, 'Prediction generated successfully!')
+                
+            except Exception as e:
+                logger.error(f"Error generating prediction: {e}")
+                messages.error(request, 'An error occurred while generating the prediction. Please try again.')
         else:
-            form = PredictionRequestForm()
+            messages.error(request, 'Please correct the errors in the form.')
+    else:
+        form = PredictionRequestForm()
 
-        try:
-            past_predictions = PredictionRequest.objects.filter(user=request.user).order_by('-request_timestamp')
-            total_predictions = past_predictions.count()
+    # Fetch past predictions and statistics
+    try:
+        past_predictions = PredictionRequest.objects.filter(
+            user=request.user
+        ).select_related('predictionresult').order_by('-request_timestamp')
+        
+        total_predictions = past_predictions.count()
+        
+        if total_predictions > 0:
+            avg_success_rate = past_predictions.aggregate(
+                avg_success=Avg('predictionresult__success_probability')
+            )['avg_success'] or 0
             
-            if total_predictions > 0:
-                avg_success_rate = past_predictions.aggregate(
-                    avg_success=Avg('predictionresult__success_probability')
-                )['avg_success'] or 0
-                
-                high_potential_count = past_predictions.filter(
-                    predictionresult__success_probability__gte=70
-                ).count()
-                
-                medium_potential_count = past_predictions.filter(
-                    predictionresult__success_probability__gte=40,
-                    predictionresult__success_probability__lt=70
-                ).count()
-                
-                low_potential_count = past_predictions.filter(
-                    predictionresult__success_probability__lt=40
-                ).count()
-            else:
-                avg_success_rate = 0
-                high_potential_count = 0
-                medium_potential_count = 0
-                low_potential_count = 0
-                
-        except Exception as e:
-            logger.error(f"Error fetching past predictions: {e}")
-            past_predictions = []
-            total_predictions = 0
+            high_potential_count = past_predictions.filter(
+                predictionresult__success_probability__gte=70
+            ).count()
+            
+            medium_potential_count = past_predictions.filter(
+                predictionresult__success_probability__gte=40,
+                predictionresult__success_probability__lt=70
+            ).count()
+            
+            low_potential_count = past_predictions.filter(
+                predictionresult__success_probability__lt=40
+            ).count()
+        else:
             avg_success_rate = 0
             high_potential_count = 0
             medium_potential_count = 0
             low_potential_count = 0
-            messages.warning(request, 'Could not load past predictions.')
+            
+    except Exception as e:
+        logger.error(f"Error fetching past predictions: {e}")
+        past_predictions = []
+        total_predictions = 0
+        avg_success_rate = 0
+        high_potential_count = 0
+        medium_potential_count = 0
+        low_potential_count = 0
+        messages.warning(request, 'Could not load past predictions.')
 
-        # Get map context - PASS user AND form_data
-        map_context = get_map_context(user=request.user, form_data=form_data)
-        charts_context = get_entrepreneur_charts_context(user=request.user)
-        
-        context = {
-            'form': form,
-            'past_predictions': past_predictions,
-            # Pass choices for dropdowns to the template
-            'product_type_choices': PredictionRequestForm.PRODUCT_TYPE_CHOICES,
-            'product_luxury_choices': PredictionRequestForm.LUXURY_LEVEL_CHOICES,
-            'product_category_choices': PredictionRequestForm.PRODUCT_CATEGORY_CHOICES,
-            'sector_choices': PredictionRequestForm.SECTOR_CHOICES,
-            'age_group_choices': PredictionRequestForm.AGE_GROUP_CHOICES,
-            'gender_choices': PredictionRequestForm.GENDER_CHOICES,
-            'income_range_choices': PredictionRequestForm.INCOME_RANGE_CHOICES,
-            'education_level_choices': PredictionRequestForm.EDUCATION_LEVEL_CHOICES,
-            'product_dependencies_json': json.dumps(PRODUCT_DEPENDENCIES), # Pass the dependencies as JSON
-            'total_predictions': total_predictions,
-            'avg_success_rate': round(avg_success_rate, 1),
-            'high_potential_count': high_potential_count,
-            'medium_potential_count': medium_potential_count,
-            'low_potential_count': low_potential_count,
-        }
-        context.update(map_context)
-        context.update(charts_context)
-        
-        return render(request, 'core/entrepreneur_dashboard.html', context)
-    else:
-        return redirect('core:admin_dashboard')
+    # Get map context with user and form_data
+    map_context = get_map_context(user=request.user, form_data=form_data)
+    
+    # Get charts context
+    charts_context = get_entrepreneur_charts_context(user=request.user)
+    
+    # Build context
+    context = {
+        'form': form,
+        'past_predictions': past_predictions,
+        # Pass choices for dropdowns to the template
+        'product_type_choices': PredictionRequestForm.PRODUCT_TYPE_CHOICES,
+        'product_luxury_choices': PredictionRequestForm.LUXURY_LEVEL_CHOICES,
+        'product_category_choices': PredictionRequestForm.PRODUCT_CATEGORY_CHOICES,
+        'sector_choices': PredictionRequestForm.SECTOR_CHOICES,
+        'age_group_choices': PredictionRequestForm.AGE_GROUP_CHOICES,
+        'gender_choices': PredictionRequestForm.GENDER_CHOICES,
+        'income_range_choices': PredictionRequestForm.INCOME_RANGE_CHOICES,
+        'education_level_choices': PredictionRequestForm.EDUCATION_LEVEL_CHOICES,
+        'product_dependencies_json': json.dumps(PRODUCT_DEPENDENCIES),
+        # Statistics
+        'total_predictions': total_predictions,
+        'avg_success_rate': round(avg_success_rate, 1),
+        'high_potential_count': high_potential_count,
+        'medium_potential_count': medium_potential_count,
+        'low_potential_count': low_potential_count,
+    }
+    
+    # Merge map and charts contexts
+    context.update(map_context)
+    context.update(charts_context)
+    
+    return render(request, 'core/entrepreneur_dashboard.html', context)
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def admin_dashboard(request):
+    """Admin dashboard view"""
     total_users = User.objects.count()
     total_predictions = PredictionRequest.objects.count()
 
@@ -274,7 +297,19 @@ def admin_dashboard(request):
     
     # List ML model files
     ml_model_dir = os.path.join(os.path.dirname(__file__), 'models_ml')
-    ml_model_files = [f for f in os.listdir(ml_model_dir) if os.path.isfile(os.path.join(ml_model_dir, f))]
+    try:
+        if os.path.exists(ml_model_dir):
+            ml_model_files = [f for f in os.listdir(ml_model_dir) if os.path.isfile(os.path.join(ml_model_dir, f))]
+        else:
+            ml_model_files = []
+            messages.warning(request, 'ML model directory not found.')
+    except Exception as e:
+        logger.error(f"Error listing ML model files: {e}")
+        ml_model_files = []
+        messages.warning(request, 'Could not load ML model files.')
+
+    # Get admin charts context
+    admin_charts_context = get_admin_charts_context()
 
     context = {
         'total_users': total_users,
@@ -283,6 +318,10 @@ def admin_dashboard(request):
         'latest_datasets': latest_datasets,
         'ml_model_files': ml_model_files,
     }
+    
+    # Merge admin charts context
+    context.update(admin_charts_context)
+    
     return render(request, 'core/admin_dashboard.html', context)
 
 @login_required
@@ -322,6 +361,8 @@ def user_management(request):
                 user.is_active = True
                 user.save()
                 messages.success(request, f'User {user.username} has been activated.')
+            else:
+                messages.warning(request, 'Invalid action.')
         except User.DoesNotExist:
             messages.error(request, 'User not found.')
         except Exception as e:
