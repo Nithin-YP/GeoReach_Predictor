@@ -1,9 +1,22 @@
 {% extends 'base.html' %}
-{% load form_extras %}
+{% load static %}
 
 {% block title %}Dataset Management - GeoReach Predictor{% endblock %}
 
 {% block content %}
+<style>
+    .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .dashboard-header h1 { font-weight: 700; color: #00bcd4; }
+    .card-header { font-weight: 600; background: linear-gradient(90deg, #007bff, #00bcd4); color: #fff; border-radius: 12px 12px 0 0; }
+    .card { border-radius: 12px; background: rgba(255,255,255,0.06); backdrop-filter: blur(6px); box-shadow: 0 8px 20px rgba(0,0,0,0.18); }
+    .table-hover tbody tr:hover { background-color: rgba(0,188,212,0.06); }
+    .btn-outline-secondary, .btn-outline-danger { transition: all 0.2s ease; }
+    .search-bar { margin-bottom: 1rem; }
+    .search-input { width: 100%; padding: 0.5rem 1rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03); color: #fff; }
+    .small-muted { color: rgba(255,255,255,0.7); }
+    .action-link { color: #00fff0; text-shadow: 0 0 6px rgba(0,255,240,0.35); font-weight:600; }
+</style>
+
 <div class="row">
     <div class="col-12">
         <nav aria-label="breadcrumb">
@@ -12,14 +25,16 @@
                 <li class="breadcrumb-item active">Dataset Management</li>
             </ol>
         </nav>
-        
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="text-primary">
-                <i class="bi bi-database me-2"></i>Dataset Management
-            </h1>
+
+        <div class="dashboard-header">
+            <h1><i class="bi bi-hdd-rack me-2"></i>Dataset Management</h1>
             <a href="{% url 'core:admin_dashboard' %}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
             </a>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" class="search-input" id="datasetSearch" placeholder="Search datasets by name or source...">
         </div>
     </div>
 </div>
@@ -27,72 +42,45 @@
 <div class="row">
     <div class="col-12">
         <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">
-                    <i class="bi bi-table me-2"></i>Available Datasets
-                </h5>
+            <div class="card-header">
+                <i class="bi bi-table me-2"></i>Datasets
             </div>
             <div class="card-body">
                 {% if datasets %}
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-hover" id="datasetsTable">
                             <thead class="table-light">
                                 <tr>
                                     <th>Name</th>
                                     <th>Source</th>
-                                    <th>Upload Date</th>
-                                    <th>Last Updated</th>
-                                    <th>Record Count</th>
-                                    <th>Features</th>
+                                    <th>Uploaded</th>
+                                    <th>Records</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for dataset in datasets %}
+                                {% for ds in datasets %}
                                     <tr>
-                                        <td><strong>{{ dataset.name }}</strong></td>
+                                        <td>{{ ds.name }}</td>
+                                        <td>{{ ds.source|default:'-' }}</td>
+                                        <td>{{ ds.upload_date|date:'Y-m-d H:i' }}</td>
+                                        <td>{{ ds.record_count|default:'-' }}</td>
                                         <td>
-                                            {% if dataset.source %}
-                                                <small class="text-muted">{{ dataset.source }}</small>
-                                            {% else %}
-                                                <span class="text-muted">-</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <small>{{ dataset.upload_date|date:"M d, Y H:i" }}</small>
-                                        </td>
-                                        <td>
-                                            <small>{{ dataset.last_updated|date:"M d, Y H:i" }}</small>
-                                        </td>
-                                        <td>
-                                            {% if dataset.record_count %}
-                                                <span class="badge bg-info">{{ dataset.record_count }}</span>
-                                            {% else %}
-                                                <span class="text-muted">-</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if dataset.feature_list %}
-                                                <button class="btn btn-sm btn-outline-secondary" type="button" 
-                                                        data-bs-toggle="collapse" 
-                                                        data-bs-target="#features-{{ dataset.id }}">
-                                                    View Features
-                                                </button>
-                                                <div class="collapse mt-2" id="features-{{ dataset.id }}">
-                                                    <div class="card card-body">
-                                                        <small>{{ dataset.feature_list|join:", " }}</small>
-                                                    </div>
-                                                </div>
-                                            {% else %}
-                                                <span class="text-muted">-</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-outline-danger" 
-                                                        onclick="confirmDelete('{{ dataset.name }}', '{{ dataset.id }}')">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
+                                            <div class="d-flex gap-2">
+                                                <!-- Placeholder for download if file handling exists -->
+                                                <a href="#" class="action-link" title="Download" onclick="alert('Download not implemented')">
+                                                    <i class="bi bi-download"></i>
+                                                </a>
+
+                                                <!-- Delete form -->
+                                                <form method="post" style="display:inline;">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="dataset_id" value="{{ ds.id }}">
+                                                    <input type="hidden" name="action" value="delete">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete dataset {{ ds.name }}?');" title="Delete">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
                                             </div>
                                         </td>
                                     </tr>
@@ -102,8 +90,8 @@
                     </div>
                 {% else %}
                     <div class="text-center py-4">
-                        <i class="bi bi-database text-muted" style="font-size: 3rem;"></i>
-                        <h5 class="text-muted mt-3">No datasets found</h5>
+                        <i class="bi bi-hdd-rack text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="text-muted mt-3">No datasets available</h5>
                         <p class="text-muted">No datasets have been uploaded yet.</p>
                     </div>
                 {% endif %}
@@ -112,22 +100,20 @@
     </div>
 </div>
 
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="alert alert-info">
-            <i class="bi bi-info-circle me-2"></i>
-            <strong>Note:</strong> Dataset upload functionality will be available in a future update. 
-            Currently, datasets are loaded from the <code>datasets/</code> directory.
-        </div>
-    </div>
-</div>
-
 <script>
-function confirmDelete(datasetName, datasetId) {
-    if (confirm(`Are you sure you want to delete the dataset "${datasetName}"? This action cannot be undone.`)) {
-        // In a real implementation, this would submit a delete form
-        alert('Delete functionality will be implemented in a future update.');
-    }
+// Simple search filter for datasets
+const dsSearch = document.getElementById('datasetSearch');
+if (dsSearch) {
+    dsSearch.addEventListener('keyup', function() {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#datasetsTable tbody tr');
+        rows.forEach(row => {
+            const name = row.cells[0].textContent.toLowerCase();
+            const source = row.cells[1].textContent.toLowerCase();
+            row.style.display = (name.includes(filter) || source.includes(filter)) ? '' : 'none';
+        });
+    });
 }
 </script>
+
 {% endblock %}

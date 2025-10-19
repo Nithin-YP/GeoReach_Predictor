@@ -1,55 +1,187 @@
 {% extends 'base.html' %}
 
-{% block title %}Admin Dashboard{% endblock %}
+{% block title %}Admin Dashboard - GeoReach Predictor{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h1 class="mb-4">Admin Dashboard</h1>
+<style>
+    body {
+        background: linear-gradient(135deg, #1d2a35, #22303f);
+        min-height: 100vh;
+        font-family: 'Poppins', sans-serif;
+        color: #fff;
+        margin: 0;
+    }
 
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card text-white bg-primary mb-3">
-                <div class="card-header">Total Users</div>
-                <div class="card-body">
-                    <h5 class="card-title">{{ total_users }}</h5>
+    .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+        background: rgba(0,0,0,0.8);
+        backdrop-filter: blur(6px);
+    }
+
+    .dashboard-container {
+        padding-top: 100px;
+        padding-bottom: 80px;
+        max-width: 1200px;
+        margin: 0 auto;
+        animation: fadeInUp 0.8s ease-in-out;
+    }
+
+    h1 { font-weight: 600; text-align: center; margin-bottom: 40px; color: #00bcd4; }
+
+    .card {
+        border: none;
+        border-radius: 20px;
+        background: rgba(255,255,255,0.08);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        color: #fff;
+    }
+
+    .card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.4); }
+
+    .card-header { background: linear-gradient(90deg, #007bff, #00bcd4); border-radius: 20px 20px 0 0 !important; font-weight: 600; color: #fff; }
+    .card-body { background-color: transparent; }
+
+    .list-group-item { background-color: rgba(255,255,255,0.05); color: #eaeaea; border: 1px solid rgba(255,255,255,0.1); }
+    .list-group-item:hover { background-color: rgba(255,255,255,0.12); }
+
+    .btn { border-radius: 10px; transition: all 0.3s ease; }
+    .btn-outline-info:hover { background: linear-gradient(90deg, #00bcd4, #007bff); color: #fff; border-color: transparent; box-shadow: 0 0 10px rgba(0,188,212,0.5); }
+
+    footer { position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; background: rgba(0,0,0,0.75); color: #ccc; padding: 10px 0; font-size: 0.9rem; backdrop-filter: blur(5px); }
+
+    @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+
+    canvas { background: rgba(255,255,255,0.05); border-radius: 15px; padding: 10px; }
+</style>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand fw-bold text-info" href="#">GeoReach Predictor</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            {% if user.is_authenticated %}
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle me-2"></i>{{ user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'core:admin_dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</a></li>
+                        <li><a class="dropdown-item" href="/admin/"><i class="bi bi-gear me-2"></i>Django Admin</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'core:logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<div class="dashboard-container">
+    <h1><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</h1>
+
+    <!-- Quick Actions & System Status Row -->
+    <div class="row text-center mb-4 g-4">
+        <!-- Quick Actions -->
+        <div class="col-md-6">
+            <div class="card p-3">
+                <div class="card-header"><i class="bi bi-lightning-fill me-2"></i>Quick Actions</div>
+                <div class="card-body d-flex justify-content-around flex-wrap">
+                    <a href="{% url 'core:user_management' %}" class="btn btn-outline-info m-2">
+                        <i class="bi bi-people-fill me-2"></i>User Management
+                    </a>
+                    <a href="{% url 'core:dataset_management' %}" class="btn btn-outline-info m-2">
+                        <i class="bi bi-hdd-fill me-2"></i>Datasets Management
+                    </a>
+                    <a href="/admin/" class="btn btn-outline-info m-2">
+                        <i class="bi bi-gear-fill me-2"></i>Django Admin
+                    </a>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card text-white bg-success mb-3">
-                <div class="card-header">Total Predictions</div>
-                <div class="card-body">
-                    <h5 class="card-title">{{ total_predictions }}</h5>
+
+        <!-- System Status -->
+        <div class="col-md-6">
+            <div class="card p-3">
+                <div class="card-header"><i class="bi bi-server me-2"></i>System Status</div>
+                <div class="card-body text-start">
+                    <p><strong>Database:</strong>
+                        {% if db_connected %}
+                            <span class="text-success">Connected</span>
+                        {% else %}
+                            <span class="text-danger">Disconnected</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>ML Models:</strong> {{ ml_model_files|length }} available</p>
+                    <p><strong>Version:</strong> 1.0.0</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row mt-4">
-        <div class="col-md-6">
-            <div class="card mb-3">
-                <div class="card-header">Most Queried Regions</div>
+    <!-- KPI Cards -->
+    <div class="row text-center mb-4 g-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card p-3">
+                <div class="card-header"><i class="bi bi-people-fill me-2"></i>Total Users</div>
                 <div class="card-body">
-                    <ul class="list-group">
-                        {% for region in most_queried_regions %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                {{ region.region }}
-                                <span class="badge bg-primary rounded-pill">{{ region.count }}</span>
-                            </li>
-                        {% empty %}
-                            <li class="list-group-item">No regions queried yet.</li>
-                        {% endfor %}
-                    </ul>
+                    <h2 class="text-info">{{ total_users }}</h2>
                 </div>
             </div>
         </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card p-3">
+                <div class="card-header"><i class="bi bi-bar-chart-fill me-2"></i>Total Predictions</div>
+                <div class="card-body">
+                    <h2 class="text-success">{{ total_predictions }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4">
         <div class="col-md-6">
-            <div class="card mb-3">
-                <div class="card-header">Latest Datasets</div>
+            <div class="card h-100 p-3">
+                <div class="card-header"><i class="bi bi-map-fill me-2"></i>Most Queried Regions</div>
+                <div class="card-body">
+                    <canvas id="regionsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card h-100 p-3">
+                <div class="card-header"><i class="bi bi-bar-chart-line-fill me-2"></i>Predictions per Dataset</div>
+                <div class="card-body">
+                    <canvas id="predictionsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Latest Datasets & ML Models -->
+    <div class="row g-4 mt-4">
+        <div class="col-md-6">
+            <div class="card p-3">
+                <div class="card-header"><i class="bi bi-hdd-rack-fill me-2"></i>Latest Datasets</div>
                 <div class="card-body">
                     <ul class="list-group">
                         {% for dataset in latest_datasets %}
-                            <li class="list-group-item">{{ dataset.name }} ({{ dataset.upload_date|date:"Y-m-d" }})</li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ dataset.name }}
+                                <span class="text-info">{{ dataset.upload_date|date:"Y-m-d" }}</span>
+                            </li>
                         {% empty %}
                             <li class="list-group-item">No datasets uploaded yet.</li>
                         {% endfor %}
@@ -57,12 +189,10 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <div class="card mb-3">
-                <div class="card-header">ML Model Files</div>
+        <div class="col-md-6">
+            <div class="card p-3">
+                <div class="card-header"><i class="bi bi-cpu-fill me-2"></i>ML Model Files</div>
                 <div class="card-body">
                     <ul class="list-group">
                         {% for model_file in ml_model_files %}
@@ -75,46 +205,38 @@
             </div>
         </div>
     </div>
-
-    <div class="row mt-5">
-        <div class="col-md-6">
-            <div class="card mb-3">
-                <div class="card-header bg-success text-white">Quick Actions</div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{% url 'core:user_management' %}" class="btn btn-outline-primary">
-                            <i class="bi bi-people me-2"></i>User Management
-                        </a>
-                        <a href="{% url 'core:dataset_management' %}" class="btn btn-outline-info">
-                            <i class="bi bi-database me-2"></i>Dataset Management
-                        </a>
-                        <a href="/admin/" class="btn btn-outline-secondary">
-                            <i class="bi bi-gear me-2"></i>Django Admin
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card mb-3">
-                <div class="card-header bg-warning text-dark">System Status</div>
-                <div class="card-body">
-                    <p class="mb-2">
-                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                        Database: Connected
-                    </p>
-                    <p class="mb-2">
-                        <i class="bi bi-{% if ml_model_files %}check-circle-fill text-success{% else %}x-circle-fill text-danger{% endif %} me-2"></i>
-                        ML Models: {% if ml_model_files %}Ready{% else %}Not Available{% endif %}
-                    </p>
-                    <p class="mb-0">
-                        <i class="bi bi-info-circle-fill text-info me-2"></i>
-                        Version: 1.0.0
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-
 </div>
+
+<footer>
+    <p class="mb-0">© 2025 GeoReach Predictor. Built with Django & Bootstrap.</p>
+</footer>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script id="mostQueriedRegions" type="application/json">[{% for region in most_queried_regions %}{"region":"{{ region.region|escapejs }}","count":{{ region.count }}}{% if not forloop.last %}, {% endif %}{% endfor %}]</script>
+<script id="latestDatasets" type="application/json">[{% for dataset in latest_datasets %}{"name":"{{ dataset.name|escapejs }}","prediction_count":{{ dataset.prediction_count|default:0 }}}{% if not forloop.last %}, {% endif %}{% endfor %}]</script>
+
+<script>
+const mostQueriedRegions = JSON.parse(document.getElementById('mostQueriedRegions').textContent || '[]');
+const regionLabels = mostQueriedRegions.map(r => r.region);
+const regionData = mostQueriedRegions.map(r => r.count);
+
+const latestDatasets = JSON.parse(document.getElementById('latestDatasets').textContent || '[]');
+const datasetLabels = latestDatasets.map(d => d.name);
+const datasetData = latestDatasets.map(d => d.prediction_count);
+
+// Most Queried Regions Chart
+new Chart(document.getElementById('regionsChart').getContext('2d'), {
+    type: 'bar',
+    data: { labels: regionLabels, datasets: [{ label: 'Query Count', data: regionData, backgroundColor: 'rgba(0, 188, 212, 0.6)', borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 1, borderRadius: 8 }] },
+    options: { responsive: true, plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } }, x: { grid: { display: false } } } }
+});
+
+// Predictions per Dataset Chart
+new Chart(document.getElementById('predictionsChart').getContext('2d'), {
+    type: 'bar',
+    data: { labels: datasetLabels, datasets: [{ label: 'Predictions', data: datasetData, backgroundColor: 'rgba(0, 123, 255, 0.6)', borderColor: 'rgba(0, 123, 255, 1)', borderWidth: 1, borderRadius: 8 }] },
+    options: { responsive: true, plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } }, x: { grid: { display: false } } } }
+});
+</script>
 {% endblock %}

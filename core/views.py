@@ -206,8 +206,23 @@ def admin_dashboard(request):
 @user_passes_test(lambda u: u.is_superuser)
 def dataset_management(request):
     """Dataset management view for admins"""
+    # Handle delete action from the template
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        dataset_id = request.POST.get('dataset_id')
+        if action == 'delete' and dataset_id:
+            try:
+                ds = Dataset.objects.get(id=dataset_id)
+                ds.delete()
+                messages.success(request, f'Dataset "{ds.name}" deleted.')
+            except Dataset.DoesNotExist:
+                messages.error(request, 'Dataset not found.')
+            except Exception as e:
+                logger.error(f"Error deleting dataset: {e}")
+                messages.error(request, 'An error occurred while deleting the dataset.')
+
     datasets = Dataset.objects.all().order_by('-upload_date')
-    
+
     context = {
         'datasets': datasets,
     }

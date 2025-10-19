@@ -4,58 +4,190 @@
 {% block title %}Login - GeoReach Predictor{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white text-center">
-                <h3 class="mb-0">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Login
-                </h3>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
-                        {{ form.username|add_class:"form-control" }}
-                        {% if form.username.errors %}
-                            <div class="text-danger small mt-1">
-                                {% for error in form.username.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
-                        {{ form.password|add_class:"form-control" }}
-                        {% if form.password.errors %}
-                            <div class="text-danger small mt-1">
-                                {% for error in form.password.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
-                        </button>
-                    </div>
-                </form>
-                
-                <div class="text-center mt-3">
-                    <small class="text-muted">
-                        Don't have an account? 
-                        <a href="{% url 'core:entrepreneur_register' %}" class="text-decoration-none">
-                            Register as Entrepreneur
-                        </a>
-                    </small>
+<style>
+    /* 🔹 Full-page layout */
+    body {
+        background: linear-gradient(135deg, #1d2a35, #22303f);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        margin: 0;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* 🔹 Fixed Navbar */
+    .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(6px);
+    }
+
+    /* 🔹 Centered Login Box */
+    .login-container {
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-top: 80px; /* space for navbar */
+        padding-bottom: 80px; /* space for footer */
+        animation: fadeInUp 0.9s ease-in-out;
+    }
+
+    /* 🔹 Enlarged Login Card */
+    .card {
+        width: 100%;
+        max-width: 480px;
+        border: none;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+        color: #fff;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+    }
+
+    .card-header {
+        border-radius: 20px 20px 0 0 !important;
+        background: linear-gradient(90deg, #007bff, #00bcd4);
+    }
+
+    /* 🔹 Input Fields */
+    .form-control {
+        border-radius: 10px;
+        background-color: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        color: #fff;
+    }
+
+    .form-control:focus {
+        background-color: rgba(255, 255, 255, 0.25);
+        border-color: #00bcd4;
+        box-shadow: 0 0 8px rgba(0, 188, 212, 0.5);
+    }
+
+    /* 🔹 Button Styling */
+    .btn-primary {
+        background: linear-gradient(90deg, #007bff, #00bcd4);
+        border: none;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(90deg, #00bcd4, #007bff);
+        transform: scale(1.03);
+        box-shadow: 0 0 12px rgba(0, 188, 212, 0.6);
+    }
+
+    /* 🔹 Footer */
+    footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        background: rgba(0, 0, 0, 0.75);
+        color: #ccc;
+        padding: 10px 0;
+        font-size: 0.9rem;
+        backdrop-filter: blur(5px);
+    }
+
+    /* 🔹 Animations */
+    @keyframes fadeInUp {
+        0% {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* 🔹 Responsive */
+    @media (max-width: 768px) {
+        .card {
+            max-width: 90%;
+        }
+    }
+</style>
+
+<!-- ✅ Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand fw-bold text-info" href="#">GeoReach Predictor</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</nav>
+
+<!-- ✅ Login Form -->
+<div class="login-container">
+    <div class="card shadow-lg">
+        <div class="card-header text-white text-center">
+            <h3 class="mb-0">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Login
+            </h3>
+        </div>
+        <div class="card-body p-4">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                    {{ form.username|add_class:"form-control" }}
+                    {% if form.username.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in form.username.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
+                    {{ form.password|add_class:"form-control" }}
+                    {% if form.password.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in form.password.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-primary py-2">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                    </button>
+                </div>
+            </form>
+
+            <div class="text-center mt-3">
+                <small style="color: #ffffff;">
+                    Don't have an account?
+                    <a href="{% url 'core:entrepreneur_register' %}" class="text-decoration-none" style="color: #00fff0; text-shadow: 0 0 8px rgba(0,255,240,0.6); font-weight:600;">
+                        Register as Entrepreneur
+                    </a>
+                </small>
             </div>
         </div>
     </div>
 </div>
+
+<!-- ✅ Footer -->
+<footer>
+    <p class="mb-0">© 2025 GeoReach Predictor. All rights reserved.</p>
+</footer>
 {% endblock %}
