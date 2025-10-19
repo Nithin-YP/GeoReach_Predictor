@@ -864,10 +864,13 @@ class GeoReachMap {
         this.showGeoJsonLayer(initialZoom);
     }
 
-    getGeoJsonFile(zoom) {
-        return zoom < this.mapConfig.zoom_thresholds.state_to_district 
-            ? this.mapConfig.geojson_paths.adm1 
-            : this.mapConfig.geojson_paths.adm2;
+    getApiEndpoint(zoom) {
+        // Use PostGIS API endpoints instead of static files
+        if (zoom < this.mapConfig.zoom_thresholds.state_to_district) {
+            return '/geo/api/states/geojson/';
+        } else {
+            return '/geo/api/districts/geojson/';
+        }
     }
 
     showGeoJsonLayer(zoom) {
@@ -892,12 +895,22 @@ class GeoReachMap {
 
         if (zoom < 4) {
             this.currentZoomLevel = null;
+        const apiEndpoint = this.getApiEndpoint(zoom);
+
+        // Remove all active boundary layers
+        Object.values(this.geojsonLayerCache).forEach(layer => {
+            if (this.map.hasLayer(layer)) this.map.removeLayer(layer);
+        });
+
+        // Don't show boundaries when zoomed too far OUT
+        if (zoom < 4) {
             return;
         }
 
         // Use cached layer if available
-        if (this.geojsonLayerCache[geojsonFile]) {
-            this.currentLayer = this.geojsonLayerCache[geojsonFile];
+        // Use cached layer if available
+        if (this.geojsonLayerCache[apiEndpoint]) {
+            this.currentLayer = this.geojsonLayerCache[apiEndpoint];
             this.currentLayer.addTo(this.map);
             this.currentZoomLevel = isStateLevel ? 'state' : 'district';
             console.log(`✅ Loaded cached ${isStateLevel ? 'STATE' : 'DISTRICT'} layer`);
@@ -931,6 +944,10 @@ class GeoReachMap {
         console.log(`📥 Fetching ${isStateLevel ? 'STATE' : 'DISTRICT'} GeoJSON from: /static/${geojsonFile}`);
         
         fetch(`/static/${geojsonFile}`)
+        // Fetch from PostGIS API endpoint
+        console.log('Loading from PostGIS API:', apiEndpoint);
+        
+        fetch(apiEndpoint)
             .then(response => {
                 console.log(`📡 Response status: ${response.status}`);
                 if (!response.ok) {
@@ -940,6 +957,10 @@ class GeoReachMap {
             })
             .then(data => {
                 console.log(`✅ GeoJSON loaded: ${geojsonFile}, Features: ${data.features?.length}`);
+                
+                console.log('GeoJSON loaded from API:', apiEndpoint, 'Features:', data.features?.length);
+                
+                const isStateLevel = apiEndpoint.includes('states');
                 
                 const layer = L.geoJSON(data, {
                     style: (feature) => {
@@ -981,6 +1002,12 @@ class GeoReachMap {
                             fillColor: fillColor
                         };
                     },
+                    style: () => ({
+                        color: isStateLevel ? "#2c7fb8" : "#3388ff",
+                        weight: isStateLevel ? 3 : 2,
+                        fillOpacity: isStateLevel ? 0.15 : 0.2,
+                        fillColor: isStateLevel ? "#2c7fb8" : "#3388ff"
+                    }),
                     onEachFeature: (feature, layer) => {
                         const name = feature.properties.shapeName || 
                                     feature.properties.shapeGroup ||
@@ -1253,6 +1280,7 @@ class GeoReachMap {
                 console.log(`✅ ${isStateLevel ? 'STATE' : 'DISTRICT'} layer added to map`);
             })
             .catch(error => {
+                console.error('Error loading from PostGIS API:', error, 'Endpoint:', apiEndpoint);
                 console.error('❌ Error loading GeoJSON:', error, 'File:', geojsonFile);
                 console.error('Full path attempted:', `/static/${geojsonFile}`);
             });

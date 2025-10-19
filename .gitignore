@@ -1,30 +1,273 @@
+# ============================================
 # Python
+# ============================================
 *.pyc
+*.pyo
+*.pyd
 __pycache__/
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
 .Python
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Virtual Environments
 venv/
 env/
-.env
+ENV/
+env.bak/
+venv.bak/
+.venv/
+*.virtualenv
 
+# ============================================
 # Django
+# ============================================
 *.log
 *.pot
 *.mo
 *.sqlite3
+*.sqlite3-journal
 db.sqlite3
-media/
+db.sqlite3-journal
 
-# Frontend (common)
+# Django migrations (keep initial, ignore others if needed)
+# Uncomment to ignore all migrations except __init__.py
+# **/migrations/*.py
+# !**/migrations/__init__.py
+
+# Django static files (after collectstatic)
+/staticfiles/
+/static_root/
+/static/admin/
+/static/rest_framework/
+
+# Media files (user uploads - usually don't commit)
+/media/
+/uploads/
+
+# Django settings (if you have local_settings.py)
+local_settings.py
+settings_local.py
+
+# Django secret key
+.secret_key
+
+# ============================================
+# Environment Variables
+# ============================================
+.env
+.env.local
+.env.*.local
+.envrc
+*.env
+
+# ============================================
+# Database
+# ============================================
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+*.sql
+
+# PostgreSQL
+*.pgsql
+*.backup
+
+# ============================================
+# GIS / PostGIS / GDAL
+# ============================================
+# Shapefiles (if too large for GitHub)
+# Uncomment if your shapefiles are large
+# *.shp
+# *.shx
+# *.dbf
+# *.prj
+# *.cpg
+
+# GeoTIFF and raster files (can be large)
+*.tif
+*.tiff
+*.geotiff
+
+# Temporary GIS files
+*.lock
+*.xml.bak
+*.aux.xml
+
+# ============================================
+# Machine Learning / Data Science
+# ============================================
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb
+!example*.ipynb  # Keep example notebooks
+
+# ML Models (can be large)
+*.pkl
+*.pickle
+*.joblib
+*.h5
+*.hdf5
+*.ckpt
+*.pt
+*.pth
+*.onnx
+*.pb
+*.tflite
+
+# Large datasets
+*.csv
+!datasets/*.csv  # Keep dataset samples
+# datasets/large_*.csv
+
+# NumPy
+*.npy
+*.npz
+
+# ============================================
+# IDE / Editor
+# ============================================
+# VS Code
+.vscode/
+*.code-workspace
+.history/
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ============================================
+# OS Generated Files
+# ============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+.directory
+.Trash-*
+.nfs*
+
+# ============================================
+# Frontend (if using)
+# ============================================
 node_modules/
-npm-debug.log
-yarn-debug.log
-yarn-error.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 .pnp/
 .pnp.js
-build/
-dist/
+package-lock.json
+yarn.lock
 
-# OS generated files
-.DS_Store
-.Trashes
-Thumbs.db
+# Build output
+/build/
+/dist/
+/.next/
+/out/
+
+# ============================================
+# Testing
+# ============================================
+htmlcov/
+.tox/
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# ============================================
+# Documentation
+# ============================================
+docs/_build/
+docs/.doctrees/
+site/
+
+# ============================================
+# Temporary / Cache Files
+# ============================================
+*.tmp
+*.temp
+*.bak
+*.swp
+*~.nib
+*.cache
+
+# ============================================
+# Project Specific
+# ============================================
+# Uncomment these if you don't want to commit them
+
+# Test scripts (keep them for now)
+# test_*.py
+# check_*.py
+
+# Documentation markdown (keep them for now)
+# *_SUMMARY.md
+# *_TODO.md
+# *_FIXES.md
+
+# Sensitive data
+secrets.json
+credentials.json
+*.pem
+*.key
+*.crt
+
+# Large shapefiles from datasets
+# datasets/geodata/*.shp
+# datasets/geodata/*.dbf
+# datasets/geodata/*.shx

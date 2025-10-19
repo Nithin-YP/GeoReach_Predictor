@@ -9,10 +9,59 @@ from .models import User, PredictionRequest, PredictionResult, Cluster, Dataset
 from .ml_pipeline import run_prediction_pipeline
 import os
 import logging
+import json # Import json to dump the dictionary
 from geo.views import get_map_context
 from charts.views import get_entrepreneur_charts_context, get_admin_charts_context
 
 logger = logging.getLogger(__name__)
+
+# Define product dependencies for dynamic dropdowns
+PRODUCT_DEPENDENCIES = {
+    'Food': {
+        'categories': ['Fast food', 'Organic', 'Packaged', 'Beverages'],
+        'sectors': ['Retail', 'Hospitality']
+    },
+    'Groceries': {
+        'categories': ['Daily essentials', 'Organic produce'],
+        'sectors': ['Retail']
+    },
+    'Clothing': {
+        'categories': ['Casual wear', 'Formal', 'Ethnic', 'Sportswear'],
+        'sectors': ['Fashion', 'Retail']
+    },
+    'Technology': {
+        'categories': ['Smartphones', 'Laptops', 'IoT', 'Appliances'],
+        'sectors': ['Telecom', 'Retail']
+    },
+    'Automobile': {
+        'categories': ['Two-wheelers', 'EVs', 'Cars'],
+        'sectors': ['Transport', 'Manufacturing']
+    },
+    'Healthcare': {
+        'categories': ['Pharma', 'Wellness', 'Devices'],
+        'sectors': ['Health', 'Retail']
+    },
+    'Education': {
+        'categories': ['EdTech', 'Skill training'],
+        'sectors': ['Education']
+    },
+    'Energy': {
+        'categories': ['Solar panels', 'Batteries'],
+        'sectors': ['Infrastructure']
+    },
+    'Housing': {
+        'categories': ['Real estate', 'Interiors'],
+        'sectors': ['Construction']
+    },
+    'Finance': {
+        'categories': ['Insurance', 'Microfinance', 'Credit'],
+        'sectors': ['Banking', 'FinTech']
+    },
+    'Entertainment': {
+        'categories': ['Streaming', 'Gaming', 'Cinema'],
+        'sectors': ['Media', 'IT']
+    },
+}
 
 def entrepreneur_register(request):
     if request.method == 'POST':
@@ -68,8 +117,33 @@ def entrepreneur_dashboard(request):
             form = PredictionRequestForm(request.POST)
             if form.is_valid():
                 try:
-                    prediction_request = form.save(commit=False)
-                    prediction_request.user = request.user
+                    # Extract data from the form, including new dropdowns
+                    product_type = form.cleaned_data['product_type']
+                    product_luxury = form.cleaned_data['product_luxury']
+                    product_category = form.cleaned_data.get('product_category', '')
+                    sector = form.cleaned_data.get('sector', '')
+                    age_group = form.cleaned_data.get('age_group', '')
+                    gender = form.cleaned_data.get('gender', '')
+                    income_range = form.cleaned_data.get('income_range', '')
+                    education_level = form.cleaned_data.get('education_level', '')
+                    price = form.cleaned_data.get('price', 0.0) # Directly get price
+
+                    # Combine audience-related fields into target_audience
+                    target_audience_parts = []
+                    if age_group: target_audience_parts.append(f"Age: {age_group}")
+                    if gender: target_audience_parts.append(f"Gender: {gender}")
+                    if income_range: target_audience_parts.append(f"Income: {income_range}")
+                    if education_level: target_audience_parts.append(f"Education: {education_level}")
+                    target_audience = ", ".join(target_audience_parts) if target_audience_parts else "General"
+
+                    # Create PredictionRequest instance
+                    prediction_request = PredictionRequest(
+                        user=request.user,
+                        product_type=product_type,
+                        product_luxury=product_luxury,
+                        target_audience=target_audience,
+                        price=price,
+                    )
                     prediction_request.save()
 
                     # Extract form data for map scoring
@@ -86,7 +160,6 @@ def entrepreneur_dashboard(request):
                         product_luxury=prediction_request.product_luxury,
                         target_audience=prediction_request.target_audience,
                         price=float(prediction_request.price),
-                        region=prediction_request.region
                     )
 
                     prediction_result = PredictionResult.objects.create(
@@ -162,6 +235,16 @@ def entrepreneur_dashboard(request):
         context = {
             'form': form,
             'past_predictions': past_predictions,
+            # Pass choices for dropdowns to the template
+            'product_type_choices': PredictionRequestForm.PRODUCT_TYPE_CHOICES,
+            'product_luxury_choices': PredictionRequestForm.LUXURY_LEVEL_CHOICES,
+            'product_category_choices': PredictionRequestForm.PRODUCT_CATEGORY_CHOICES,
+            'sector_choices': PredictionRequestForm.SECTOR_CHOICES,
+            'age_group_choices': PredictionRequestForm.AGE_GROUP_CHOICES,
+            'gender_choices': PredictionRequestForm.GENDER_CHOICES,
+            'income_range_choices': PredictionRequestForm.INCOME_RANGE_CHOICES,
+            'education_level_choices': PredictionRequestForm.EDUCATION_LEVEL_CHOICES,
+            'product_dependencies_json': json.dumps(PRODUCT_DEPENDENCIES), # Pass the dependencies as JSON
             'total_predictions': total_predictions,
             'avg_success_rate': round(avg_success_rate, 1),
             'high_potential_count': high_potential_count,

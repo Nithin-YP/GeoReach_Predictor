@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSRF Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #2196F3;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button.danger {
+            background: #f44336;
+        }
+        button.danger:hover {
+            background: #da190b;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔒 CSRF Protection Test Page</h1>
+        <p>This page tests CSRF (Cross-Site Request Forgery) protection for the GeoReach Predictor application.</p>
+
+        <!-- Test 1: Check CSRF Token -->
+        <div class="test-section">
+            <h3>Test 1: Check CSRF Token</h3>
+            <p>This checks if a CSRF token can be retrieved from cookies or the page.</p>
+            <button onclick="checkCSRFToken()">Check CSRF Token</button>
+            <div id="token-result" class="result info" style="display:none;"></div>
+        </div>
+
+        <!-- Test 2: Test Login Form -->
+        <div class="test-section">
+            <h3>Test 2: Form Submission Test</h3>
+            <p>This tests if forms are properly protected with CSRF tokens.</p>
+            <form method="post" action="/core/login/" onsubmit="return false;">
+                {% csrf_token %}
+                <div style="margin: 10px 0;">
+                    <label>Username: <input type="text" name="username" value="testuser" style="padding: 5px;"></label>
+                </div>
+                <div style="margin: 10px 0;">
+                    <label>Password: <input type="password" name="password" value="testpass" style="padding: 5px;"></label>
+                </div>
+                <button type="button" onclick="testFormSubmission()">Test Form (Won't Actually Submit)</button>
+            </form>
+            <div id="form-result" class="result info" style="display:none;"></div>
+        </div>
+
+        <!-- Test 3: AJAX POST Request -->
+        <div class="test-section">
+            <h3>Test 3: AJAX POST Request</h3>
+            <p>This tests if AJAX requests include proper CSRF tokens.</p>
+            <button onclick="testAjaxWithCSRF()">Test POST with CSRF</button>
+            <button class="danger" onclick="testAjaxWithoutCSRF()">Test POST without CSRF (Should Fail)</button>
+            <div id="ajax-result" class="result info" style="display:none;"></div>
+        </div>
+
+        <!-- Test 4: Cookie Check -->
+        <div class="test-section">
+            <h3>Test 4: Cookie Check</h3>
+            <p>This displays all cookies to verify CSRF cookie is set.</p>
+            <button onclick="checkCookies()">Check Cookies</button>
+            <div id="cookie-result" class="result info" style="display:none;"></div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="test-section" style="border-left-color: #FF9800;">
+            <h3>📋 Instructions</h3>
+            <ol>
+                <li>Make sure Django development server is running: <code>python manage.py runserver</code></li>
+                <li>Click each test button in order</li>
+                <li>Green results = CSRF is working correctly</li>
+                <li>Red results = CSRF configuration issue</li>
+                <li>Open browser DevTools (F12) to see detailed network requests</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Include CSRF utility functions
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function getCSRFToken() {
+            // Try cookie first
+            let token = getCookie('csrftoken');
+            if (token) return token;
+            
+            // Try meta tag
+            const metaTag = document.querySelector('meta[name="csrf-token"]');
+            if (metaTag) return metaTag.getAttribute('content');
+            
+            // Try hidden input
+            const hiddenInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            if (hiddenInput) return hiddenInput.value;
+            
+            return null;
+        }
+
+        // Test 1: Check CSRF Token
+        function checkCSRFToken() {
+            const result = document.getElementById('token-result');
+            result.style.display = 'block';
+            
+            const token = getCSRFToken();
+            
+            if (token) {
+                result.className = 'result success';
+                result.textContent = '✓ CSRF Token Found!\n\n' +
+                    'Token: ' + token.substring(0, 20) + '...\n' +
+                    'Length: ' + token.length + ' characters\n' +
+                    'Source: Cookie or Form';
+            } else {
+                result.className = 'result error';
+                result.textContent = '✗ CSRF Token NOT Found!\n\n' +
+                    'This means CSRF protection may not be working.\n' +
+                    'Check that:\n' +
+                    '1. Django server is running\n' +
+                    '2. CSRF middleware is enabled\n' +
+                    '3. Page was loaded from Django (not opened as file://)\n';
+            }
+        }
+
+        // Test 2: Form Submission
+        function testFormSubmission() {
+            const result = document.getElementById('form-result');
+            result.style.display = 'block';
+            
+            const form = document.querySelector('form');
+            const csrfInput = form.querySelector('input[name="csrfmiddlewaretoken"]');
+            
+            if (csrfInput && csrfInput.value) {
+                result.className = 'result success';
+                result.textContent = '✓ Form has CSRF token!\n\n' +
+                    'Token: ' + csrfInput.value.substring(0, 20) + '...\n' +
+                    'This form is properly protected against CSRF attacks.\n\n' +
+                    'Note: This test doesn\'t actually submit the form.';
+            } else {
+                result.className = 'result error';
+                result.textContent = '✗ Form does NOT have CSRF token!\n\n' +
+                    'The form is missing: <input type="hidden" name="csrfmiddlewaretoken" value="...">\n' +
+                    'Add {% csrf_token %} inside the <form> tag.';
+            }
+        }
+
+        // Test 3a: AJAX with CSRF
+        async function testAjaxWithCSRF() {
+            const result = document.getElementById('ajax-result');
+            result.style.display = 'block';
+            result.className = 'result info';
+            result.textContent = 'Testing AJAX POST with CSRF token...\n';
+            
+            const token = getCSRFToken();
+            
+            if (!token) {
+                result.className = 'result error';
+                result.textContent += '\n✗ Cannot test: CSRF token not found!';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/geo/api/states/', {
+                    method: 'POST',  // This will likely fail as endpoint expects GET
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': token
+                    },
+                    body: JSON.stringify({ test: 'data' })
+                });
+                
+                result.className = 'result success';
+                result.textContent = '✓ AJAX request sent with CSRF token!\n\n' +
+                    'Status: ' + response.status + '\n' +
+                    'CSRF Token Header: Included ✓\n\n' +
+                    'Note: The request may fail for other reasons (wrong method, etc.)\n' +
+                    'but CSRF token was properly included.';
+                    
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = '✗ AJAX request failed!\n\n' +
+                    'Error: ' + error.message + '\n\n' +
+                    'Check browser DevTools Network tab for details.';
+            }
+        }
+
+        // Test 3b: AJAX without CSRF
+        async function testAjaxWithoutCSRF() {
+            const result = document.getElementById('ajax-result');
+            result.style.display = 'block';
+            result.className = 'result info';
+            result.textContent = 'Testing AJAX POST WITHOUT CSRF token (should be rejected)...\n';
+            
+            try {
+                const response = await fetch('/geo/api/states/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                        // NO X-CSRFToken header!
+                    },
+                    body: JSON.stringify({ test: 'data' })
+                });
+                
+                if (response.status === 403) {
+                    result.className = 'result success';
+                    result.textContent = '✓ CSRF protection is working!\n\n' +
+                        'Status: 403 Forbidden (as expected)\n' +
+                        'The server correctly rejected the request without CSRF token.';
+                } else {
+                    result.className = 'result error';
+                    result.textContent = '⚠ Unexpected result!\n\n' +
+                        'Status: ' + response.status + '\n' +
+                        'Expected: 403 (CSRF rejection)\n' +
+                        'The endpoint may have @csrf_exempt decorator.';
+                }
+                    
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = '✗ Request failed!\n\n' +
+                    'Error: ' + error.message;
+            }
+        }
+
+        // Test 4: Cookie Check
+        function checkCookies() {
+            const result = document.getElementById('cookie-result');
+            result.style.display = 'block';
+            
+            const allCookies = document.cookie;
+            
+            if (!allCookies) {
+                result.className = 'result error';
+                result.textContent = '✗ No cookies found!\n\n' +
+                    'Make sure you\'re accessing this page through Django server:\n' +
+                    'http://127.0.0.1:8000/ (not file://)';
+                return;
+            }
+            
+            const hasCsrfToken = allCookies.includes('csrftoken=');
+            
+            if (hasCsrfToken) {
+                result.className = 'result success';
+                result.textContent = '✓ CSRF cookie is set!\n\n' +
+                    'All cookies:\n' + allCookies.split('; ').join('\n');
+            } else {
+                result.className = 'result error';
+                result.textContent = '✗ CSRF cookie is missing!\n\n' +
+                    'All cookies:\n' + allCookies.split('; ').join('\n') + '\n\n' +
+                    'The csrftoken cookie should be set when you visit any Django page.\n' +
+                    'Try refreshing the page or visiting another page first.';
+            }
+        }
+
+        // Auto-run first test on page load
+        window.addEventListener('load', function() {
+            console.log('🔒 CSRF Test Page Loaded');
+            console.log('Django Server must be running for tests to work!');
+            checkCSRFToken();
+        });
+    </script>
+</body>
+</html>

@@ -53,10 +53,15 @@ cp .env.example .env
 
 ### 4. Database Setup
 ```bash
-# Apply migrations
+# (Option A) Quick start with existing SQLite schema
 python manage.py migrate
-cd scripts
-python data_loading.py
+
+# (Option B) Provision a PostGIS database and seed 10k+ synthetic records
+python manage.py setup_postgis_db --reset-data --records 12000
+#   └─ Automatically imports datasets/geodata shapefiles (use --skip-shapefiles to opt out)
+
+# (Optional) Replace geometries with official shapefile boundaries
+python manage.py import_geo_shapefiles --reset
 
 # Create superuser (admin)
 python manage.py create_admin
@@ -217,6 +222,11 @@ python manage.py createsuperuser         # Create admin user manually
 # ML & Data
 python manage.py train_models           # Train ML models
 python manage.py create_admin           # Create default admin
+python manage.py setup_postgis_db       # Create DB, enable PostGIS, seed data
+#   --skip-shapefiles / --strict-shapefiles / --states-shapefile=<path>
+python manage.py import_geo_shapefiles  # Load states/districts from shapefiles
+python manage.py generate_synthetic_geo_data --reset --records 15000
+#   --preserve-districts (reuse imported boundaries)
 
 # Development
 python manage.py runserver              # Start development server
