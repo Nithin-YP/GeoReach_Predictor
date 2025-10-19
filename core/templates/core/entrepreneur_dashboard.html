@@ -561,38 +561,46 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========================================
     // Initialize Map With Match Scores
     // ========================================
-    const mapConfig = {{ map_config|safe }};
-    const stateMetrics = {{ state_demographics|safe }};
-    const districtMetrics = {{ district_demographics|safe }};
-    const matchScores = {{ match_scores|safe }};
-    
+    // parse JSON data emitted by the template
+    const mapConfigEl = document.getElementById('mapConfigJson');
+    const stateMetricsEl = document.getElementById('stateMetricsJson');
+    const districtMetricsEl = document.getElementById('districtMetricsJson');
+    const matchScoresEl = document.getElementById('matchScoresJson');
+
+    const mapConfig = mapConfigEl ? JSON.parse(mapConfigEl.textContent || '{}') : {};
+    const stateMetrics = stateMetricsEl ? JSON.parse(stateMetricsEl.textContent || '{}') : {};
+    const districtMetrics = districtMetricsEl ? JSON.parse(districtMetricsEl.textContent || '{}') : {};
+    const matchScores = matchScoresEl ? JSON.parse(matchScoresEl.textContent || '{}') : {};
+
     georearchMap = new GeoReachMap('map', mapConfig, stateMetrics, districtMetrics, matchScores);
     window.georearchMap = georearchMap; // Make globally accessible
 
     // ========================================
-    // Initialize Charts
+    // Initialize Charts (from JSON blocks rendered below)
     // ========================================
-    const chartData = {{ entrepreneur_charts|safe }};
-    window.entrepreneurCharts = new EntrepreneurCharts(chartData);
+    const chartDataEl = document.getElementById('entrepreneurChartsJson');
+    const parsedChartData = chartDataEl ? JSON.parse(chartDataEl.textContent || '{}') : null;
+    if (parsedChartData) {
+        window.entrepreneurCharts = new EntrepreneurCharts(parsedChartData);
 
-    // Render Radar Chart
-    if (chartData.radar_chart) {
-        window.entrepreneurCharts.renderRadarChart('radarChartCanvas', {
-            labels: chartData.radar_chart.labels,
-            data: chartData.radar_chart.data
-        });
+        if (parsedChartData.radar_chart) {
+            window.entrepreneurCharts.renderRadarChart('radarChartCanvas', {
+                labels: parsedChartData.radar_chart.labels,
+                data: parsedChartData.radar_chart.data
+            });
+        }
+
+        if (parsedChartData.bubble_chart) {
+            window.entrepreneurCharts.renderBubbleChart('bubbleChartCanvas', {
+                data: parsedChartData.bubble_chart.data,
+                xLabel: parsedChartData.bubble_chart.xLabel,
+                yLabel: parsedChartData.bubble_chart.yLabel
+            });
+        }
     }
 
-    // Render Bubble Chart
-    if (chartData.bubble_chart) {
-        window.entrepreneurCharts.renderBubbleChart('bubbleChartCanvas', {
-            data: chartData.bubble_chart.data,
-            xLabel: chartData.bubble_chart.xLabel,
-            yLabel: chartData.bubble_chart.yLabel
-        });
-    }
-
     // ========================================
+
     // Basemap Selector Toggle
     // ========================================
     const basemapToggle = document.getElementById('basemap-toggle');
@@ -650,4 +658,11 @@ function stopRealTime() {
     }
 }
 </script>
+
+<!-- JSON data blocks (rendered by Django safely) -->
+<script id="mapConfigJson" type="application/json">{{ map_config|safe }}</script>
+<script id="stateMetricsJson" type="application/json">{{ state_demographics|safe }}</script>
+<script id="districtMetricsJson" type="application/json">{{ district_demographics|safe }}</script>
+<script id="matchScoresJson" type="application/json">{{ match_scores|safe }}</script>
+<script id="entrepreneurChartsJson" type="application/json">{{ entrepreneur_charts|safe }}</script>
 {% endblock %}
