@@ -1,176 +1,197 @@
-{% extends 'entrepreneur_base.html' %}
+{% extends 'base.html' %}
 {% load static %}
-{% load form_extras %}
 
-{% block title %}Dashboard - GeoReach Predictor{% endblock %}
+{% block title %}Dataset Management - GeoReach Predictor{% endblock %}
 
 {% block content %}
+<style>
+    body {
+        background: linear-gradient(135deg, #1d2a35, #22303f);
+        font-family: 'Poppins', sans-serif;
+        color: #fff;
+        min-height: 100vh;
+        transition: all 0.3s ease;
+    }
+
+    .dashboard-header { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        margin-bottom: 1.5rem; 
+        flex-wrap: wrap;
+    }
+
+    .dashboard-header h1 { 
+        font-weight: 700; 
+        color: #00bcd4; 
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: color 0.3s ease;
+    }
+
+    .card {
+        border-radius: 15px; 
+        background: rgba(255,255,255,0.06); 
+        backdrop-filter: blur(8px); 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+        transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+        background: rgba(255,255,255,0.08);
+    }
+
+    .card-header {
+        font-weight: 600; 
+        background: linear-gradient(90deg, #007bff, #00bcd4); 
+        color: #fff; 
+        border-radius: 15px 15px 0 0; 
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: background 0.3s ease;
+    }
+
+    .table-hover tbody tr:hover { 
+        background-color: rgba(0,188,212,0.1); 
+        transition: background 0.3s ease;
+    }
+
+    .btn-outline-secondary, .btn-outline-danger { 
+        transition: all 0.3s ease; 
+    }
+
+    .btn-outline-secondary:hover {
+        background: linear-gradient(90deg, #00bcd4, #007bff);
+        color: #fff;
+        border-color: transparent;
+        box-shadow: 0 0 12px rgba(0,188,212,0.5);
+    }
+
+    .btn-outline-danger:hover {
+        background: linear-gradient(90deg, #ff5252, #ff1744);
+        color: #fff;
+        border-color: transparent;
+        box-shadow: 0 0 12px rgba(255,23,68,0.5);
+    }
+
+    .search-bar { margin-bottom: 1rem; }
+    .search-input {
+        width: 100%; 
+        padding: 0.6rem 1rem; 
+        border-radius: 12px; 
+        border: 1px solid rgba(255,255,255,0.12); 
+        background: rgba(255,255,255,0.03); 
+        color: #fff;
+        transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+        border-color: #00bcd4;
+        box-shadow: 0 0 12px rgba(0,188,212,0.6);
+        outline: none;
+        background: rgba(255,255,255,0.05);
+    }
+
+    .small-muted { color: rgba(255,255,255,0.7); }
+    .action-link { 
+        color: #00fff0; 
+        text-shadow: 0 0 6px rgba(0,255,240,0.35); 
+        font-weight:600; 
+        transition: all 0.3s ease;
+    }
+
+    .action-link:hover {
+        color: #00e6d5;
+        text-shadow: 0 0 12px rgba(0,255,240,0.6);
+    }
+
+    .breadcrumb a {
+        color: #00bcd4;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb a:hover {
+        color: #00fff0;
+    }
+
+    .text-muted {
+        color: rgba(255,255,255,0.5) !important;
+    }
+
+    @media (max-width: 575px) {
+        .dashboard-header { flex-direction: column; gap: 0.8rem; }
+        .dashboard-header a { width: 100%; text-align: center; }
+    }
+</style>
+
 <div class="row">
     <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h1 class="text-primary">
-                    <i class="bi bi-graph-up me-2"></i>Welcome, {{ user.username }}!
-                </h1>
-                <p class="text-muted mb-0">Predict your product's market reach with AI-powered insights</p>
-            </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:admin_dashboard' %}">Admin Dashboard</a></li>
+                <li class="breadcrumb-item active">Dataset Management</li>
+            </ol>
+        </nav>
+
+        <div class="dashboard-header">
+            <h1><i class="bi bi-hdd-rack me-2"></i>Dataset Management</h1>
+            <a href="{% url 'core:admin_dashboard' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" class="search-input" id="datasetSearch" placeholder="Search datasets by name or source...">
         </div>
     </div>
 </div>
 
 <div class="row">
-    <div class="col-lg-4 mb-4" id="new-prediction">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0">
-                    <i class="bi bi-plus-circle me-2"></i>New Prediction Request
-                </h5>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    
-                    {% if form.errors %}
-                    <div class="alert alert-danger" role="alert">
-                        <strong>Please correct the following errors:</strong>
-                        <ul class="mb-0">
-                            {% for field in form %}
-                                {% for error in field.errors %}
-                                    <li>{{ field.label }}: {{ error }}</li>
-                                {% endfor %}
-                            {% endfor %}
-                            {% for error in form.non_field_errors %}
-                                <li>{{ error }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.product_type.id_for_label }}" class="form-label">Product Type <span class="text-danger">*</span></label>
-                        {{ form.product_type|add_class:"form-select" }}
-                        {% if form.product_type.errors %}
-                            <div class="text-danger small">{{ form.product_type.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.product_category.id_for_label }}" class="form-label">Product Category</label>
-                        {{ form.product_category|add_class:"form-select" }}
-                        {% if form.product_category.errors %}
-                            <div class="text-danger small">{{ form.product_category.errors }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="{{ form.sector.id_for_label }}" class="form-label">Sector</label>
-                        {{ form.sector|add_class:"form-select" }}
-                        {% if form.sector.errors %}
-                            <div class="text-danger small">{{ form.sector.errors }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="{{ form.product_luxury.id_for_label }}" class="form-label">Luxury Level <span class="text-danger">*</span></label>
-                        {{ form.product_luxury|add_class:"form-select" }}
-                        {% if form.product_luxury.errors %}
-                            <div class="text-danger small">{{ form.product_luxury.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Target Audience</label>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.age_group.id_for_label }}" class="form-label visually-hidden">Age Group</label>
-                                {{ form.age_group|add_class:"form-select" }}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.gender.id_for_label }}" class="form-label visually-hidden">Gender</label>
-                                {{ form.gender|add_class:"form-select" }}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.income_range.id_for_label }}" class="form-label visually-hidden">Income Range</label>
-                                {{ form.income_range|add_class:"form-select" }}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.education_level.id_for_label }}" class="form-label visually-hidden">Education Level</label>
-                                {{ form.education_level|add_class:"form-select" }}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.price.id_for_label }}" class="form-label">Price (₹) <span class="text-danger">*</span></label>
-                        {{ form.price|add_class:"form-control" }}
-                        {% if form.price.errors %}
-                            <div class="text-danger small">{{ form.price.errors }}</div>
-                        {% endif %}
-                        <small class="text-muted">Enter the product price in rupees</small>
-                    </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-magic me-2"></i>Generate Prediction
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-lg-8">
+    <div class="col-12">
         <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">
-                    <i class="bi bi-clock-history me-2"></i>Past Predictions
-                </h5>
+            <div class="card-header">
+                <i class="bi bi-table me-2"></i>Datasets
             </div>
             <div class="card-body">
-                {% if past_predictions %}
+                {% if datasets %}
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-hover" id="datasetsTable">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Product</th>
-                                    <th>Luxury</th>
-                                    <th>Target</th>
-                                    <th>Price</th>
-                                    <th>Reach</th>
-                                    <th>Probability</th>
+                                    <th>Name</th>
+                                    <th>Source</th>
+                                    <th>Uploaded</th>
+                                    <th>Records</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for prediction in past_predictions %}
+                                {% for ds in datasets %}
                                     <tr>
+                                        <td>{{ ds.name }}</td>
+                                        <td>{{ ds.source|default:'-' }}</td>
+                                        <td>{{ ds.upload_date|date:'Y-m-d H:i' }}</td>
+                                        <td>{{ ds.record_count|default:'-' }}</td>
                                         <td>
-                                            <strong>{{ prediction.product_type }}</strong>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-secondary">{{ prediction.product_luxury }}</span>
-                                        </td>
-                                        <td>{{ prediction.target_audience }}</td>
-                                        <td>₹{{ prediction.price|floatformat:0 }}</td>
-                                        <td>
-                                            <small class="text-muted">{{ prediction.request_timestamp|date:"M d, Y" }}</small>
-                                        </td>
-                                        <td>
-                                            {% if prediction.predictionresult %}
-                                                <span class="badge bg-success">
-                                                    {{ prediction.predictionresult.predicted_reach|floatformat:1 }}%
-                                                </span>
-                                            {% else %}
-                                                <span class="badge bg-warning">Processing</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if prediction.predictionresult %}
-                                                <span class="badge bg-info">
-                                                    {{ prediction.predictionresult.success_probability|floatformat:3 }}
-                                                </span>
-                                            {% else %}
-                                                <span class="badge bg-warning">-</span>
-                                            {% endif %}
+                                            <div class="d-flex gap-2">
+                                                <a href="#" class="action-link" title="Download" onclick="alert('Download not implemented')">
+                                                    <i class="bi bi-download"></i>
+                                                </a>
+
+                                                <form method="post" style="display:inline;">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="dataset_id" value="{{ ds.id }}">
+                                                    <input type="hidden" name="action" value="delete">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete dataset {{ ds.name }}?');" title="Delete">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </td>
                                     </tr>
                                 {% endfor %}
@@ -179,9 +200,9 @@
                     </div>
                 {% else %}
                     <div class="text-center py-4">
-                        <i class="bi bi-graph-up text-muted" style="font-size: 3rem;"></i>
-                        <h5 class="text-muted mt-3">No predictions yet</h5>
-                        <p class="text-muted">Create your first prediction request to get started!</p>
+                        <i class="bi bi-hdd-rack text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="text-muted mt-3">No datasets available</h5>
+                        <p class="text-muted">No datasets have been uploaded yet.</p>
                     </div>
                 {% endif %}
             </div>
@@ -189,103 +210,20 @@
     </div>
 </div>
 
-<!-- Placeholder for future map visualization -->
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card shadow-sm">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0">
-                    <i class="bi bi-map me-2"></i>Geographic Insights
-                </h5>
-            </div>
-            <div class="card-body">
-                <div id="map" style="height: 400px;"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Load geo app's JavaScript -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="{% static 'geo/js/map.js' %}"></script>
 <script>
-
-    const productTypeSelect = document.getElementById('id_product_type');
-    // Initialize map with safe data from geo app (guarded to avoid parse errors and redeclaration)
-    document.addEventListener('DOMContentLoaded', function() {
-        window.GeoReachData = window.GeoReachData || {};
-
-        // Parse (or provide defaults) safely and cache on window.GeoReachData to avoid redeclaration
-        if (!window.GeoReachData.mapConfig) {
-            try {
-                window.GeoReachData.mapConfig = JSON.parse('{{ map_config|default:"{}"|escapejs }}');
-            } catch (e) {
-                window.GeoReachData.mapConfig = {};
-            }
-        }
-        if (!window.GeoReachData.clusters) {
-            try {
-                window.GeoReachData.clusters = JSON.parse('{{ clusters|default:"[]"|escapejs }}');
-            } catch (e) {
-                window.GeoReachData.clusters = [];
-            }
-        }
-        if (!window.GeoReachData.productDependencies) {
-            try {
-                window.GeoReachData.productDependencies = JSON.parse('{{ product_dependencies_json|default:"{}"|escapejs }}');
-            } catch (e) {
-                window.GeoReachData.productDependencies = {};
-            }
-        }
-
-        const mapConfig = window.GeoReachData.mapConfig;
-        const clusters = window.GeoReachData.clusters;
-        new GeoReachMap('map', mapConfig, clusters);
-
-        // Dynamic dropdown logic
-        const productTypeSelect = document.getElementById('id_product_type');
-        const productCategorySelect = document.getElementById('id_product_category');
-        const sectorSelect = document.getElementById('id_sector');
-        const productDependencies = window.GeoReachData.productDependencies;
-
-        function updateDependentDropdowns() {
-            const selectedProductType = productTypeSelect ? productTypeSelect.value : '';
-            const dependentData = productDependencies[selectedProductType];
-
-            // Clear and populate productCategorySelect
-            if (productCategorySelect) {
-                productCategorySelect.innerHTML = '<option value="">---------</option>'; // Add a default blank option
-                if (dependentData && dependentData.categories) {
-                    dependentData.categories.forEach(category => {
-                        const option = document.createElement('option');
-                        option.value = category;
-                        option.textContent = category;
-                        productCategorySelect.appendChild(option);
-                    });
-                }
-            }
-
-            // Clear and populate sectorSelect
-            if (sectorSelect) {
-                sectorSelect.innerHTML = '<option value="">---------</option>'; // Add a default blank option
-                if (dependentData && dependentData.sectors) {
-                    dependentData.sectors.forEach(sector => {
-                        const option = document.createElement('option');
-                        option.value = sector;
-                        option.textContent = sector;
-                        sectorSelect.appendChild(option);
-                    });
-                }
-            }
-        }
-
-        // Attach event listener
-        if (productTypeSelect) {
-            productTypeSelect.addEventListener('change', updateDependentDropdowns);
-            // Initial update in case a product type is pre-selected (e.g., on form error)
-            updateDependentDropdowns();
-        }
+// Simple search filter for datasets
+const dsSearch = document.getElementById('datasetSearch');
+if (dsSearch) {
+    dsSearch.addEventListener('keyup', function() {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#datasetsTable tbody tr');
+        rows.forEach(row => {
+            const name = row.cells[0].textContent.toLowerCase();
+            const source = row.cells[1].textContent.toLowerCase();
+            row.style.display = (name.includes(filter) || source.includes(filter)) ? '' : 'none';
+        });
     });
+}
 </script>
+
 {% endblock %}

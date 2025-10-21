@@ -4,6 +4,33 @@
 {% block title %}User Management - GeoReach Predictor{% endblock %}
 
 {% block content %}
+<style>
+/* Blue neon theme for user management */
+.user-mgmt-container {
+    background: linear-gradient(180deg, #071226 0%, #051526 100%);
+    color: #e6faff;
+    padding: 1rem;
+    border-radius: 12px;
+}
+.user-mgmt-container h1, .user-mgmt-container h5 { color: #00f0ff; text-shadow: 0 0 8px rgba(0,240,255,0.6); }
+.user-mgmt-container .card { background: rgba(6,12,24,0.6); border: 1px solid rgba(0,240,255,0.06); box-shadow: 0 8px 30px rgba(0,240,255,0.03); }
+.user-mgmt-container .card-header { background: linear-gradient(90deg, rgba(0,24,40,0.6), rgba(2,12,30,0.6)); border-bottom: 1px solid rgba(0,240,255,0.06); }
+.user-mgmt-container .table thead { background: rgba(0,240,255,0.02); color: #aef6ff; }
+.user-mgmt-container .badge { font-weight: 600; }
+.user-mgmt-container .btn-outline-secondary { color: #cfeffd; border-color: rgba(0,240,255,0.08); }
+.user-mgmt-container .btn-outline-secondary:hover { background: rgba(0,240,255,0.04); border-color: rgba(0,240,255,0.12); }
+.user-mgmt-container .text-muted { color: rgba(174,246,255,0.6) !important; }
+.user-mgmt-container .bi { color: #00f0ff; }
+.user-mgmt-container .list-group-item { background: transparent; border-bottom: 1px solid rgba(0,240,255,0.02); }
+.user-mgmt-container .table-hover tbody tr:hover { background: rgba(0,240,255,0.02); }
+.user-mgmt-container .badge.bg-success { background-color: #00c6a7; }
+.user-mgmt-container .badge.bg-warning { background-color: #ffb86b; color: #041017; }
+.user-mgmt-container .badge.bg-danger { background-color: #ff6b6b; }
+.user-mgmt-container .badge.bg-primary { background-color: #00aaff; }
+.user-mgmt-container .badge.bg-secondary { background-color: #6c7a89; }
+</style>
+
+<div class="user-mgmt-container">
 <div class="row">
     <div class="col-12">
         <nav aria-label="breadcrumb">
@@ -154,5 +181,6 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 {% endblock %}

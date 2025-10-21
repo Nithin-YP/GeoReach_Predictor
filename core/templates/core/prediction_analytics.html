@@ -5,6 +5,7 @@
 
 {% block content %}
 <style>
+    /* Blue neon theme adjustments */
     .analytics-container {
         display: flex;
         gap: 1rem;
@@ -38,31 +39,36 @@
     
     .metric-card:hover {
         transform: translateX(5px);
-        border-left-color: #3498db;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border-left-color: #00f0ff; /* neon cyan */
+        box-shadow: 0 6px 24px rgba(0, 240, 255, 0.12);
+        background: rgba(0,240,255,0.03);
     }
     
     .metric-card.active {
-        border-left-color: #2ecc71;
-        background: linear-gradient(90deg, rgba(46, 204, 113, 0.1) 0%, transparent 100%);
+        border-left-color: #00f0ff;
+        background: linear-gradient(90deg, rgba(0, 240, 255, 0.06) 0%, transparent 100%);
+        box-shadow: 0 8px 30px rgba(0,240,255,0.06);
     }
     
     .metric-value {
         font-size: 2rem;
         font-weight: bold;
-        color: #2c3e50;
+        color: #00f0ff; /* neon */
+        text-shadow: 0 0 8px rgba(0,240,255,0.6);
     }
     
     .metric-label {
         font-size: 0.875rem;
-        color: #7f8c8d;
+        color: #a6f3ff;
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
     
     .analytics-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: linear-gradient(135deg, rgba(0,24,40,1) 0%, rgba(2,12,30,1) 100%);
+        border: 1px solid rgba(0,240,255,0.08);
+        box-shadow: 0 8px 40px rgba(0,240,255,0.06) inset;
+        color: #e6faff;
         padding: 2rem;
         border-radius: 0.5rem;
         margin-bottom: 1.5rem;
@@ -74,7 +80,7 @@
     }
     
     .district-item:hover {
-        background: #f8f9fa;
+        background: rgba(0,240,255,0.03);
         transform: translateX(3px);
     }
     
@@ -417,6 +423,15 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+<!-- Embedded JSON data (keeps template vars out of raw JS) -->
+<script id="clusters-json" type="application/json">{{ clusters_json|safe }}</script>
+<script id="state-level-json" type="application/json">{{ state_level_json|safe }}</script>
+<script id="demographic-labels-json" type="application/json">{{ demographic_labels|safe }}</script>
+<script id="demographic-values-json" type="application/json">{{ demographic_values|safe }}</script>
+<script id="state-demographic-labels-json" type="application/json">{{ state_demographic_labels|safe }}</script>
+<script id="state-demographic-values-json" type="application/json">{{ state_demographic_values|safe }}</script>
+<script id="prediction-id-json" type="application/json">{{ prediction.id|json_script:'prediction-id' }}</script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize map
@@ -434,12 +449,22 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentGranularity = 'district';  // Track current view
     let polygonLayer = null;  // GeoJSON polygon layer
     
-    // Data for both levels
-    const districtData = {{ clusters_json|safe }};
-    const stateData = {{ state_level_json|safe }};
-    
-    // Prediction ID for API calls
-    const predictionId = {{ prediction.id }};
+    // Data for both levels (parsed from safe JSON script blocks)
+    let districtData = [];
+    let stateData = [];
+    try{
+        const dblock = document.getElementById('clusters-json');
+        if(dblock) districtData = JSON.parse(dblock.textContent || '[]');
+        const sblock = document.getElementById('state-level-json');
+        if(sblock) stateData = JSON.parse(sblock.textContent || '[]');
+    }catch(e){ console.error('Error parsing embedded JSON data', e); }
+
+    // Prediction ID for API calls (from json script - fallback to template var)
+    let predictionId = null;
+    try{
+        const pidBlock = document.getElementById('prediction-id-json');
+        if(pidBlock){ predictionId = JSON.parse(pidBlock.textContent || 'null'); }
+    }catch(e){ console.error('Error parsing prediction id', e); }
     
     // Function to clear all markers
     function clearMarkers() {
@@ -1022,11 +1047,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Demographics data for both levels
-    const districtDemographicLabels = {{ demographic_labels|safe }};
-    const districtDemographicValues = {{ demographic_values|safe }};
-    const stateDemographicLabels = {{ state_demographic_labels|safe }};
-    const stateDemographicValues = {{ state_demographic_values|safe }};
+    // Demographics data for both levels (from JSON script blocks)
+    let districtDemographicLabels = [];
+    let districtDemographicValues = [];
+    let stateDemographicLabels = [];
+    let stateDemographicValues = [];
+    try{
+        const dl = document.getElementById('demographic-labels-json'); if(dl) districtDemographicLabels = JSON.parse(dl.textContent || '[]');
+        const dv = document.getElementById('demographic-values-json'); if(dv) districtDemographicValues = JSON.parse(dv.textContent || '[]');
+        const sl = document.getElementById('state-demographic-labels-json'); if(sl) stateDemographicLabels = JSON.parse(sl.textContent || '[]');
+        const sv = document.getElementById('state-demographic-values-json'); if(sv) stateDemographicValues = JSON.parse(sv.textContent || '[]');
+    }catch(e){ console.error('Error parsing demographics JSON', e); }
     
     // Demographics Chart
     const ctx = document.getElementById('demographicsChart').getContext('2d');

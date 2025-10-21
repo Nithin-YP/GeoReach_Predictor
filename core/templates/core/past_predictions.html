@@ -4,6 +4,102 @@
 {% block title %}Past Predictions - GeoReach Predictor{% endblock %}
 
 {% block content %}
+<style>
+/* 🔹 Global Styles */
+body {
+    background: linear-gradient(135deg, #0d1117, #121924);
+    color: #ffffff;
+    font-family: 'Poppins', sans-serif;
+}
+
+h1, h5 {
+    color: #00f0ff;
+    text-shadow: 0 0 5px #00f0ff, 0 0 10px #00f0ff;
+}
+
+/* 🔹 Buttons */
+.btn-success {
+    background-color: #00f0ff;
+    border: none;
+    color: #0d1117;
+    font-weight: 600;
+    box-shadow: 0 0 10px #00f0ff;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-success:hover {
+    background-color: #00c3cc;
+    box-shadow: 0 0 15px #00f0ff;
+    color: #fff;
+}
+
+.btn-primary {
+    background-color: #0099ff;
+    border: none;
+    box-shadow: 0 0 10px #0099ff;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+    background-color: #007acc;
+    box-shadow: 0 0 15px #00f0ff;
+}
+
+/* 🔹 Cards */
+.card {
+    background-color: #0d1117;
+    border: 1px solid #00f0ff;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+    border-radius: 15px;
+}
+
+.card-header {
+    background-color: #0d1117 !important;
+    border-bottom: 1px solid #00f0ff;
+    color: #00f0ff;
+    text-shadow: 0 0 5px #00f0ff;
+}
+
+/* 🔹 Table */
+.table thead {
+    background-color: #0d1117 !important;
+    color: #00f0ff;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 255, 255, 0.1);
+}
+
+.table td, .table th {
+    vertical-align: middle;
+}
+
+/* 🔹 Badges */
+.badge {
+    font-weight: 600;
+    text-shadow: 0 0 3px #00f0ff;
+}
+
+/* 🔹 Summary Cards */
+.card-body h3 {
+    color: #00f0ff;
+    text-shadow: 0 0 5px #00f0ff;
+}
+
+/* 🔹 Charts */
+canvas {
+    background-color: #0d1117;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+}
+
+/* 🔹 Empty State */
+.text-center i {
+    color: rgba(0, 255, 255, 0.3);
+    text-shadow: 0 0 10px #00f0ff;
+}
+</style>
+
 <div class="row">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -23,7 +119,7 @@
 <div class="row">
     <div class="col-12">
         <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
                         <i class="bi bi-list-ul me-2"></i>All Predictions
@@ -37,23 +133,21 @@
                         <table class="table table-hover align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th style="width: 5%;">#</th>
-                                    <th style="width: 15%;">Date</th>
-                                    <th style="width: 15%;">Product Type</th>
-                                    <th style="width: 10%;">Luxury</th>
-                                    <th style="width: 20%;">Target Audience</th>
-                                    <th style="width: 10%;">Price</th>
-                                    <th style="width: 12%;">Predicted Reach</th>
-                                    <th style="width: 13%;">Success Probability</th>
-                                    <th style="width: 10%;">Actions</th>
+                                    <th>#</th>
+                                    <th>Date</th>
+                                    <th>Product Type</th>
+                                    <th>Luxury</th>
+                                    <th>Target Audience</th>
+                                    <th>Price</th>
+                                    <th>Predicted Reach</th>
+                                    <th>Success Probability</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for prediction in past_predictions %}
                                     <tr>
-                                        <td>
-                                            <strong class="text-primary">{{ forloop.counter }}</strong>
-                                        </td>
+                                        <td><strong class="text-primary">{{ forloop.counter }}</strong></td>
                                         <td>
                                             <small class="text-muted">
                                                 <i class="bi bi-calendar3 me-1"></i>{{ prediction.request_timestamp|date:"M d, Y" }}
@@ -61,25 +155,19 @@
                                                 <i class="bi bi-clock me-1"></i>{{ prediction.request_timestamp|date:"h:i A" }}
                                             </small>
                                         </td>
-                                        <td>
-                                            <strong>{{ prediction.product_type }}</strong>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-secondary">{{ prediction.product_luxury }}</span>
-                                        </td>
-                                        <td>
-                                            <small>{{ prediction.target_audience|truncatewords:5 }}</small>
-                                        </td>
-                                        <td>
-                                            <strong class="text-success">₹{{ prediction.price|floatformat:0 }}</strong>
-                                        </td>
+                                        <td><strong>{{ prediction.product_type }}</strong></td>
+                                        <td><span class="badge bg-secondary">{{ prediction.product_luxury }}</span></td>
+                                        <td><small>{{ prediction.target_audience|truncatewords:5 }}</small></td>
+                                        <td><strong class="text-success">₹{{ prediction.price|floatformat:0 }}</strong></td>
                                         <td>
                                             {% if prediction.predictionresult %}
                                                 <div class="d-flex align-items-center">
-                                                    <div class="progress flex-grow-1 me-2" style="height: 20px;">
-                                                        <div class="progress-bar bg-success" role="progressbar" 
-                                                             style="width: {{ prediction.predictionresult.predicted_reach|floatformat:1 }} %"
-                                                             aria-valuenow="{{ prediction.predictionresult.predicted_reach }}" 
+                                                    <div class="progress flex-grow-1 me-2" style="height: 20px; background-color: #111827;">
+                                                        {# store numeric value in data attribute, set width via JS to avoid CSS parse errors #}
+                                                        <div class="progress-bar bg-success" role="progressbar"
+                                                             data-predicted="{{ prediction.predictionresult.predicted_reach|floatformat:1 }}"
+                                                             style="width: 0%"
+                                                             aria-valuenow="{{ prediction.predictionresult.predicted_reach }}"
                                                              aria-valuemin="0" aria-valuemax="100">
                                                             {{ prediction.predictionresult.predicted_reach|floatformat:1 }}%
                                                         </div>
@@ -124,47 +212,48 @@
                             </tbody>
                         </table>
                     </div>
-                    
-                    <!-- Summary Statistics -->
+
+                    <!-- Summary Cards -->
                     <div class="row mt-4">
                         <div class="col-md-3">
-                            <div class="card bg-primary text-white">
-                                <div class="card-body text-center">
-                                    <h3 class="mb-0">{{ past_predictions|length }}</h3>
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h3>{{ past_predictions|length }}</h3>
                                     <small>Total Predictions</small>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card bg-success text-white">
-                                <div class="card-body text-center">
-                                    <h3 class="mb-0">{{ avg_reach|floatformat:1 }}%</h3>
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h3>{{ avg_reach|floatformat:1 }}%</h3>
                                     <small>Avg. Reach</small>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card bg-info text-white">
-                                <div class="card-body text-center">
-                                    <h3 class="mb-0">{{ avg_probability|floatformat:3 }}</h3>
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h3>{{ avg_probability|floatformat:3 }}</h3>
                                     <small>Avg. Success Rate</small>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card bg-warning text-white">
-                                <div class="card-body text-center">
-                                    <h3 class="mb-0">₹{{ avg_price|floatformat:0 }}</h3>
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h3>₹{{ avg_price|floatformat:0 }}</h3>
                                     <small>Avg. Price</small>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                 {% else %}
                     <div class="text-center py-5">
-                        <i class="bi bi-graph-up text-muted" style="font-size: 4rem;"></i>
-                        <h4 class="text-muted mt-3">No predictions yet</h4>
-                        <p class="text-muted mb-4">Create your first prediction request to get started!</p>
+                        <i class="bi bi-graph-up" style="font-size: 4rem;"></i>
+                        <h4 class="mt-3">No predictions yet</h4>
+                        <p class="mb-4">Create your first prediction request to get started!</p>
                         <a href="{% url 'core:entrepreneur_dashboard' %}#new-prediction" class="btn btn-success">
                             <i class="bi bi-plus-circle me-2"></i>Create First Prediction
                         </a>
@@ -175,12 +264,27 @@
     </div>
 </div>
 
+                <script>
+                document.addEventListener('DOMContentLoaded', function(){
+                    document.querySelectorAll('.progress-bar[data-predicted]').forEach(function(el){
+                        var v = el.getAttribute('data-predicted');
+                        if(v !== null){
+                            // clamp and append percent
+                            var n = parseFloat(v) || 0;
+                            if(n < 0) n = 0; if(n > 100) n = 100;
+                            el.style.width = n + '%';
+                            el.setAttribute('aria-valuenow', String(n));
+                        }
+                    });
+                });
+                </script>
+
 <!-- Visualization Section -->
 {% if past_predictions %}
 <div class="row mt-4">
     <div class="col-md-6">
         <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header">
                 <h5 class="mb-0">
                     <i class="bi bi-bar-chart-line me-2"></i>Reach Over Time
                 </h5>
@@ -192,7 +296,7 @@
     </div>
     <div class="col-md-6">
         <div class="card shadow-sm">
-            <div class="card-header bg-success text-white">
+            <div class="card-header">
                 <h5 class="mb-0">
                     <i class="bi bi-pie-chart-fill me-2"></i>Product Type Distribution
                 </h5>
@@ -204,109 +308,4 @@
     </div>
 </div>
 {% endif %}
-
-{% if past_predictions %}
-{% comment %} Prepare chart data using Django template logic {% endcomment %}
-{% with labels_list="" reach_list="" %}
-    {% for pred in past_predictions reversed %}
-        {% if not forloop.first %}
-            {% with labels_list=labels_list|add:"," reach_list=reach_list|add:"," %}
-            {% endwith %}
-        {% endif %}
-        {% with labels_list=labels_list|add:"'"|add:pred.request_timestamp|date:"M d"|add:"'" %}
-        {% endwith %}
-        {% if pred.predictionresult %}
-            {% with reach_list=reach_list|add:pred.predictionresult.predicted_reach|stringformat:"s" %}
-            {% endwith %}
-        {% else %}
-            {% with reach_list=reach_list|add:"0" %}
-            {% endwith %}
-        {% endif %}
-    {% endfor %}
-{% endwith %}
-
-{% comment %} Prepare product type distribution data {% endcomment %}
-{% regroup past_predictions by product_type as product_type_groups %}
-{% with product_type_labels="" product_type_counts="" %}
-    {% for group in product_type_groups %}
-        {% if not forloop.first %}
-            {% with product_type_labels=product_type_labels|add:"," product_type_counts=product_type_counts|add:"," %}
-            {% endwith %}
-        {% endif %}
-        {% with product_type_labels=product_type_labels|add:"'"|add:group.grouper|add:"'" %}
-        {% endwith %}
-        {% with product_type_counts=product_type_counts|add:group.list|length|stringformat:"s" %}
-        {% endwith %}
-    {% endfor %}
-{% endwith %}
-{% endif %}
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    {% if past_predictions %}
-    // Reach Over Time Chart
-    const reachCtx = document.getElementById('reachChart').getContext('2d');
-    const reachData = {
-        labels: [{{ labels_list|safe }}],
-        datasets: [{
-            label: 'Predicted Reach (%)',
-            data: [{{ reach_list|safe }}],
-            borderColor: 'rgb(75, 192, 192)',
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            tension: 0.1
-        }]
-    };
-
-    new Chart(reachCtx, {
-        type: 'line',
-        data: reachData,
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top',
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100
-                }
-            }
-        }
-    });
-
-    // Product Type Distribution Chart
-    const productTypeCtx = document.getElementById('productTypeChart').getContext('2d');
-    const productTypeData = {
-        labels: [{{ product_type_labels|safe }}],
-        datasets: [{
-            data: [{{ product_type_counts|safe }}],
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.8)',
-                'rgba(54, 162, 235, 0.8)',
-                'rgba(255, 206, 86, 0.8)',
-                'rgba(75, 192, 192, 0.8)',
-                'rgba(153, 102, 255, 0.8)',
-                'rgba(255, 159, 64, 0.8)'
-            ]
-        }]
-    };
-
-    new Chart(productTypeCtx, {
-        type: 'pie',
-        data: productTypeData,
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                }
-            }
-        }
-    });
-    {% endif %}
-});
-</script>
 {% endblock %}

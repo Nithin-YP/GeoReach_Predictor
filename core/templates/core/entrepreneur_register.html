@@ -3,11 +3,109 @@
 {% block title %}Register as Entrepreneur{% endblock %}
 
 {% block content %}
+<style>
+    body {
+        background: linear-gradient(135deg, #1d2a35, #22303f);
+        font-family: 'Poppins', sans-serif;
+        color: #fff;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+        transition: all 0.3s ease;
+    }
+
+    h2 {
+        color: #00bcd4;
+        text-align: center;
+        margin-bottom: 1.5rem;
+        text-shadow: 0 0 10px rgba(0,188,212,0.6);
+        transition: color 0.3s ease;
+    }
+
+    form {
+        background: rgba(255,255,255,0.05);
+        padding: 2rem;
+        border-radius: 15px;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        width: 100%;
+        max-width: 500px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    form:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 35px rgba(0,0,0,0.45);
+    }
+
+    form p {
+        margin-bottom: 1rem;
+    }
+
+    input, select, textarea {
+        width: 100%;
+        padding: 0.6rem 1rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.2);
+        background: rgba(255,255,255,0.03);
+        color: #fff;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: #00bcd4;
+        box-shadow: 0 0 12px rgba(0,188,212,0.6);
+        background: rgba(255,255,255,0.05);
+    }
+
+    button {
+        width: 100%;
+        padding: 0.7rem;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(90deg, #007bff, #00bcd4);
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,188,212,0.4);
+    }
+
+    button:hover {
+        background: linear-gradient(90deg, #00bcd4, #007bff);
+        box-shadow: 0 6px 20px rgba(0,188,212,0.6);
+    }
+
+    a {
+        color: #00bcd4;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    a:hover {
+        color: #00fff0;
+        text-shadow: 0 0 8px rgba(0,255,240,0.5);
+    }
+
+    .login-link {
+        text-align: center;
+        margin-top: 1rem;
+    }
+</style>
+
+<div>
     <h2>Register as Entrepreneur</h2>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Register</button>
     </form>
-    <p>Already have an account? <a href="{% url 'core:login' %}">Login here</a>.</p>
+    <div class="login-link">
+        <p>Already have an account? <a href="{% url 'core:login' %}">Login here</a>.</p>
+    </div>
+</div>
 {% endblock %}
