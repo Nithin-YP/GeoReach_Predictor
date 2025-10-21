@@ -83,7 +83,23 @@ class PredictionRequestForm(forms.ModelForm):
     gender = forms.ChoiceField(choices=GENDER_CHOICES, required=False)
     income_range = forms.ChoiceField(choices=INCOME_RANGE_CHOICES, required=False)
     education_level = forms.ChoiceField(choices=EDUCATION_LEVEL_CHOICES, required=False)
-    price = forms.DecimalField(max_digits=10, decimal_places=2, required=False, help_text="Enter the product's price")
+    price = forms.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        required=True,
+        min_value=0.01,
+        help_text="Enter the product's price in rupees",
+        widget=forms.NumberInput(attrs={
+            'placeholder': 'e.g., 999.00',
+            'step': '0.01',
+            'min': '0.01'
+        }),
+        error_messages={
+            'required': 'Price is required.',
+            'invalid': 'Please enter a valid price.',
+            'min_value': 'Price must be greater than 0.'
+        }
+    )
 
     # Define dependencies here for server-side validation
     PRODUCT_DEPENDENCIES = {
@@ -158,6 +174,5 @@ class PredictionRequestForm(forms.ModelForm):
 
     class Meta:
         model = PredictionRequest
-        fields = ['product_type', 'product_luxury', 'target_audience', 'price', 'region']
-        # Exclude fields that will be derived or combined from new dropdowns
-        exclude = ['target_audience', 'price']
+        fields = ['product_type', 'product_luxury', 'price']
+        # Note: target_audience and region are handled in the view

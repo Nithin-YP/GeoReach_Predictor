@@ -1,0 +1,1092 @@
+{% extends 'entrepreneur_base.html' %}
+{% load static %}
+
+{% block title %}Prediction Analytics - {{ prediction.product_type }} - GeoReach Predictor{% endblock %}
+
+{% block content %}
+<style>
+    .analytics-container {
+        display: flex;
+        gap: 1rem;
+        height: calc(100vh - 120px);
+    }
+    
+    .left-panel {
+        width: 40%;
+        overflow-y: auto;
+        padding-right: 1rem;
+    }
+    
+    .right-panel {
+        width: 60%;
+        position: sticky;
+        top: 0;
+    }
+    
+    #analyticsMap {
+        height: 100%;
+        min-height: 500px;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .metric-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+    
+    .metric-card:hover {
+        transform: translateX(5px);
+        border-left-color: #3498db;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .metric-card.active {
+        border-left-color: #2ecc71;
+        background: linear-gradient(90deg, rgba(46, 204, 113, 0.1) 0%, transparent 100%);
+    }
+    
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+    
+    .metric-label {
+        font-size: 0.875rem;
+        color: #7f8c8d;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .analytics-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .district-item {
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .district-item:hover {
+        background: #f8f9fa;
+        transform: translateX(3px);
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 3px;
+    }
+    
+    @media (max-width: 992px) {
+        .analytics-container {
+            flex-direction: column;
+            height: auto;
+        }
+        
+        .left-panel, .right-panel {
+            width: 100%;
+        }
+        
+        #analyticsMap {
+            height: 400px;
+        }
+    }
+</style>
+
+<div class="analytics-header">
+    <div class="d-flex justify-content-between align-items-start">
+        <div>
+            <h2 class="mb-2">
+                <i class="bi bi-graph-up-arrow me-2"></i>Prediction Analytics
+            </h2>
+            <p class="mb-1"><strong>Product:</strong> {{ prediction.product_type }} ({{ prediction.product_luxury }})</p>
+            <p class="mb-1"><strong>Target:</strong> {{ prediction.target_audience }}</p>
+            <p class="mb-0"><strong>Price:</strong> ₹{{ prediction.price|floatformat:0 }}</p>
+        </div>
+        <div class="text-end">
+            <div class="badge bg-light text-dark mb-2" style="font-size: 1rem;">
+                {{ prediction.request_timestamp|date:"M d, Y H:i" }}
+            </div>
+            <br>
+            <!-- Granularity Toggle -->
+            <div class="btn-group mb-2 me-2" role="group" aria-label="Granularity toggle">
+                <input type="radio" class="btn-check" name="granularity" id="district-level" value="district" checked>
+                <label class="btn btn-outline-primary btn-sm" for="district-level">
+                    <i class="bi bi-geo-alt-fill me-1"></i>District Level
+                </label>
+                
+                <input type="radio" class="btn-check" name="granularity" id="state-level" value="state">
+                <label class="btn btn-outline-primary btn-sm" for="state-level">
+                    <i class="bi bi-map me-1"></i>State Level
+                </label>
+            </div>
+            <br>
+            <a href="{% url 'core:entrepreneur_dashboard' %}" class="btn btn-light btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="analytics-container">
+    <!-- Left Panel: Analytics & Metrics -->
+    <div class="left-panel">
+        <!-- Overall Metrics -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-bullseye me-2"></i>Overall Performance</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="metric-card card h-100" data-metric="reach">
+                            <div class="card-body text-center">
+                                <div class="metric-value text-success">{{ result.predicted_reach|floatformat:1 }}%</div>
+                                <div class="metric-label">Predicted Reach</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="metric-card card h-100" data-metric="probability">
+                            <div class="card-body text-center">
+                                <div class="metric-value text-info">{{ result.success_probability|floatformat:3 }}</div>
+                                <div class="metric-label">Success Probability</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="metric-card card h-100" data-metric="confidence">
+                            <div class="card-body text-center">
+                                <div class="metric-value text-warning">{{ result.model_confidence|floatformat:3 }}</div>
+                                <div class="metric-label">Model Confidence</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="metric-card card h-100" data-metric="clusters">
+                            <div class="card-body text-center">
+                                <div class="metric-value text-primary">{{ clusters|length }}</div>
+                                <div class="metric-label">Target Clusters</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Districts -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-geo-alt-fill me-2"></i>Top Target Districts</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for district in top_districts %}
+                    <div class="list-group-item district-item" data-district="{{ district.name }}" 
+                         data-lat="{{ district.lat }}" data-lon="{{ district.lon }}"
+                         style="cursor: pointer; transition: background-color 0.2s;">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div style="flex: 1;">
+                                <div class="d-flex align-items-center mb-2">
+                                    <h6 class="mb-0 me-2">{{ forloop.counter }}. {{ district.name }}</h6>
+                                    {% if district.label == 'High' %}
+                                    <span class="badge bg-success">
+                                        {{ district.label }}
+                                    </span>
+                                    {% elif district.label == 'Medium' %}
+                                    <span class="badge bg-warning">
+                                        {{ district.label }}
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-danger">
+                                        {{ district.label|default:'Low' }}
+                                    </span>
+                                    {% endif %}
+                                    {% if district.tier %}
+                                    <span class="badge bg-secondary ms-1">Tier {{ district.tier }}</span>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted d-block"><i class="bi bi-map me-1"></i>{{ district.state }}</small>
+                                <div class="mt-2">
+                                    <small class="text-muted d-block">
+                                        <i class="bi bi-people-fill me-1"></i>Population: <strong>{{ district.population|floatformat:0 }}</strong>
+                                    </small>
+                                    {% if district.literacy_rate %}
+                                    <small class="text-muted d-block">
+                                        <i class="bi bi-book me-1"></i>Literacy: <strong>{{ district.literacy_rate }}%</strong>
+                                    </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="text-end ms-3">
+                                <div class="mb-1">
+                                    <strong class="text-success">₹{{ district.avg_income|floatformat:0 }}</strong>
+                                    <br><small class="text-muted">Avg Income</small>
+                                </div>
+                                {% if district.interest_index %}
+                                <div class="mt-2">
+                                    <span class="badge bg-info">{{ district.interest_index|floatformat:3 }}</span>
+                                    <br><small class="text-muted">Interest Score</small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="list-group-item text-center text-muted py-4">
+                        <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                        <p class="mb-0 mt-2">No district data available</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Demographics Breakdown -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-people-fill me-2"></i>Demographics Insights</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="demographicsChart" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Economic Indicators -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="bi bi-currency-rupee me-2"></i>Economic Indicators</h5>
+            </div>
+            <div class="card-body">
+                {% if economic_indicators %}
+                <div class="list-group list-group-flush" id="economic-indicators-list">
+                    {% for indicator in economic_indicators %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ indicator.district }}</h6>
+                                <small class="text-muted">{{ indicator.state }}</small>
+                            </div>
+                            <div class="text-end">
+                                {% if indicator.label == 'High' %}
+                                <span class="badge bg-success">
+                                    {{ indicator.label }}
+                                </span>
+                                {% elif indicator.label == 'Medium' %}
+                                <span class="badge bg-warning">
+                                    {{ indicator.label }}
+                                </span>
+                                {% else %}
+                                <span class="badge bg-danger">
+                                    {{ indicator.label|default:'Low' }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row g-2 mt-2">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-cash-stack me-2 text-success"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Avg Income</small>
+                                        <strong>₹{{ indicator.avg_income|floatformat:0 }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-graph-down me-2 text-danger"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Unemployment</small>
+                                        <strong>{{ indicator.unemployment }}%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            {% if indicator.literacy_rate %}
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-book me-2 text-info"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Literacy</small>
+                                        <strong>{{ indicator.literacy_rate }}%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% if indicator.relevant_expenditure %}
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-cart3 me-2 text-primary"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Spending</small>
+                                        <strong>₹{{ indicator.relevant_expenditure|floatformat:0 }}/mo</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-graph-up" style="font-size: 2rem;"></i>
+                    <p class="mb-0 mt-2">No economic data available</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Map Legend -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="bi bi-map me-2"></i>Map Legend</h5>
+            </div>
+            <div class="card-body">
+                <h6 class="mb-2 text-success"><strong>High Potential (>70%)</strong></h6>
+                <div class="legend-item mb-1">
+                    <div class="legend-color" style="background: #00b894;"></div>
+                    <span>Very High (>80%)</span>
+                </div>
+                <div class="legend-item mb-1">
+                    <div class="legend-color" style="background: #27ae60;"></div>
+                    <span>High+ (70-80%)</span>
+                </div>
+                <div class="legend-item mb-3">
+                    <div class="legend-color" style="background: #2ecc71;"></div>
+                    <span>High (70%+)</span>
+                </div>
+                
+                <h6 class="mb-2 text-warning"><strong>Medium Potential (40-70%)</strong></h6>
+                <div class="legend-item mb-1">
+                    <div class="legend-color" style="background: #f39c12;"></div>
+                    <span>Medium+ (50-70%)</span>
+                </div>
+                <div class="legend-item mb-1">
+                    <div class="legend-color" style="background: #f1c40f;"></div>
+                    <span>Medium (40-50%)</span>
+                </div>
+                <div class="legend-item mb-3">
+                    <div class="legend-color" style="background: #ffa502;"></div>
+                    <span>Medium- (40-45%)</span>
+                </div>
+                
+                <h6 class="mb-2 text-danger"><strong>Low Potential (<40%)</strong></h6>
+                <div class="legend-item mb-1">
+                    <div class="legend-color" style="background: #e17055;"></div>
+                    <span>Low+ (30-40%)</span>
+                </div>
+                <div class="legend-item mb-1">
+                    <div class="legend-color" style="background: #e74c3c;"></div>
+                    <span>Low (20-30%)</span>
+                </div>
+                <div class="legend-item mb-2">
+                    <div class="legend-color" style="background: #c0392b;"></div>
+                    <span>Very Low (<20%)</span>
+                </div>
+                
+                <hr class="my-2">
+                <p class="mb-1 small text-muted"><i class="bi bi-info-circle me-1"></i>
+                    <strong>Marker Size:</strong> Proportional to population density (district) or district count (state)
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel: Map -->
+    <div class="right-panel">
+        <div id="analyticsMap"></div>
+    </div>
+</div>
+
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize map
+    const map = L.map('analyticsMap').setView([20.5937, 78.9629], 5); // Center of India
+    
+    // Add tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 18
+    }).addTo(map);
+    
+    // Store markers and polygon layer for later reference
+    let markers = [];
+    let selectedMarker = null;
+    let currentGranularity = 'district';  // Track current view
+    let polygonLayer = null;  // GeoJSON polygon layer
+    
+    // Data for both levels
+    const districtData = {{ clusters_json|safe }};
+    const stateData = {{ state_level_json|safe }};
+    
+    // Prediction ID for API calls
+    const predictionId = {{ prediction.id }};
+    
+    // Function to clear all markers
+    function clearMarkers() {
+        markers.forEach(marker => map.removeLayer(marker));
+        markers = [];
+        if (selectedMarker) {
+            map.removeLayer(selectedMarker);
+            selectedMarker = null;
+        }
+    }
+    
+    // Function to get color based on POTENTIAL LABEL (not reachability index)
+    function getColorByPotential(label) {
+        // Color based ONLY on potential label for consistency
+        // Note: No region has true 0 reachability - null/undefined = no data
+        
+        // Check for no data first
+        if (!label || label === null || label === undefined) {
+            return '#E0E0E0';  // Light gray for no data
+        }
+        
+        // High Potential Colors (Green shades)
+        if (label === 'Very High') {
+            return '#006400';  // Very High: Dark Green
+        }
+        if (label === 'High+' || label === 'High') {
+            return '#228B22';  // High+: Forest Green
+        }
+        
+        // Medium Potential Colors (Yellow/Orange shades)
+        if (label === 'Medium+') {
+            return '#FFA500';  // Medium+: Orange
+        }
+        if (label === 'Medium') {
+            return '#FFD700';  // Medium: Gold
+        }
+        if (label === 'Medium-') {
+            return '#FFFF00';  // Medium-: Yellow
+        }
+        
+        // Low Potential Colors (Red shades)
+        if (label === 'Low+') {
+            return '#FF6347';  // Low+: Tomato
+        }
+        if (label === 'Low') {
+            return '#FF4500';  // Low: Orange Red
+        }
+        if (label === 'Very Low') {
+            return '#DC143C';  // Very Low: Crimson
+        }
+        
+        // Default for unknown/unrecognized labels
+        return '#E0E0E0';  // Light gray for unknown
+    }
+    
+    // Function to get color for markers (can use both label and index)
+    function getMarkerColor(interestIndex, label) {
+        // For markers, we primarily use the label but can fallback to index
+        if (label && label !== 'Low') {
+            return getColorByPotential(label);
+        }
+        
+        // Fallback to index-based coloring if no label
+        if (interestIndex >= 0.8) return '#006400';  // Dark Green
+        if (interestIndex >= 0.7) return '#228B22';  // Forest Green
+        if (interestIndex >= 0.5) return '#FFA500';  // Orange
+        if (interestIndex >= 0.45) return '#FFD700';  // Gold
+        if (interestIndex >= 0.4) return '#FFFF00';  // Yellow
+        if (interestIndex >= 0.3) return '#FF6347';  // Tomato
+        if (interestIndex >= 0.2) return '#FF4500';  // Orange Red
+        return '#DC143C';  // Crimson
+    }
+    
+    // Function to add district-level markers
+    function addDistrictMarkers() {
+        clearMarkers();
+        districtData.forEach(function(cluster, index) {
+        const color = getMarkerColor(cluster.interest_index, cluster.label);
+        
+        const marker = L.circleMarker([cluster.lat, cluster.lon], {
+            radius: Math.max(8, Math.min(20, 8 + ((cluster.population_density || 0) / 5000))),
+            fillColor: color,
+            color: '#fff',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).addTo(map);
+        
+        // Enhanced popup with city and state information
+        const cityInfo = cluster.city_name ? `<h6 class="mb-2"><i class="bi bi-geo-alt-fill"></i> ${cluster.city_name}, ${cluster.state}</h6>` : '';
+        const tierBadge = cluster.tier ? `<span class="badge bg-secondary mb-2">Tier ${cluster.tier} City</span>` : '';
+        
+        marker.bindPopup(`
+            <div class="p-2" style="min-width: 200px;">
+                ${cityInfo}
+                ${tierBadge}
+                <div class="mb-2">
+                    <span class="badge ${cluster.label === 'High' ? 'bg-success' : cluster.label === 'Medium' ? 'bg-warning' : 'bg-danger'}">
+                        ${cluster.label} Potential
+                    </span>
+                </div>
+                <hr class="my-2">
+                <p class="mb-1"><strong>Population:</strong> ${cluster.population ? cluster.population.toLocaleString() : 'N/A'}</p>
+                <p class="mb-1"><strong>Density:</strong> ${cluster.population_density.toLocaleString()}/km²</p>
+                <p class="mb-1"><strong>Avg Income:</strong> ₹${cluster.avg_income.toLocaleString()}</p>
+                <p class="mb-1"><strong>Literacy Rate:</strong> ${cluster.literacy_rate ? cluster.literacy_rate + '%' : 'N/A'}</p>
+                <p class="mb-1"><strong>Employment Rate:</strong> ${cluster.employment_rate.toFixed(1)}%</p>
+                <p class="mb-1"><strong>Interest Index:</strong> <strong>${(cluster.interest_index * 100).toFixed(1)}%</strong></p>
+                ${cluster.relevant_expenditure ? `<p class="mb-0"><strong>Relevant Spending:</strong> ₹${cluster.relevant_expenditure.toLocaleString()}/month</p>` : ''}
+            </div>
+        `);
+        
+        markers.push(marker);
+    });
+    }
+    
+    // Function to add state-level markers
+    function addStateMarkers() {
+        clearMarkers();
+        stateData.forEach(function(state, index) {
+            const color = getMarkerColor(state.interest_index, state.label);
+            
+            const marker = L.circleMarker([state.center_lat, state.center_lon], {
+                radius: Math.max(15, Math.min(35, 15 + (state.district_count * 2))),
+                fillColor: color,
+                color: '#fff',
+                weight: 3,
+                opacity: 1,
+                fillOpacity: 0.7
+            }).addTo(map);
+            
+            marker.bindPopup(`
+                <div class="p-2" style="min-width: 220px;">
+                    <h6 class="mb-2"><i class="bi bi-map-fill"></i> ${state.state}</h6>
+                    <div class="mb-2">
+                        <span class="badge ${state.label === 'High' ? 'bg-success' : state.label === 'Medium' ? 'bg-warning' : 'bg-danger'}">
+                            ${state.label} Potential
+                        </span>
+                    </div>
+                    <hr class="my-2">
+                    <p class="mb-1"><strong>Districts:</strong> ${state.district_count}</p>
+                    <p class="mb-1"><strong>Top District:</strong> ${state.top_district}</p>
+                    <p class="mb-1"><strong>Avg Population:</strong> ${state.avg_population ? state.avg_population.toLocaleString() : 'N/A'}</p>
+                    <p class="mb-1"><strong>Avg Income:</strong> ₹${state.avg_income.toLocaleString()}</p>
+                    <p class="mb-1"><strong>Avg Literacy:</strong> ${state.avg_literacy_rate ? state.avg_literacy_rate.toFixed(1) + '%' : 'N/A'}</p>
+                    <p class="mb-1"><strong>Avg Employment:</strong> ${state.avg_employment_rate.toFixed(1)}%</p>
+                    <p class="mb-1"><strong>Interest Index:</strong> <strong>${(state.interest_index * 100).toFixed(1)}%</strong></p>
+                </div>
+            `);
+            
+            markers.push(marker);
+        });
+    }
+    
+    // Function to load and display polygon overlay
+    function loadPolygonOverlay(granularity) {
+        console.log(`Loading polygon overlay for ${granularity} level...`);
+        
+        // Remove existing polygon layer
+        if (polygonLayer) {
+            map.removeLayer(polygonLayer);
+            polygonLayer = null;
+            console.log('Removed existing polygon layer');
+        }
+        
+        // Fetch GeoJSON data from backend
+        const url = `/core/prediction/${predictionId}/geojson/?granularity=${granularity}`;
+        console.log(`Fetching from: ${url}`);
+        
+        fetch(url, {
+            credentials: 'same-origin',  // Include cookies for authentication
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'  // Mark as AJAX request
+            }
+        })
+            .then(response => {
+                console.log(`Response status: ${response.status}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(geojson => {
+                console.log(`GeoJSON received with ${geojson.features ? geojson.features.length : 0} features`);
+                
+                if (!geojson.features || geojson.features.length === 0) {
+                    console.warn('No features in GeoJSON');
+                    return;
+                }
+                // Create polygon layer with styling based on POTENTIAL (label)
+                polygonLayer = L.geoJSON(geojson, {
+                    style: function(feature) {
+                        const label = feature.properties.label;  // Can be null/undefined for no data
+                        const clusterCount = feature.properties.cluster_count || 0;
+                        const interestIndex = feature.properties.interest_index;
+                        
+                        // Get fill color based on POTENTIAL LABEL (not reachability index)
+                        // Note: null label = no data (not zero reachability!)
+                        const fillColor = getColorByPotential(label);
+                        
+                        // Adjust opacity based on whether region has data
+                        // Regions with no data: very faded (differentiate from low reachability)
+                        const fillOpacity = clusterCount > 0 ? 0.5 : 0.05;  // Much clearer distinction
+                        
+                        return {
+                            fillColor: fillColor,
+                            fillOpacity: fillOpacity,
+                            color: fillColor,  // Border color matches fill
+                            weight: 2,
+                            opacity: 0.7
+                        };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        // Add popup with reachability info
+                        const props = feature.properties;
+                        const name = props.NAME_1 || props.NAME_2 || props.NAME_3 || props.DISTRICT || props.STATE || 'Unknown';
+                        
+                        // Handle null values properly - null means no data, NOT zero reachability
+                        const hasData = props.interest_index !== null && props.interest_index !== undefined;
+                        const interest = hasData ? (props.interest_index * 100).toFixed(1) : 'N/A';
+                        const label = props.label || 'No Data';
+                        
+                        // Granular badge colors based on label
+                        let badgeClass;
+                        if (label === 'No Data') {
+                            badgeClass = 'bg-secondary';  // Gray for no data
+                        } else if (label === 'Very High' || label === 'High+') {
+                            badgeClass = 'bg-success';  // Green for high potential
+                        } else if (label === 'Medium+' || label === 'Medium' || label === 'Medium-') {
+                            badgeClass = 'bg-warning';  // Orange/Yellow for medium potential
+                        } else {
+                            badgeClass = 'bg-danger';  // Red for low potential
+                        }
+                        
+                        let popupContent = `
+                            <div class="p-2" style="min-width: 180px;">
+                                <h6 class="mb-2"><i class="bi bi-map-fill"></i> ${name}</h6>
+                                <div class="mb-2">
+                                    <span class="badge ${badgeClass}">${label} Potential</span>
+                                </div>
+                                <hr class="my-2">
+                                <p class="mb-1"><strong>Reachability:</strong> ${interest}%</p>
+                        `;
+                        
+                        if (granularity === 'state' && props.cluster_count) {
+                            popupContent += `<p class="mb-0"><strong>Target Areas:</strong> ${props.cluster_count}</p>`;
+                        }
+                        
+                        popupContent += `</div>`;
+                        
+                        layer.bindPopup(popupContent);
+                        
+                        // Highlight on hover
+                        layer.on('mouseover', function() {
+                            layer.setStyle({
+                                weight: 3,
+                                fillOpacity: 0.5
+                            });
+                        });
+                        
+                        layer.on('mouseout', function() {
+                            layer.setStyle({
+                                weight: 2,
+                                fillOpacity: 0.3
+                            });
+                        });
+                    }
+                }).addTo(map);
+                
+                console.log('Polygon layer added to map successfully');
+                
+                // Bring markers to front
+                markers.forEach(marker => marker.bringToFront());
+                console.log('Markers brought to front');
+            })
+            .catch(error => {
+                console.error('Error loading polygon overlay:', error);
+                console.error('Error details:', error.message);
+                console.error('Stack:', error.stack);
+                alert(`Failed to load geographic boundaries: ${error.message}\nCheck browser console for details.`);
+            });
+    }
+    
+    // Function to update districts list
+    function updateDistrictsList(granularity) {
+        const listContainer = document.querySelector('.list-group.list-group-flush');
+        if (!listContainer) return;
+        
+        listContainer.innerHTML = '';
+        
+        if (granularity === 'district') {
+            // Show district-level data
+            districtData.slice(0, 5).forEach(function(cluster, index) {
+                const badgeClass = cluster.label === 'High' ? 'bg-success' : 
+                                  cluster.label === 'Medium' ? 'bg-warning' : 'bg-danger';
+                const cityName = cluster.city_name || cluster.district_name || 'Unknown';
+                const tierBadge = cluster.tier ? `<span class="badge bg-secondary ms-1">Tier ${cluster.tier}</span>` : '';
+                
+                listContainer.innerHTML += `
+                    <div class="list-group-item district-item" data-district="${cityName}" 
+                         data-lat="${cluster.lat}" data-lon="${cluster.lon}"
+                         style="cursor: pointer; transition: background-color 0.2s;">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div style="flex: 1;">
+                                <div class="d-flex align-items-center mb-2">
+                                    <h6 class="mb-0 me-2">${index + 1}. ${cityName}</h6>
+                                    <span class="badge ${badgeClass}">${cluster.label}</span>
+                                    ${tierBadge}
+                                </div>
+                                <small class="text-muted d-block"><i class="bi bi-map me-1"></i>${cluster.state}</small>
+                                <div class="mt-2">
+                                    <small class="text-muted d-block">
+                                        <i class="bi bi-people-fill me-1"></i>Population: <strong>${cluster.population ? cluster.population.toLocaleString() : 'N/A'}</strong>
+                                    </small>
+                                    ${cluster.literacy_rate ? `<small class="text-muted d-block">
+                                        <i class="bi bi-book me-1"></i>Literacy: <strong>${cluster.literacy_rate}%</strong>
+                                    </small>` : ''}
+                                </div>
+                            </div>
+                            <div class="text-end ms-3">
+                                <div class="mb-1">
+                                    <strong class="text-success">₹${cluster.avg_income.toLocaleString()}</strong>
+                                    <br><small class="text-muted">Avg Income</small>
+                                </div>
+                                <div class="mt-2">
+                                    <span class="badge bg-info">${cluster.interest_index.toFixed(3)}</span>
+                                    <br><small class="text-muted">Interest Score</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        } else {
+            // Show state-level data
+            stateData.slice(0, 5).forEach(function(state, index) {
+                const badgeClass = state.label === 'High' ? 'bg-success' : 
+                                  state.label === 'Medium' ? 'bg-warning' : 'bg-danger';
+                
+                listContainer.innerHTML += `
+                    <div class="list-group-item district-item" data-district="${state.state}" 
+                         data-lat="${state.center_lat}" data-lon="${state.center_lon}"
+                         style="cursor: pointer; transition: background-color 0.2s;">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div style="flex: 1;">
+                                <div class="d-flex align-items-center mb-2">
+                                    <h6 class="mb-0 me-2">${index + 1}. ${state.state}</h6>
+                                    <span class="badge ${badgeClass}">${state.label}</span>
+                                </div>
+                                <small class="text-muted d-block"><i class="bi bi-geo-fill me-1"></i>Top: ${state.top_district}</small>
+                                <div class="mt-2">
+                                    <small class="text-muted d-block">
+                                        <i class="bi bi-building me-1"></i>Districts: <strong>${state.district_count}</strong>
+                                    </small>
+                                    <small class="text-muted d-block">
+                                        <i class="bi bi-book me-1"></i>Avg Literacy: <strong>${state.avg_literacy_rate.toFixed(1)}%</strong>
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="text-end ms-3">
+                                <div class="mb-1">
+                                    <strong class="text-success">₹${state.avg_income.toLocaleString()}</strong>
+                                    <br><small class="text-muted">Avg Income</small>
+                                </div>
+                                <div class="mt-2">
+                                    <span class="badge bg-info">${state.interest_index.toFixed(3)}</span>
+                                    <br><small class="text-muted">Interest Score</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        // Re-attach click handlers
+        attachDistrictClickHandlers();
+    }
+    
+    // Function to attach click handlers to district items
+    function attachDistrictClickHandlers() {
+        document.querySelectorAll('.district-item').forEach(function(item) {
+        item.addEventListener('click', function() {
+            const lat = parseFloat(this.dataset.lat);
+            const lon = parseFloat(this.dataset.lon);
+            const name = this.dataset.district;
+            
+            // Remove previous selection
+            document.querySelectorAll('.district-item').forEach(d => d.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Remove previous marker highlight
+            if (selectedMarker) {
+                map.removeLayer(selectedMarker);
+            }
+            
+            // Add new marker
+            selectedMarker = L.marker([lat, lon], {
+                icon: L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="background: #3498db; color: white; padding: 5px 10px; border-radius: 5px; font-weight: bold;">${name}</div>`,
+                    iconSize: [100, 40]
+                })
+            }).addTo(map);
+            
+            // Zoom to location
+            map.flyTo([lat, lon], 10, {
+                duration: 1.5
+            });
+        });
+    });
+    
+    // Metric card interactions
+    document.querySelectorAll('.metric-card').forEach(function(card) {
+        card.addEventListener('click', function() {
+            document.querySelectorAll('.metric-card').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            
+            const metric = this.dataset.metric;
+            
+            // Filter markers based on metric
+            markers.forEach(function(marker) {
+                // Add animation or filtering logic based on metric
+                marker.setStyle({ fillOpacity: 0.7 });
+            });
+        });
+    });
+    }
+    
+    // Function to update economic indicators
+    function updateEconomicIndicators(granularity) {
+        const indicatorsList = document.querySelector('#economic-indicators-list');
+        if (!indicatorsList) return;
+        
+        indicatorsList.innerHTML = '';
+        
+        if (granularity === 'district') {
+            // Show district-level indicators
+            districtData.slice(0, 5).forEach(function(cluster) {
+                const badgeClass = cluster.label === 'High' ? 'bg-success' : 
+                                  cluster.label === 'Medium' ? 'bg-warning' : 'bg-danger';
+                const cityName = cluster.city_name || cluster.district_name || 'Unknown';
+                const unemployment = cluster.employment_rate ? (100 - cluster.employment_rate).toFixed(1) : 'N/A';
+                
+                indicatorsList.innerHTML += `
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">${cityName}</h6>
+                                <small class="text-muted">${cluster.state}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge ${badgeClass}">${cluster.label}</span>
+                            </div>
+                        </div>
+                        <div class="row g-2 mt-2">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-cash-stack me-2 text-success"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Avg Income</small>
+                                        <strong>₹${cluster.avg_income.toLocaleString()}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-graph-down me-2 text-danger"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Unemployment</small>
+                                        <strong>${unemployment}%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            ${cluster.literacy_rate ? `
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-book me-2 text-info"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Literacy</small>
+                                        <strong>${cluster.literacy_rate}%</strong>
+                                    </div>
+                                </div>
+                            </div>` : ''}
+                            ${cluster.relevant_expenditure ? `
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-cart3 me-2 text-primary"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Spending</small>
+                                        <strong>₹${cluster.relevant_expenditure.toLocaleString()}/mo</strong>
+                                    </div>
+                                </div>
+                            </div>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+        } else {
+            // Show state-level indicators (aggregated)
+            stateData.slice(0, 5).forEach(function(state) {
+                const badgeClass = state.label === 'High' ? 'bg-success' : 
+                                  state.label === 'Medium' ? 'bg-warning' : 'bg-danger';
+                const unemployment = state.avg_employment_rate ? (100 - state.avg_employment_rate).toFixed(1) : 'N/A';
+                
+                indicatorsList.innerHTML += `
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">${state.state}</h6>
+                                <small class="text-muted">${state.district_count} districts</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge ${badgeClass}">${state.label}</span>
+                            </div>
+                        </div>
+                        <div class="row g-2 mt-2">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-cash-stack me-2 text-success"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Avg Income</small>
+                                        <strong>₹${state.avg_income.toLocaleString()}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-graph-down me-2 text-danger"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Unemployment</small>
+                                        <strong>${unemployment}%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-book me-2 text-info"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Avg Literacy</small>
+                                        <strong>${state.avg_literacy_rate.toFixed(1)}%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-people-fill me-2 text-primary"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Avg Population</small>
+                                        <strong>${state.avg_population.toLocaleString()}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+    }
+    
+    // Toggle event handlers
+    document.querySelectorAll('input[name="granularity"]').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            currentGranularity = this.value;
+            
+            if (currentGranularity === 'district') {
+                addDistrictMarkers();
+                map.setView([20.5937, 78.9629], 5);  // India center, zoomed out
+            } else {
+                addStateMarkers();
+                map.setView([20.5937, 78.9629], 5);  // India center, same zoom
+            }
+            
+            // Load polygon overlay for current granularity
+            loadPolygonOverlay(currentGranularity);
+            
+            updateDistrictsList(currentGranularity);
+            updateEconomicIndicators(currentGranularity);
+            updateDemographicsChart(currentGranularity);
+        });
+    });
+    
+    // Demographics data for both levels
+    const districtDemographicLabels = {{ demographic_labels|safe }};
+    const districtDemographicValues = {{ demographic_values|safe }};
+    const stateDemographicLabels = {{ state_demographic_labels|safe }};
+    const stateDemographicValues = {{ state_demographic_values|safe }};
+    
+    // Demographics Chart
+    const ctx = document.getElementById('demographicsChart').getContext('2d');
+    const demographicsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: districtDemographicLabels,
+            datasets: [{
+                label: 'Distribution',
+                data: districtDemographicValues,
+                backgroundColor: [
+                    'rgba(52, 152, 219, 0.7)',
+                    'rgba(46, 204, 113, 0.7)',
+                    'rgba(241, 196, 15, 0.7)',
+                    'rgba(231, 76, 60, 0.7)',
+                    'rgba(155, 89, 182, 0.7)'
+                ],
+                borderColor: [
+                    'rgb(52, 152, 219)',
+                    'rgb(46, 204, 113)',
+                    'rgb(241, 196, 15)',
+                    'rgb(231, 76, 60)',
+                    'rgb(155, 89, 182)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    // Function to update demographics chart
+    function updateDemographicsChart(granularity) {
+        if (granularity === 'district') {
+            demographicsChart.data.labels = districtDemographicLabels;
+            demographicsChart.data.datasets[0].data = districtDemographicValues;
+        } else {
+            demographicsChart.data.labels = stateDemographicLabels;
+            demographicsChart.data.datasets[0].data = stateDemographicValues;
+        }
+        demographicsChart.update();
+    }
+    
+    // Initial load - district level
+    addDistrictMarkers();
+    loadPolygonOverlay('district');  // Load polygon overlay on page load
+    attachDistrictClickHandlers();
+    updateEconomicIndicators('district');
+});
+</script>
+{% endblock %}

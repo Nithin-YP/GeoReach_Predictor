@@ -7,8 +7,9 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Dict, Iterable, List, Tuple
 
+import geopandas as gpd
 from django.conf import settings
-from django.contrib.gis.geos import MultiPolygon, Point, Polygon
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
 from django.core.management import BaseCommand
 
 from core.models import Dataset
@@ -56,7 +57,7 @@ STATE_DATA: Tuple[Tuple[str, str], ...] = (
     ("Dadra and Nagar Haveli and Daman and Diu", "DN"),
     ("Delhi", "DL"),
     ("Jammu and Kashmir", "JK"),
-    ("Ladakh", "LA"),
+    # ("Ladakh", "LA"),  # Excluded - not in shapefile, would show incorrect geometry
     ("Lakshadweep", "LD"),
     ("Puducherry", "PY"),
 )
@@ -206,23 +207,92 @@ class Command(BaseCommand):
 
     def _create_states(self, preserve_existing: bool) -> List[StateSeed]:
         seeds: List[StateSeed] = []
+        
+        # Try to load real state geometries from shapefile
+        shapefile_dir = Path(settings.BASE_DIR) / 'datasets' / 'geodata'
+        shapefile_path = shapefile_dir / 'india_states.shp'
+        
+        state_geometries = {}
+        if shapefile_path.exists():
+            self.stdout.write(self.style.SUCCESS(f"Loading state geometries from shapefile: {shapefile_path}"))
+            gdf = gpd.read_file(shapefile_path)
+            
+            # Group by state name and merge geometries if there are duplicates
+            for idx, row in gdf.iterrows():
+                state_name = row.get('NAME_1') or row.get('name') or row.get('STATE')
+                if not state_name:
+                    continue
+                
+                # Normalize state name to match our database
+                normalized_name = state_name.strip()
+                if normalized_name == "Andaman and Nicobar":
+                    normalized_name = "Andaman and Nicobar Islands"
+                elif normalized_name == "NCT of Delhi" or normalized_name == "National Capital Territory of Delhi":
+                    normalized_name = "Delhi"
+                elif normalized_name == "Dadra and Nagar Haveli":
+                    normalized_name = "Dadra and Nagar Haveli and Daman and Diu"
+                elif normalized_name == "Daman and Diu":
+                    continue  # Skip, will be merged with Dadra
+                
+                geom = row['geometry']
+                if normalized_name in state_geometries:
+                    # Merge with existing geometry (for states split across multiple rows)
+                    from shapely.ops import unary_union
+                    state_geometries[normalized_name] = unary_union([state_geometries[normalized_name], geom])
+                else:
+                    state_geometries[normalized_name] = geom
+            
+            self.stdout.write(self.style.SUCCESS(f"Loaded geometries for {len(state_geometries)} states"))
+        
+        # Create states with real or synthetic geometries
         columns = 9
         spacing = 2.5
         size = 1.2
+        
         for index, (name, code) in enumerate(STATE_DATA):
             row = index // columns
             col = index % columns
             base_x = 65 + col * spacing
             base_y = 5 + row * spacing
-            geometry = create_polygon(base_x, base_y, size)
-            centroid = geometry.centroid
-            centroid.srid = 4326
+            
+            # Use real geometry from shapefile if available, otherwise synthetic
+            if name in state_geometries:
+                try:
+                    geom_wkt = state_geometries[name].wkt
+                    geometry = GEOSGeometry(geom_wkt, srid=4326)
+                    
+                    # Convert to MultiPolygon if it's a Polygon
+                    if geometry.geom_type == 'Polygon':
+                        geometry = MultiPolygon(geometry, srid=4326)
+                    
+                    centroid = geometry.centroid
+                    
+                    # Calculate area from real geometry
+                    try:
+                        geom_metric = geometry.transform(3857, clone=True)
+                        area_km2 = Decimal(geom_metric.area / 1_000_000).quantize(Decimal("1.00"))
+                    except:
+                        area_km2 = decimal_range(4000, 200000)
+                    
+                    self.stdout.write(self.style.SUCCESS(f"Using real geometry for {name}"))
+                except Exception as e:
+                    self.stdout.write(self.style.WARNING(f"Error loading geometry for {name}: {e}, using synthetic"))
+                    geometry = create_polygon(base_x, base_y, size)
+                    centroid = geometry.centroid
+                    centroid.srid = 4326
+                    area_km2 = decimal_range(4000, 200000)
+            else:
+                # Fallback to synthetic geometry
+                geometry = create_polygon(base_x, base_y, size)
+                centroid = geometry.centroid
+                centroid.srid = 4326
+                area_km2 = decimal_range(4000, 200000)
+            
             population = random.randint(3_000_000, 150_000_000)
             male_population = int(population * random.uniform(0.48, 0.52))
             female_population = population - male_population
             rural_population = int(population * random.uniform(0.35, 0.65))
             urban_population = population - rural_population
-            area_km2 = decimal_range(4000, 200000)
             density = (Decimal(population) / area_km2).quantize(Decimal("1.00"))
 
             state = State.objects.filter(name=name).first()
@@ -291,7 +361,119 @@ class Command(BaseCommand):
         districts: List[District] = []
         district_rows: List[Dict[str, str]] = []
         combos = len(AGE_GROUPS) * len(EDUCATION_LEVELS)
-        districts_per_state = max(math.ceil(target_records / (len(state_seeds) * combos)), 6)
+        
+        # Load real districts from shapefile
+        shapefile_dir = Path(settings.BASE_DIR) / 'datasets' / 'geodata'
+        shapefile_path = shapefile_dir / 'india_districts.shp'
+        
+        if shapefile_path.exists():
+            self.stdout.write(self.style.SUCCESS(f"Loading districts from shapefile: {shapefile_path}"))
+            gdf = gpd.read_file(shapefile_path)
+            
+            # Create state name mapping (handle variations)
+            state_mapping = {seed.state.name: seed.state for seed in state_seeds}
+            # Add common variations
+            state_mapping["Andaman and Nicobar"] = state_mapping.get("Andaman and Nicobar Islands")
+            state_mapping["Dadra and Nagar Haveli"] = state_mapping.get("Dadra and Nagar Haveli and Daman and Diu")
+            state_mapping["Daman and Diu"] = state_mapping.get("Dadra and Nagar Haveli and Daman and Diu")
+            state_mapping["NCT of Delhi"] = state_mapping.get("Delhi")
+            state_mapping["National Capital Territory of Delhi"] = state_mapping.get("Delhi")
+            
+            for idx, row in gdf.iterrows():
+                district_name = row.get('DISTRICT') or row.get('NAME_2') or row.get('name')
+                state_name = row.get('STATE') or row.get('NAME_1') or row.get('state')
+                
+                if not district_name or not state_name:
+                    continue
+                
+                # Map state name variations
+                state = state_mapping.get(state_name)
+                if not state:
+                    # Try fuzzy match
+                    for key, val in state_mapping.items():
+                        if key and state_name and (key.lower() in state_name.lower() or state_name.lower() in key.lower()):
+                            state = val
+                            break
+                
+                if not state:
+                    continue
+                
+                # Check if district already exists
+                existing = District.objects.filter(name__iexact=district_name.strip(), state=state).first()
+                if existing:
+                    districts.append(existing)
+                    continue
+                
+                # Convert geometry from shapefile to Django GEOS
+                try:
+                    geom_wkt = row['geometry'].wkt
+                    geometry = GEOSGeometry(geom_wkt, srid=4326)
+                    
+                    # Convert to MultiPolygon if it's a Polygon
+                    if geometry.geom_type == 'Polygon':
+                        geometry = MultiPolygon(geometry, srid=4326)
+                except Exception as e:
+                    self.stdout.write(self.style.WARNING(f"Could not parse geometry for {district_name}: {e}"))
+                    continue
+                
+                # Assign development tier for varied statistics
+                tier_random = random.random()
+                if tier_random < 0.15:
+                    # Tier-1: High development
+                    pop_range = (800_000, 5_000_000)
+                    literacy_range = (78.0, 98.5)
+                elif tier_random < 0.45:
+                    # Tier-2: Upper-middle
+                    pop_range = (300_000, 1_500_000)
+                    literacy_range = (68.0, 85.0)
+                elif tier_random < 0.80:
+                    # Tier-3: Middle
+                    pop_range = (150_000, 800_000)
+                    literacy_range = (58.0, 75.0)
+                else:
+                    # Tier-4: Lower development
+                    pop_range = (50_000, 400_000)
+                    literacy_range = (45.0, 65.0)
+                
+                # Calculate area from geometry
+                try:
+                    geom_metric = geometry.transform(3857, clone=True)
+                    area_sq_km = Decimal(geom_metric.area / 1_000_000).quantize(Decimal("1.00"))
+                except:
+                    area_sq_km = decimal_range(100, 5000)
+                
+                population = random.randint(pop_range[0], pop_range[1])
+                
+                district = District.objects.create(
+                    name=district_name.strip(),
+                    state=state,
+                    geometry=geometry,
+                    centroid=geometry.centroid,
+                    population=population,
+                    growth_rate=decimal_range(0.5, 6.5),
+                    sex_ratio=random.randint(880, 1120),
+                    literacy_rate=decimal_range(literacy_range[0], literacy_range[1]),
+                    area_km2=area_sq_km,
+                )
+                districts.append(district)
+                district_rows.append({
+                    "state": state.name,
+                    "state_code": state.code,
+                    "district": district.name,
+                    "population": str(population),
+                    "growth_rate": str(district.growth_rate),
+                    "sex_ratio": str(district.sex_ratio),
+                    "literacy_rate": str(district.literacy_rate),
+                    "area_km2": str(district.area_km2),
+                    "geometry_wkt": district.geometry.wkt,
+                })
+            
+            self.stdout.write(self.style.SUCCESS(f"Loaded {len(districts)} districts from shapefile"))
+            return districts, district_rows
+        
+        # Fallback to synthetic district generation if shapefile not found
+        self.stdout.write(self.style.WARNING(f"Shapefile not found, generating synthetic districts"))
+        districts_per_state = max(math.ceil(target_records / (len(list(state_seeds)) * combos)), 6)
 
         for seed in state_seeds:
             existing_districts = list(District.objects.filter(state=seed.state))
@@ -388,14 +570,70 @@ class Command(BaseCommand):
     def _create_economic_indicators(self, districts: Iterable[District]) -> List[Dict[str, str]]:
         indicators: List[EconomicIndicator] = []
         rows: List[Dict[str, str]] = []
+        
+        # Create district tiers for varied economic profiles  
+        district_list = list(districts)
+        random.shuffle(district_list)
+        
+        tier1_count = int(len(district_list) * 0.15)
+        tier2_count = int(len(district_list) * 0.30)
+        tier3_count = int(len(district_list) * 0.35)
+        
+        tier1_districts = set(district_list[:tier1_count])
+        tier2_districts = set(district_list[tier1_count:tier1_count + tier2_count])
+        tier3_districts = set(district_list[tier1_count + tier2_count:tier1_count + tier2_count + tier3_count])
+        
         for district in districts:
+            # Determine tier-based characteristics
+            if district in tier1_districts:
+                # Tier-1: Prefer urban, lower unemployment, higher salaries
+                area_weights = {'URBAN': 5, 'COMBINED': 2, 'RURAL': 1}
+                unemployment_range = (2.0, 6.0)
+                salary_range = (60_000, 120_000)
+            elif district in tier2_districts:
+                # Tier-2: Mixed areas, moderate stats
+                area_weights = {'URBAN': 3, 'COMBINED': 4, 'RURAL': 2}
+                unemployment_range = (4.0, 8.5)
+                salary_range = (35_000, 75_000)
+            elif district in tier3_districts:
+                # Tier-3: More rural, higher unemployment
+                area_weights = {'URBAN': 2, 'COMBINED': 3, 'RURAL': 4}
+                unemployment_range = (6.0, 10.5)
+                salary_range = (20_000, 50_000)
+            else:
+                # Tier-4: Predominantly rural, high unemployment, low salaries
+                area_weights = {'URBAN': 1, 'COMBINED': 2, 'RURAL': 5}
+                unemployment_range = (8.0, 12.5)
+                salary_range = (8_000, 35_000)
+            
+            # Weighted random selection of area types
+            area_choices = []
             for area_type in AREA_TYPES:
-                year = random.randint(2019, 2025)
-                month = random.randint(1, 12)
-                unemployment_rate = decimal_range(2.0, 12.5)
+                weight = area_weights.get(area_type, 1)
+                area_choices.extend([area_type] * weight)
+            
+            for area_type in AREA_TYPES:
+                # Use weighted probability for this district's primary area type
+                if area_type == random.choice(area_choices):
+                    year = random.randint(2023, 2024)  # Recent data
+                    month = random.choice([1, 7])  # Jan or July
+                    unemployment_rate = decimal_range(unemployment_range[0], unemployment_range[1])
+                else:
+                    # Other area types get slightly different stats
+                    year = random.randint(2022, 2024)
+                    month = random.randint(1, 12)
+                    unemployment_rate = decimal_range(2.0, 12.5)
+                
                 employment_rate = (Decimal("100.00") - unemployment_rate + decimal_range(-1.5, 1.5)).quantize(Decimal("1.00"))
                 employment_rate = max(Decimal("35.00"), min(employment_rate, Decimal("100.00")))
                 estimated_employed = int(district.population * float(employment_rate) / 100)
+                
+                # Salary based on tier
+                avg_salary = decimal_range(salary_range[0], salary_range[1])
+                
+                # Salary based on tier
+                avg_salary = decimal_range(salary_range[0], salary_range[1])
+                
                 record = EconomicIndicator(
                     state=district.state,
                     district=district,
@@ -407,7 +645,7 @@ class Command(BaseCommand):
                     employment_rate=employment_rate,
                     estimated_employed=estimated_employed,
                     labour_participation_rate=decimal_range(40.0, 75.0),
-                    avg_monthly_salary=decimal_range(8_000, 120_000),
+                    avg_monthly_salary=avg_salary,
                 )
                 indicators.append(record)
                 rows.append(
@@ -430,19 +668,100 @@ class Command(BaseCommand):
     def _create_demographic_profiles(self, districts: Iterable[District], target_records: int) -> List[Dict[str, str]]:
         profiles: List[DemographicProfile] = []
         rows: List[Dict[str, str]] = []
+        
+        # Create district development tiers for varied distribution (better visual results)
+        district_list = list(districts)
+        random.shuffle(district_list)
+        
+        # Tier distribution: 15% Tier-1, 30% Tier-2, 35% Tier-3, 20% Tier-4
+        tier1_count = int(len(district_list) * 0.15)
+        tier2_count = int(len(district_list) * 0.30)
+        tier3_count = int(len(district_list) * 0.35)
+        
+        tier1_districts = set(district_list[:tier1_count])
+        tier2_districts = set(district_list[tier1_count:tier1_count + tier2_count])
+        tier3_districts = set(district_list[tier1_count + tier2_count:tier1_count + tier2_count + tier3_count])
+        # tier4_districts are the rest
+        
         for district in districts:
+            # Determine district tier and set income/expenditure ranges accordingly
+            if district in tier1_districts:
+                # Tier-1: High development (metro cities)
+                income_range = (80_000, 180_000)
+                literacy_boost = 1.15
+                urban_probability = 0.8
+            elif district in tier2_districts:
+                # Tier-2: Upper-middle development
+                income_range = (50_000, 100_000)
+                literacy_boost = 1.05
+                urban_probability = 0.5
+            elif district in tier3_districts:
+                # Tier-3: Middle development
+                income_range = (30_000, 65_000)
+                literacy_boost = 0.95
+                urban_probability = 0.3
+            else:
+                # Tier-4: Lower development (rural)
+                income_range = (15_000, 45_000)
+                literacy_boost = 0.85
+                urban_probability = 0.1
+            
             for age_group in AGE_GROUPS:
                 for education in EDUCATION_LEVELS:
-                    income = decimal_range(25_000, 180_000)
-                    disposable = max(Decimal("0.00"), income - decimal_range(5_000, 70_000))
-                    groceries = decimal_range(2_000, 25_000)
-                    transport = decimal_range(1_000, 12_000)
-                    eating_out = decimal_range(800, 10_000)
-                    entertainment = decimal_range(500, 8_000)
-                    utilities = decimal_range(1_500, 9_000)
-                    healthcare = decimal_range(600, 12_000)
-                    education_spend = decimal_range(800, 10_000)
+                    # Education level affects income
+                    education_multiplier = {
+                        'Below High School': 0.6,
+                        'High School': 0.8,
+                        'Some College': 1.0,
+                        'Bachelor': 1.3,
+                        'Master': 1.6,
+                        'PhD': 1.8,
+                    }.get(education, 1.0)
+                    
+                    base_income = decimal_range(income_range[0], income_range[1])
+                    income = base_income * Decimal(str(education_multiplier))
+                    
+                    # Disposable income (after taxes/savings) - 40-70% of income
+                    disposable_ratio = random.uniform(0.40, 0.70)
+                    disposable = income * Decimal(str(disposable_ratio))
+                    
+                    # Expenditures as proportion of disposable income (varied by tier)
+                    if income > 80000:
+                        # High income: Lower food %, higher discretionary %
+                        groceries = disposable * Decimal(str(random.uniform(0.08, 0.15)))
+                        eating_out = disposable * Decimal(str(random.uniform(0.05, 0.12)))
+                        entertainment = disposable * Decimal(str(random.uniform(0.04, 0.10)))
+                        healthcare = disposable * Decimal(str(random.uniform(0.03, 0.08)))
+                        education_spend = disposable * Decimal(str(random.uniform(0.05, 0.12)))
+                    elif income > 50000:
+                        # Middle-high income
+                        groceries = disposable * Decimal(str(random.uniform(0.12, 0.22)))
+                        eating_out = disposable * Decimal(str(random.uniform(0.03, 0.08)))
+                        entertainment = disposable * Decimal(str(random.uniform(0.02, 0.06)))
+                        healthcare = disposable * Decimal(str(random.uniform(0.02, 0.06)))
+                        education_spend = disposable * Decimal(str(random.uniform(0.03, 0.08)))
+                    elif income > 30000:
+                        # Middle income
+                        groceries = disposable * Decimal(str(random.uniform(0.18, 0.30)))
+                        eating_out = disposable * Decimal(str(random.uniform(0.02, 0.05)))
+                        entertainment = disposable * Decimal(str(random.uniform(0.01, 0.04)))
+                        healthcare = disposable * Decimal(str(random.uniform(0.02, 0.05)))
+                        education_spend = disposable * Decimal(str(random.uniform(0.02, 0.06)))
+                    else:
+                        # Low income: High food %, minimal discretionary
+                        groceries = disposable * Decimal(str(random.uniform(0.25, 0.40)))
+                        eating_out = disposable * Decimal(str(random.uniform(0.01, 0.03)))
+                        entertainment = disposable * Decimal(str(random.uniform(0.005, 0.02)))
+                        healthcare = disposable * Decimal(str(random.uniform(0.015, 0.04)))
+                        education_spend = disposable * Decimal(str(random.uniform(0.01, 0.03)))
+                    
+                    transport = disposable * Decimal(str(random.uniform(0.05, 0.15)))
+                    utilities = disposable * Decimal(str(random.uniform(0.08, 0.18)))
+                    transport = disposable * Decimal(str(random.uniform(0.05, 0.15)))
+                    utilities = disposable * Decimal(str(random.uniform(0.08, 0.18)))
+                    
                     avg_spending = sum([groceries, transport, eating_out, entertainment, utilities, healthcare, education_spend])
+                    
                     profile = DemographicProfile(
                         state=district.state,
                         district=district,

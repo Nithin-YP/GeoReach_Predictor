@@ -52,13 +52,24 @@ class Cluster(models.Model):
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
     cluster_label = models.CharField(max_length=50) # e.g., High, Medium, Low
+    
+    # Basic metrics
     population_density = models.IntegerField(null=True, blank=True)
     avg_income = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     employment_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True) # Percentage
     interest_index = models.DecimalField(max_digits=4, decimal_places=3, null=True, blank=True)
+    
+    # New fields for enhanced cluster information
+    city_name = models.CharField(max_length=100, null=True, blank=True)
+    state = models.CharField(max_length=100, null=True, blank=True)
+    tier = models.IntegerField(null=True, blank=True)  # City tier (1, 2, 3)
+    population = models.IntegerField(null=True, blank=True)
+    literacy_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    relevant_expenditure = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
-        return f"Cluster {self.cluster_label} for Result {self.prediction_result.id} at ({self.latitude}, {self.longitude})"
+        city_info = f" - {self.city_name}" if self.city_name else ""
+        return f"Cluster {self.cluster_label} for Result {self.prediction_result.id} at ({self.latitude}, {self.longitude}){city_info}"
 
 class Dataset(models.Model):
     name = models.CharField(max_length=255)
