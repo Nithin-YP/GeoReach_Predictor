@@ -1,57 +1,330 @@
 {% extends 'base.html' %}
 
-{% block title %}Admin Dashboard{% endblock %}
+{% block title %}Admin Dashboard - GeoReach Predictor{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h1 class="mb-4">Admin Dashboard</h1>
+<style>
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #2c3e50;
+        margin: 0;
+    }
 
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card text-white bg-primary mb-3">
-                <div class="card-header">Total Users</div>
+    .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+        background: #ffffff;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .navbar-brand {
+        color: #2563eb !important;
+        font-weight: 700;
+        font-size: 1.5rem;
+    }
+
+    .nav-link {
+        color: #64748b !important;
+    }
+
+    .nav-link:hover {
+        color: #2563eb !important;
+    }
+
+    .dashboard-container {
+        padding-top: 100px;
+        padding-bottom: 80px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding-left: 20px;
+        padding-right: 20px;
+        animation: fadeInUp 0.8s ease-in-out;
+    }
+
+    h1 { 
+        font-weight: 700; 
+        text-align: center; 
+        margin-bottom: 40px; 
+        color: #1e293b;
+        font-size: 2.5rem;
+    }
+
+    .card {
+        border: none;
+        border-radius: 16px;
+        background: #ffffff;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        color: #334155;
+        overflow: hidden;
+    }
+
+    .card:hover { 
+        transform: translateY(-4px); 
+        box-shadow: 0 12px 24px rgba(0,0,0,0.12); 
+    }
+
+    .card-header { 
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        border-radius: 0 !important; 
+        font-weight: 600; 
+        color: #ffffff;
+        padding: 1rem 1.25rem;
+        font-size: 1.1rem;
+        border-bottom: none;
+    }
+    
+    .card-header.bg-success { 
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    }
+    
+    .card-header.bg-warning { 
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+        color: #ffffff !important;
+    }
+
+    .card-body { 
+        background-color: #ffffff;
+        padding: 1.5rem;
+    }
+
+    .card-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2563eb;
+        margin: 0;
+    }
+
+    .list-group-item { 
+        background-color: #f8fafc; 
+        color: #475569; 
+        border: 1px solid #e2e8f0;
+        transition: background-color 0.2s ease;
+    }
+    
+    .list-group-item:hover { 
+        background-color: #e0e7ff;
+    }
+
+    .badge {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .btn { 
+        border-radius: 10px; 
+        transition: all 0.3s ease;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+    }
+    
+    .btn-outline-primary { 
+        color: #2563eb; 
+        border-color: #2563eb;
+    }
+    
+    .btn-outline-primary:hover { 
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        color: #ffffff; 
+        border-color: transparent; 
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline-success { 
+        color: #10b981; 
+        border-color: #10b981;
+    }
+    
+    .btn-outline-success:hover { 
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: #ffffff; 
+        border-color: transparent; 
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline-info { 
+        color: #06b6d4; 
+        border-color: #06b6d4;
+    }
+    
+    .btn-outline-info:hover { 
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        color: #ffffff; 
+        border-color: transparent; 
+        box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline-secondary { 
+        color: #64748b; 
+        border-color: #64748b;
+    }
+    
+    .btn-outline-secondary:hover { 
+        background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+        color: #ffffff; 
+        border-color: transparent; 
+        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .text-success { color: #10b981 !important; }
+    .text-danger { color: #ef4444 !important; }
+    .text-info { color: #06b6d4 !important; }
+
+    footer { 
+        position: fixed; 
+        bottom: 0; 
+        left: 0; 
+        width: 100%; 
+        text-align: center; 
+        background: #ffffff;
+        color: #64748b; 
+        padding: 15px 0; 
+        font-size: 0.9rem;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    }
+
+    .dropdown-menu {
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border: 1px solid #e2e8f0;
+    }
+
+    .dropdown-item {
+        color: #475569;
+        padding: 0.75rem 1.25rem;
+    }
+
+    .dropdown-item:hover {
+        background-color: #f1f5f9;
+        color: #2563eb;
+    }
+
+    @keyframes fadeInUp { 
+        0% { opacity: 0; transform: translateY(20px); } 
+        100% { opacity: 1; transform: translateY(0); } 
+    }
+    
+    /* KPI Card specific styles */
+    .kpi-card {
+        text-align: center;
+    }
+    
+    .kpi-card .card-header {
+        font-size: 0.95rem;
+        padding: 0.75rem;
+    }
+    
+    .kpi-card .card-body {
+        padding: 1.5rem;
+    }
+</style>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" href="#">
+            <i class="bi bi-geo-alt-fill me-2"></i>GeoReach Predictor
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            {% if user.is_authenticated %}
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle me-2"></i>{{ user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'core:admin_dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</a></li>
+                        <li><a class="dropdown-item" href="/admin/"><i class="bi bi-gear me-2"></i>Django Admin</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'core:logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<div class="dashboard-container">
+    <h1><i class="bi bi-speedometer2 me-3"></i>Admin Dashboard</h1>
+
+    <!-- KPI Cards Row -->
+    <div class="row text-center mb-4 g-4">
+        <div class="col-md-6">
+            <div class="card kpi-card">
+                <div class="card-header">
+                    <i class="bi bi-people-fill me-2"></i>Total Users
+                </div>
                 <div class="card-body">
                     <h5 class="card-title">{{ total_users }}</h5>
+                    <p class="text-muted mb-0 small">Registered entrepreneurs</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card text-white bg-success mb-3">
-                <div class="card-header">Total Predictions</div>
+        <div class="col-md-6">
+            <div class="card kpi-card">
+                <div class="card-header">
+                    <i class="bi bi-graph-up-arrow me-2"></i>Total Predictions
+                </div>
                 <div class="card-body">
                     <h5 class="card-title">{{ total_predictions }}</h5>
+                    <p class="text-muted mb-0 small">Generated reports</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row mt-4">
+    <!-- Most Queried Regions & Latest Datasets -->
+    <div class="row g-4 mb-4">
         <div class="col-md-6">
-            <div class="card mb-3">
-                <div class="card-header">Most Queried Regions</div>
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-pin-map-fill me-2"></i>Most Queried Regions
+                </div>
                 <div class="card-body">
-                    <ul class="list-group">
+                    <ul class="list-group list-group-flush">
                         {% for region in most_queried_regions %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                {{ region.region }}
+                                <span><i class="bi bi-geo-alt me-2"></i>{{ region.region }}</span>
                                 <span class="badge bg-primary rounded-pill">{{ region.count }}</span>
                             </li>
                         {% empty %}
-                            <li class="list-group-item">No regions queried yet.</li>
+                            <li class="list-group-item text-muted">
+                                <i class="bi bi-info-circle me-2"></i>No regions queried yet.
+                            </li>
                         {% endfor %}
                     </ul>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card mb-3">
-                <div class="card-header">Latest Datasets</div>
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-database-fill me-2"></i>Latest Datasets
+                </div>
                 <div class="card-body">
-                    <ul class="list-group">
+                    <ul class="list-group list-group-flush">
                         {% for dataset in latest_datasets %}
-                            <li class="list-group-item">{{ dataset.name }} ({{ dataset.upload_date|date:"Y-m-d" }})</li>
+                            <li class="list-group-item">
+                                <i class="bi bi-file-earmark-text me-2"></i>{{ dataset.name }}
+                                <span class="badge bg-secondary ms-2">{{ dataset.upload_date|date:"M d, Y" }}</span>
+                            </li>
                         {% empty %}
-                            <li class="list-group-item">No datasets uploaded yet.</li>
+                            <li class="list-group-item text-muted">
+                                <i class="bi bi-info-circle me-2"></i>No datasets uploaded yet.
+                            </li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -59,16 +332,23 @@
         </div>
     </div>
 
-    <div class="row mt-4">
+    <!-- ML Model Files -->
+    <div class="row mb-4">
         <div class="col-md-12">
-            <div class="card mb-3">
-                <div class="card-header">ML Model Files</div>
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-cpu-fill me-2"></i>ML Model Files
+                </div>
                 <div class="card-body">
-                    <ul class="list-group">
+                    <ul class="list-group list-group-flush">
                         {% for model_file in ml_model_files %}
-                            <li class="list-group-item">{{ model_file }}</li>
+                            <li class="list-group-item">
+                                <i class="bi bi-file-code me-2"></i>{{ model_file }}
+                            </li>
                         {% empty %}
-                            <li class="list-group-item">No ML model files found.</li>
+                            <li class="list-group-item text-muted">
+                                <i class="bi bi-exclamation-triangle me-2"></i>No ML model files found.
+                            </li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -76,40 +356,44 @@
         </div>
     </div>
 
-    <div class="row mt-5">
+    <!-- Quick Actions & System Status -->
+    <div class="row g-4">
         <div class="col-md-6">
-            <div class="card mb-3">
-                <div class="card-header bg-success text-white">Quick Actions</div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{% url 'core:user_management' %}" class="btn btn-outline-primary">
-                            <i class="bi bi-people me-2"></i>User Management
-                        </a>
-                        <a href="{% url 'core:dataset_management' %}" class="btn btn-outline-info">
-                            <i class="bi bi-database me-2"></i>Dataset Management
-                        </a>
-                        <a href="/admin/" class="btn btn-outline-secondary">
-                            <i class="bi bi-gear me-2"></i>Django Admin
-                        </a>
-                    </div>
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <i class="bi bi-lightning-fill me-2"></i>Quick Actions
+                </div>
+                <div class="card-body d-grid gap-3">
+                    <a href="{% url 'core:user_management' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-people me-2"></i>User Management
+                    </a>
+                    <a href="{% url 'core:dataset_management' %}" class="btn btn-outline-info">
+                        <i class="bi bi-database me-2"></i>Dataset Management
+                    </a>
+                    <a href="/admin/" class="btn btn-outline-secondary">
+                        <i class="bi bi-gear me-2"></i>Django Admin Panel
+                    </a>
                 </div>
             </div>
         </div>
+
         <div class="col-md-6">
-            <div class="card mb-3">
-                <div class="card-header bg-warning text-dark">System Status</div>
+            <div class="card">
+                <div class="card-header bg-warning text-white">
+                    <i class="bi bi-activity me-2"></i>System Status
+                </div>
                 <div class="card-body">
-                    <p class="mb-2">
+                    <p class="mb-3">
                         <i class="bi bi-check-circle-fill text-success me-2"></i>
-                        Database: Connected
+                        <strong>Database:</strong> Connected
                     </p>
-                    <p class="mb-2">
+                    <p class="mb-3">
                         <i class="bi bi-{% if ml_model_files %}check-circle-fill text-success{% else %}x-circle-fill text-danger{% endif %} me-2"></i>
-                        ML Models: {% if ml_model_files %}Ready{% else %}Not Available{% endif %}
+                        <strong>ML Models:</strong> {% if ml_model_files %}Ready{% else %}Not Available{% endif %}
                     </p>
                     <p class="mb-0">
                         <i class="bi bi-info-circle-fill text-info me-2"></i>
-                        Version: 1.0.0
+                        <strong>Version:</strong> 1.0.0
                     </p>
                 </div>
             </div>
@@ -117,4 +401,8 @@
     </div>
 
 </div>
+
+<footer>
+    <p class="mb-0">© 2025 GeoReach Predictor. Built with Django & Bootstrap.</p>
+</footer>
 {% endblock %}

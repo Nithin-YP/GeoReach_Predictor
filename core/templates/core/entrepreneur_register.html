@@ -1,13 +1,571 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Register as Entrepreneur{% endblock %}
+{% block title %}Register - GeoReach Predictor{% endblock %}
+
+{# Hide navbar, container, and footer like login page #}
+{% block navbar %}{% endblock %}
+{% block container_start %}{% endblock %}
+{% block container_end %}{% endblock %}
+{% block footer %}{% endblock %}
 
 {% block content %}
-    <h2>Register as Entrepreneur</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Register</button>
-    </form>
-    <p>Already have an account? <a href="{% url 'core:login' %}">Login here</a>.</p>
+<style>
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #2c3e50;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+        margin: 0;
+    }
+
+    .register-container {
+        max-width: 550px;
+        width: 100%;
+        animation: fadeInUp 0.8s ease-in-out;
+    }
+
+    .card {
+        border: none;
+        border-radius: 20px;
+        background: #ffffff;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        border-radius: 0;
+        text-align: center;
+        padding: 2rem 1.5rem;
+        border: none;
+    }
+
+    .card-header h3 {
+        color: #ffffff;
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.75rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .card-header p {
+        color: rgba(255,255,255,0.9);
+        margin: 0.5rem 0 0 0;
+        font-size: 0.95rem;
+    }
+
+    .card-header i {
+        font-size: 1.5rem;
+        vertical-align: middle;
+    }
+
+    .card-body {
+        padding: 2.5rem;
+        background: #ffffff;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    label {
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    label i {
+        color: #2563eb;
+        margin-right: 0.5rem;
+    }
+
+    .required {
+        color: #ef4444;
+        margin-left: 0.25rem;
+    }
+
+    .form-control, .form-select {
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        color: #1e293b;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .form-control:focus, .form-select:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        background: #ffffff;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: #ef4444;
+        background: #fef2f2;
+    }
+
+    .form-control.is-invalid:focus, .form-select.is-invalid:focus {
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+    }
+
+    .invalid-feedback {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: block;
+    }
+
+    .invalid-feedback i {
+        margin-right: 0.25rem;
+    }
+
+    .help-text {
+        color: #64748b;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+
+    .alert {
+        border: none;
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .alert-danger {
+        background: #fef2f2;
+        color: #991b1b;
+        border-left: 4px solid #ef4444;
+    }
+
+    .alert-danger .alert-heading {
+        color: #dc2626;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .alert-danger ul {
+        margin: 0;
+        padding-left: 1.25rem;
+    }
+
+    .alert-danger li {
+        margin-bottom: 0.25rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 0.875rem 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        width: 100%;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        transform: translateY(-2px);
+    }
+
+    .btn-primary:active {
+        transform: translateY(0);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .btn-primary i {
+        margin-right: 0.5rem;
+    }
+
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 1.5rem 0;
+        color: #94a3b8;
+        font-size: 0.875rem;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .divider span {
+        padding: 0 1rem;
+        font-weight: 500;
+    }
+
+    .login-link {
+        text-align: center;
+        margin-top: 1.5rem;
+        background: #f8fafc;
+        border-radius: 12px;
+    }
+
+    .login-link small {
+        color: #64748b;
+        font-size: 0.95rem;
+    }
+
+    .login-link a {
+        color: #2563eb;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .login-link a:hover {
+        color: #1e40af;
+        text-decoration: underline;
+    }
+
+    .login-link i {
+        margin-right: 0.25rem;
+    }
+
+    .password-strength {
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .password-strength .strength-bar {
+        height: 4px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        margin-top: 0.25rem;
+        overflow: hidden;
+    }
+
+    .password-strength .strength-fill {
+        height: 100%;
+        width: 0%;
+        transition: all 0.3s ease;
+        border-radius: 4px;
+    }
+
+    .password-strength.weak .strength-fill {
+        width: 33%;
+        background: #ef4444;
+    }
+
+    .password-strength.medium .strength-fill {
+        width: 66%;
+        background: #f59e0b;
+    }
+
+    .password-strength.strong .strength-fill {
+        width: 100%;
+        background: #10b981;
+    }
+
+    @keyframes fadeInUp {
+        0% {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .brand-title {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .brand-title h1 {
+        color: #1e293b;
+        font-weight: 700;
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .brand-title p {
+        color: #64748b;
+        font-size: 1rem;
+    }
+
+    .brand-title i {
+        color: #2563eb;
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Two column layout for larger screens */
+    @media (min-width: 768px) {
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+    }
+</style>
+
+<div class="register-container">
+    <!-- Brand Header -->
+    <div class="brand-title">
+        <i class="bi bi-geo-alt-fill"></i>
+        <h1>GeoReach Predictor</h1>
+        <p>Create your entrepreneur account to get started</p>
+    </div>
+
+    <!-- Registration Card -->
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <i class="bi bi-person-plus"></i>
+                Create Account
+            </h3>
+            <p>Join us and start predicting market reach</p>
+        </div>
+        <div class="card-body">
+            <!-- Error Display -->
+            {% if form.errors %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <h6 class="alert-heading">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        Registration Failed
+                    </h6>
+                    <ul class="mb-0">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+
+            <form method="post" id="registerForm">
+                {% csrf_token %}
+                
+                <!-- Username -->
+                <div class="form-group">
+                    <label for="{{ form.username.id_for_label }}">
+                        <i class="bi bi-person-fill"></i>Username<span class="required">*</span>
+                    </label>
+                    <input type="text" 
+                           name="username" 
+                           id="{{ form.username.id_for_label }}"
+                           class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
+                           placeholder="Choose a unique username"
+                           value="{{ form.username.value|default:'' }}"
+                           required
+                           autofocus>
+                    {% if form.username.help_text %}
+                        <small class="help-text">{{ form.username.help_text }}</small>
+                    {% endif %}
+                    {% if form.username.errors %}
+                        <div class="invalid-feedback">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            {% for error in form.username.errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Email -->
+                <div class="form-group">
+                    <label for="{{ form.email.id_for_label }}">
+                        <i class="bi bi-envelope-fill"></i>Email Address<span class="required">*</span>
+                    </label>
+                    <input type="email" 
+                           name="email" 
+                           id="{{ form.email.id_for_label }}"
+                           class="form-control {% if form.email.errors %}is-invalid{% endif %}" 
+                           placeholder="your.email@example.com"
+                           value="{{ form.email.value|default:'' }}"
+                           required>
+                    {% if form.email.errors %}
+                        <div class="invalid-feedback">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            {% for error in form.email.errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- First Name and Last Name -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.first_name.id_for_label }}">
+                            <i class="bi bi-person-badge"></i>First Name
+                        </label>
+                        <input type="text" 
+                               name="first_name" 
+                               id="{{ form.first_name.id_for_label }}"
+                               class="form-control {% if form.first_name.errors %}is-invalid{% endif %}" 
+                               placeholder="John"
+                               value="{{ form.first_name.value|default:'' }}">
+                        {% if form.first_name.errors %}
+                            <div class="invalid-feedback">
+                                <i class="bi bi-exclamation-circle-fill"></i>
+                                {% for error in form.first_name.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.last_name.id_for_label }}">
+                            <i class="bi bi-person-badge-fill"></i>Last Name
+                        </label>
+                        <input type="text" 
+                               name="last_name" 
+                               id="{{ form.last_name.id_for_label }}"
+                               class="form-control {% if form.last_name.errors %}is-invalid{% endif %}" 
+                               placeholder="Doe"
+                               value="{{ form.last_name.value|default:'' }}">
+                        {% if form.last_name.errors %}
+                            <div class="invalid-feedback">
+                                <i class="bi bi-exclamation-circle-fill"></i>
+                                {% for error in form.last_name.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="form-group">
+                    <label for="{{ form.password1.id_for_label }}">
+                        <i class="bi bi-lock-fill"></i>Password<span class="required">*</span>
+                    </label>
+                    <input type="password" 
+                           name="password1" 
+                           id="{{ form.password1.id_for_label }}"
+                           class="form-control {% if form.password1.errors %}is-invalid{% endif %}" 
+                           placeholder="Create a strong password"
+                           required>
+                    {% if form.password1.help_text %}
+                        <small class="help-text">{{ form.password1.help_text|safe }}</small>
+                    {% endif %}
+                    <div class="password-strength" id="passwordStrength">
+                        <div class="strength-bar">
+                            <div class="strength-fill"></div>
+                        </div>
+                    </div>
+                    {% if form.password1.errors %}
+                        <div class="invalid-feedback">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            {% for error in form.password1.errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="form-group">
+                    <label for="{{ form.password2.id_for_label }}">
+                        <i class="bi bi-lock-fill"></i>Confirm Password<span class="required">*</span>
+                    </label>
+                    <input type="password" 
+                           name="password2" 
+                           id="{{ form.password2.id_for_label }}"
+                           class="form-control {% if form.password2.errors %}is-invalid{% endif %}" 
+                           placeholder="Re-enter your password"
+                           required>
+                    {% if form.password2.errors %}
+                        <div class="invalid-feedback">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            {% for error in form.password2.errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Submit Button with Loading State -->
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary" id="registerBtn">
+                        <span class="btn-text">
+                            <i class="bi bi-person-plus"></i>
+                            Create Account
+                        </span>
+                        <span class="btn-spinner d-none">
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            Creating account...
+                        </span>
+                    </button>
+                </div>
+            </form>
+            
+            <div class="divider">
+                <span>OR</span>
+            </div>
+            
+            <!-- Login Link -->
+            <div class="login-link">
+                <small>
+                    Already have an account? 
+                    <a href="{% url 'core:login' %}" class="fw-bold">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        Login here
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Password strength indicator
+    const password1 = document.getElementById('{{ form.password1.id_for_label }}');
+    const strengthDiv = document.getElementById('passwordStrength');
+
+    if (password1) {
+        password1.addEventListener('input', function() {
+            const password = this.value;
+            let strength = 0;
+
+            if (password.length >= 8) strength++;
+            if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+            if (password.match(/[0-9]/)) strength++;
+            if (password.match(/[^a-zA-Z0-9]/)) strength++;
+
+            strengthDiv.className = 'password-strength';
+            if (strength <= 1) {
+                strengthDiv.classList.add('weak');
+            } else if (strength <= 3) {
+                strengthDiv.classList.add('medium');
+            } else {
+                strengthDiv.classList.add('strong');
+            }
+        });
+    }
+
+    // Loading state on submit
+    document.getElementById('registerForm').addEventListener('submit', function() {
+        const btn = document.getElementById('registerBtn');
+        btn.disabled = true;
+        btn.querySelector('.btn-text').classList.add('d-none');
+        btn.querySelector('.btn-spinner').classList.remove('d-none');
+    });
+</script>
 {% endblock %}
