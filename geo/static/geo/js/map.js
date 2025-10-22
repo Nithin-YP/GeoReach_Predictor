@@ -10,6 +10,7 @@ class GeoReachMap {
         this.currentLayer = null;
         this.contextMenu = null;
         this.selectedFeature = null;
+        this.loadingOverlay = document.getElementById('mapLoadingOverlay');
         
         this.initBaseMaps();
         this.addClusters();
@@ -171,6 +172,22 @@ class GeoReachMap {
         });
     }
 
+    showLoader(message = 'Loading boundaries...') {
+        if (this.loadingOverlay) {
+            const textElement = this.loadingOverlay.querySelector('.loading-text');
+            if (textElement) {
+                textElement.textContent = message;
+            }
+            this.loadingOverlay.classList.add('active');
+        }
+    }
+
+    hideLoader() {
+        if (this.loadingOverlay) {
+            this.loadingOverlay.classList.remove('active');
+        }
+    }
+
     showGeoJsonLayer(zoom) {
         const apiEndpoint = this.getApiEndpoint(zoom);
 
@@ -182,6 +199,7 @@ class GeoReachMap {
 
         // Don't show boundaries when zoomed too far OUT
         if (zoom < 4) {
+            this.hideLoader();
             return;
         }
 
@@ -190,8 +208,12 @@ class GeoReachMap {
             console.log('Using cached layer:', apiEndpoint);
             this.currentLayer = this.geojsonLayerCache[apiEndpoint];
             this.currentLayer.addTo(this.map);
+            this.hideLoader();
             return;
         }
+
+        const isStateLevel = apiEndpoint.includes('states');
+        this.showLoader(isStateLevel ? 'Loading state boundaries...' : 'Loading district boundaries...');
 
         // Fetch from PostGIS API endpoint
         console.log('Loading from PostGIS API:', apiEndpoint);
@@ -269,9 +291,12 @@ class GeoReachMap {
                     this.currentLayer = layer;
                     layer.addTo(this.map);
                 }
+
+                this.hideLoader();
             })
             .catch(error => {
                 console.error('Error loading from PostGIS API:', error, 'Endpoint:', apiEndpoint);
+                this.hideLoader();
             });
     }
 
