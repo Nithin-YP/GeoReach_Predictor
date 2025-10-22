@@ -1,0 +1,96 @@
+/* Context Menu Styles */
+.geo-context-menu {
+    position: fixed;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.08);
+    padding: 8px 0;
+    min-width: 200px;
+    z-index: 10000;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: none;
+    animation: contextMenuFadeIn 0.15s ease-out;
+}
+
+@keyframes contextMenuFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.geo-context-menu.active {
+    display: block;
+}
+
+.context-menu-header {
+    padding: 8px 16px;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 4px;
+}
+
+.context-menu-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.context-menu-subtitle {
+    font-size: 12px;
+    color: #666;
+    margin: 2px 0 0 0;
+}
+
+.context-menu-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #333;
+    font-size: 14px;
+    transition: background-color 0.1s ease;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+}
+
+.context-menu-item:hover {
+    background-color: #f5f5f5;
+}
+
+.context-menu-item:active {
+    background-color: #e8e8e8;
+}
+
+.context-menu-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.context-menu-item i {
+    width: 18px;
+    font-size: 16px;
+    color: #666;
+}
+
+.context-menu-divider {
+    height: 1px;
+    background-color: #e0e0e0;
+    margin: 4px 0;
+}
+
+/* Prevent text selection on right-click */
+.leaflet-container {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}

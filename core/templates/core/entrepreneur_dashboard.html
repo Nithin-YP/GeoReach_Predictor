@@ -205,12 +205,12 @@
     </div>
 </div>
 
-<!-- Load geo app's JavaScript -->
+<!-- Load geo app's CSS and JavaScript -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<link rel="stylesheet" href="{% static 'geo/css/map.css' %}" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="{% static 'geo/js/map.js' %}"></script>
 <script>
-
     const productTypeSelect = document.getElementById('id_product_type');
     // Initialize map with safe data from geo app (guarded to avoid parse errors and redeclaration)
     document.addEventListener('DOMContentLoaded', function() {
@@ -241,7 +241,9 @@
 
         const mapConfig = window.GeoReachData.mapConfig;
         const clusters = window.GeoReachData.clusters;
-        new GeoReachMap('map', mapConfig, clusters);
+
+        window.geoReachMapInstance = new GeoReachMap('map', mapConfig, clusters);
+        console.log('Map instance created:', window.geoReachMapInstance);
 
         // Dynamic dropdown logic
         const productTypeSelect = document.getElementById('id_product_type');
@@ -255,7 +257,7 @@
 
             // Clear and populate productCategorySelect
             if (productCategorySelect) {
-                productCategorySelect.innerHTML = '<option value="">---------</option>'; // Add a default blank option
+                productCategorySelect.innerHTML = '<option value="">---------</option>';
                 if (dependentData && dependentData.categories) {
                     dependentData.categories.forEach(category => {
                         const option = document.createElement('option');
@@ -268,7 +270,7 @@
 
             // Clear and populate sectorSelect
             if (sectorSelect) {
-                sectorSelect.innerHTML = '<option value="">---------</option>'; // Add a default blank option
+                sectorSelect.innerHTML = '<option value="">---------</option>';
                 if (dependentData && dependentData.sectors) {
                     dependentData.sectors.forEach(sector => {
                         const option = document.createElement('option');
@@ -283,7 +285,6 @@
         // Attach event listener
         if (productTypeSelect) {
             productTypeSelect.addEventListener('change', updateDependentDropdowns);
-            // Initial update in case a product type is pre-selected (e.g., on form error)
             updateDependentDropdowns();
         }
     });
