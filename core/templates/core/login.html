@@ -1,61 +1,412 @@
 {% extends 'base.html' %}
-{% load form_extras %}
+{% load static %}
 
 {% block title %}Login - GeoReach Predictor{% endblock %}
 
+{% block navbar %}{% endblock %}
+{% block container_start %}{% endblock %}
+{% block container_end %}{% endblock %}
+{% block footer %}{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white text-center">
-                <h3 class="mb-0">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Login
-                </h3>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
-                        {{ form.username|add_class:"form-control" }}
-                        {% if form.username.errors %}
-                            <div class="text-danger small mt-1">
-                                {% for error in form.username.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
+<style>
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #2c3e50;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+        margin: 0;
+    }
+
+    .login-container {
+        max-width: 450px;
+        width: 100%;
+        animation: fadeInUp 0.8s ease-in-out;
+    }
+
+    .card {
+        border: none;
+        border-radius: 20px;
+        background: #ffffff;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        border-radius: 0;
+        text-align: center;
+        padding: 2rem 1.5rem;
+        border: none;
+    }
+
+    .card-header h3 {
+        color: #ffffff;
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.75rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .card-header i {
+        font-size: 1.5rem;
+        vertical-align: middle;
+    }
+
+    .card-body {
+        padding: 2.5rem;
+        background: #ffffff;
+    }
+
+    label {
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    label i {
+        color: #2563eb;
+        margin-right: 0.5rem;
+    }
+
+    .form-control {
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        color: #1e293b;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        background: #ffffff;
+    }
+
+    .form-control.is-invalid {
+        border-color: #ef4444;
+        background: #fef2f2;
+    }
+
+    .form-control.is-invalid:focus {
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+    }
+
+    .invalid-feedback,
+    .text-danger {
+        color: #ef4444 !important;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: block;
+    }
+
+    .invalid-feedback i {
+        margin-right: 0.25rem;
+    }
+
+    .alert {
+        border: none;
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .alert-danger {
+        background: #fef2f2;
+        color: #991b1b;
+        border-left: 4px solid #ef4444;
+    }
+
+    .alert-danger .alert-heading {
+        color: #dc2626;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .alert-danger ul {
+        margin: 0;
+        padding-left: 1.25rem;
+    }
+
+    .alert-danger li {
+        margin-bottom: 0.25rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 0.875rem 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        width: 100%;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        transform: translateY(-2px);
+    }
+
+    .btn-primary:active {
+        transform: translateY(0);
+    }
+
+    .btn-primary i {
+        margin-right: 0.5rem;
+    }
+
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 1.5rem 0;
+        color: #94a3b8;
+        font-size: 0.875rem;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .divider span {
+        padding: 0 1rem;
+        font-weight: 500;
+    }
+
+    .register-link {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background: #f8fafc;
+        border-radius: 12px;
+    }
+
+    .register-link small {
+        color: #64748b;
+        font-size: 0.95rem;
+    }
+
+    .register-link a {
+        color: #2563eb;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .register-link a:hover {
+        color: #1e40af;
+        text-decoration: underline;
+    }
+
+    .register-link i {
+        margin-right: 0.25rem;
+    }
+
+    @keyframes fadeInUp {
+        0% {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .brand-title {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .brand-title h1 {
+        color: #1e293b;
+        font-weight: 700;
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .brand-title p {
+        color: #64748b;
+        font-size: 1rem;
+    }
+
+    .brand-title i {
+        color: #2563eb;
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+</style>
+
+<div class="login-container">
+    <!-- Brand Header -->
+    <div class="brand-title">
+        <i class="bi bi-geo-alt-fill"></i>
+        <h1>GeoReach Predictor</h1>
+        <p>Welcome back! Please login to your account.</p>
+    </div>
+
+    <!-- Login Card -->
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <i class="bi bi-box-arrow-in-right"></i>
+                Sign In
+            </h3>
+        </div>
+        <div class="card-body">
+            {% if form.errors %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <h6 class="alert-heading">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        {% if form.non_field_errors %}
+                            Authentication Failed
+                        {% else %}
+                            Please correct the errors below
                         {% endif %}
-                    </div>
+                    </h6>
                     
-                    <div class="mb-3">
-                        <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
-                        {{ form.password|add_class:"form-control" }}
-                        {% if form.password.errors %}
-                            <div class="text-danger small mt-1">
-                                {% for error in form.password.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
+                    {% if form.non_field_errors %}
+                        <ul class="mb-0">
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="mb-0">Please check the highlighted fields and try again.</p>
+                    {% endif %}
                     
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="{{ form.username.id_for_label }}">
+                        <i class="bi bi-person-fill"></i>Username
+                    </label>
+                    <input type="text" 
+                           name="username" 
+                           id="{{ form.username.id_for_label }}"
+                           class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
+                           placeholder="Enter your username"
+                           value="{{ form.username.value|default:'' }}"
+                           required
+                           autofocus>
+                    {% if form.username.errors %}
+                        <div class="invalid-feedback">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            {% for error in form.username.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-4">
+                    <label for="{{ form.password.id_for_label }}">
+                        <i class="bi bi-lock-fill"></i>Password
+                    </label>
+                    <div class="input-group">
+                        <input type="password" 
+                            name="password" 
+                            id="{{ form.password.id_for_label }}"
+                            class="form-control {% if form.password.errors %}is-invalid{% endif %}" 
+                            placeholder="Enter your password"
+                            required>
+                        <button class="btn btn-outline-secondary" type="button" id="togglePassword" style="border-radius: 0 12px 12px 0; border: 2px solid #e2e8f0; border-left: none;">
+                            <i class="bi bi-eye" id="toggleIcon"></i>
                         </button>
                     </div>
-                </form>
-                
-                <div class="text-center mt-3">
-                    <small class="text-muted">
-                        Don't have an account? 
-                        <a href="{% url 'core:entrepreneur_register' %}" class="text-decoration-none">
-                            Register as Entrepreneur
-                        </a>
-                    </small>
+                    {% if form.password.errors %}
+                        <div class="invalid-feedback d-block">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            {% for error in form.password.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
+                
+                <div class="d-grid">
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary" id="loginBtn">
+                            <span class="btn-text">
+                                <i class="bi bi-box-arrow-in-right"></i>
+                                Login to Dashboard
+                            </span>
+                            <span class="btn-spinner d-none">
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                Logging in...
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            <div class="divider">
+                <span>OR</span>
+            </div>
+            
+            <div class="register-link">
+                <small>
+                    Don't have an account? 
+                    <a href="{% url 'core:entrepreneur_register' %}">
+                        <i class="bi bi-person-plus-fill"></i>
+                        Register as Entrepreneur
+                    </a>
+                </small>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('{{ form.password.id_for_label }}');
+    const toggleIcon = document.getElementById('toggleIcon');
+
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        if (type === 'text') {
+            toggleIcon.classList.remove('bi-eye');
+            toggleIcon.classList.add('bi-eye-slash');
+        } else {
+            toggleIcon.classList.remove('bi-eye-slash');
+            toggleIcon.classList.add('bi-eye');
+        }
+    });
+    
+    document.querySelector('form').addEventListener('submit', function() {
+        const btn = document.getElementById('loginBtn');
+        btn.disabled = true;
+        btn.querySelector('.btn-text').classList.add('d-none');
+        btn.querySelector('.btn-spinner').classList.remove('d-none');
+    });
+</script>
 {% endblock %}

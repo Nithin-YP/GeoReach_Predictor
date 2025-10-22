@@ -4,153 +4,462 @@
 {% block title %}User Management - GeoReach Predictor{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'core:admin_dashboard' %}">Admin Dashboard</a></li>
-                <li class="breadcrumb-item active">User Management</li>
-            </ol>
-        </nav>
-        
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="text-primary">
-                <i class="bi bi-people me-2"></i>User Management
-            </h1>
-            <a href="{% url 'core:admin_dashboard' %}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
-            </a>
+<style>
+    /* Light professional theme for user management */
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+    }
+
+    .user-mgmt-container {
+        padding: 2rem;
+        animation: fadeInUp 0.8s ease-in-out;
+    }
+
+    h1 {
+        color: #1e293b;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+    }
+
+    h1 i {
+        color: #2563eb;
+    }
+
+    .breadcrumb {
+        background: #ffffff;
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        margin-bottom: 1.5rem;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        color: #64748b;
+    }
+
+    .breadcrumb-item a {
+        color: #2563eb;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb-item a:hover {
+        color: #1e40af;
+    }
+
+    .breadcrumb-item.active {
+        color: #475569;
+    }
+
+    .card {
+        border: none;
+        border-radius: 16px;
+        background: #ffffff;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        border-radius: 16px 16px 0 0 !important;
+        border: none;
+        padding: 1.25rem 1.5rem;
+    }
+
+    .card-header h5 {
+        color: #ffffff;
+        font-weight: 600;
+        margin: 0;
+        font-size: 1.1rem;
+    }
+
+    .card-header i {
+        color: #ffffff;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .btn-outline-secondary {
+        color: #64748b;
+        border-color: #cbd5e1;
+        border-radius: 10px;
+        font-weight: 600;
+        padding: 0.625rem 1.25rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-secondary:hover {
+        background: #64748b;
+        border-color: #64748b;
+        color: #ffffff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+    }
+
+    /* Fix scrollbar disappearing issue */
+    .table-responsive {
+        overflow-x: auto;
+        overflow-y: visible;
+        /* Force scrollbar to always be visible when needed */
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 #f1f5f9;
+    }
+
+    /* Webkit scrollbar styling */
+    .table-responsive::-webkit-scrollbar {
+        height: 10px;
+    }
+
+    .table-responsive::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 10px;
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+        transition: background 0.3s ease;
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+    .table {
+        color: #334155;
+        margin-bottom: 0;
+    }
+
+    .table thead {
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .table thead th {
+        border-bottom: 2px solid #e2e8f0;
+        padding: 1rem;
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .table-hover tbody tr {
+        transition: background-color 0.2s ease;
+        /* REMOVED: transform that was causing the issue */
+    }
+
+    .table-hover tbody tr:hover {
+        background: #f8fafc;
+        /* Use background color change only, no transform */
+    }
+
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.75rem;
+        font-weight: 600;
+        border-radius: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge.bg-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        color: #ffffff;
+    }
+
+    .badge.bg-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+        color: #ffffff;
+    }
+
+    .badge.bg-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+        color: #ffffff;
+    }
+
+    .badge.bg-primary {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+        color: #ffffff;
+    }
+
+    .badge.bg-secondary {
+        background: linear-gradient(135deg, #64748b 0%, #475569 100%) !important;
+        color: #ffffff;
+    }
+
+    .btn-group-sm .btn {
+        border-radius: 8px;
+        margin: 0 2px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-success {
+        color: #10b981;
+        border-color: #10b981;
+    }
+
+    .btn-outline-success:hover {
+        background: #10b981;
+        border-color: #10b981;
+        color: #ffffff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-outline-warning {
+        color: #f59e0b;
+        border-color: #f59e0b;
+    }
+
+    .btn-outline-warning:hover {
+        background: #f59e0b;
+        border-color: #f59e0b;
+        color: #ffffff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-outline-danger {
+        color: #ef4444;
+        border-color: #ef4444;
+    }
+
+    .btn-outline-danger:hover {
+        background: #ef4444;
+        border-color: #ef4444;
+        color: #ffffff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+    }
+
+    .text-muted {
+        color: #94a3b8 !important;
+    }
+
+    .text-center.py-4 {
+        padding: 3rem 1rem;
+    }
+
+    .text-center.py-4 i {
+        color: #cbd5e1;
+    }
+
+    .text-center.py-4 h5 {
+        color: #64748b;
+        margin-top: 1rem;
+    }
+
+    .text-center.py-4 p {
+        color: #94a3b8;
+    }
+
+    @keyframes fadeInUp {
+        0% {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .user-mgmt-container {
+            padding: 1rem;
+        }
+
+        .table {
+            font-size: 0.875rem;
+        }
+
+        .btn-group-sm .btn {
+            padding: 0.25rem 0.5rem;
+        }
+    }
+</style>
+
+<div class="user-mgmt-container">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'core:admin_dashboard' %}">
+                            <i class="bi bi-speedometer2 me-1"></i>Admin Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active">User Management</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>
+                    <i class="bi bi-people me-2"></i>User Management
+                </h1>
+                <a href="{% url 'core:admin_dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-12">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">
-                    <i class="bi bi-person-lines-fill me-2"></i>User List
-                </h5>
-            </div>
-            <div class="card-body">
-                {% if users %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Username</th>
-                                    <th>Email</th>
-                                    <th>Status</th>
-                                    <th>Role</th>
-                                    <th>Join Date</th>
-                                    <th>Last Login</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for user in users %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>
+                        <i class="bi bi-person-lines-fill me-2"></i>User List
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if users %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
                                     <tr>
-                                        <td>
-                                            <strong>{{ user.username }}</strong>
-                                        </td>
-                                        <td>
-                                            {% if user.email %}
-                                                {{ user.email }}
-                                            {% else %}
-                                                <span class="text-muted">No email</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if not user.is_active %}
-                                                <span class="badge bg-danger">Inactive</span>
-                                            {% elif user.is_blocked %}
-                                                <span class="badge bg-warning">Blocked</span>
-                                            {% else %}
-                                                <span class="badge bg-success">Active</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if user.is_superuser %}
-                                                <span class="badge bg-primary">Admin</span>
-                                            {% else %}
-                                                <span class="badge bg-secondary">Entrepreneur</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <small>{{ user.date_joined|date:"M d, Y" }}</small>
-                                        </td>
-                                        <td>
-                                            {% if user.last_login %}
-                                                <small>{{ user.last_login|date:"M d, Y H:i" }}</small>
-                                            {% else %}
-                                                <span class="text-muted">Never</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if not user.is_superuser %}
-                                                <div class="btn-group btn-group-sm">
-                                                    {% if user.is_blocked %}
-                                                        <form method="post" style="display: inline;">
-                                                            {% csrf_token %}
-                                                            <input type="hidden" name="user_id" value="{{ user.id }}">
-                                                            <input type="hidden" name="action" value="unblock">
-                                                            <button type="submit" class="btn btn-outline-success btn-sm" 
-                                                                    title="Unblock user">
-                                                                <i class="bi bi-check-circle"></i>
-                                                            </button>
-                                                        </form>
-                                                    {% else %}
-                                                        <form method="post" style="display: inline;">
-                                                            {% csrf_token %}
-                                                            <input type="hidden" name="user_id" value="{{ user.id }}">
-                                                            <input type="hidden" name="action" value="block">
-                                                            <button type="submit" class="btn btn-outline-warning btn-sm" 
-                                                                    title="Block user"
-                                                                    onclick="return confirm('Are you sure you want to block this user?')">
-                                                                <i class="bi bi-x-circle"></i>
-                                                            </button>
-                                                        </form>
-                                                    {% endif %}
-                                                    
-                                                    {% if user.is_active %}
-                                                        <form method="post" style="display: inline;">
-                                                            {% csrf_token %}
-                                                            <input type="hidden" name="user_id" value="{{ user.id }}">
-                                                            <input type="hidden" name="action" value="deactivate">
-                                                            <button type="submit" class="btn btn-outline-danger btn-sm" 
-                                                                    title="Deactivate user"
-                                                                    onclick="return confirm('Are you sure you want to deactivate this user?')">
-                                                                <i class="bi bi-person-x"></i>
-                                                            </button>
-                                                        </form>
-                                                    {% else %}
-                                                        <form method="post" style="display: inline;">
-                                                            {% csrf_token %}
-                                                            <input type="hidden" name="user_id" value="{{ user.id }}">
-                                                            <input type="hidden" name="action" value="activate">
-                                                            <button type="submit" class="btn btn-outline-success btn-sm" 
-                                                                    title="Activate user">
-                                                                <i class="bi bi-person-check"></i>
-                                                            </button>
-                                                        </form>
-                                                    {% endif %}
-                                                </div>
-                                            {% else %}
-                                                <small class="text-muted">Admin user</small>
-                                            {% endif %}
-                                        </td>
+                                        <th><i class="bi bi-person me-2"></i>Username</th>
+                                        <th><i class="bi bi-envelope me-2"></i>Email</th>
+                                        <th><i class="bi bi-activity me-2"></i>Status</th>
+                                        <th><i class="bi bi-shield me-2"></i>Role</th>
+                                        <th><i class="bi bi-calendar-check me-2"></i>Join Date</th>
+                                        <th><i class="bi bi-clock me-2"></i>Last Login</th>
+                                        <th><i class="bi bi-gear me-2"></i>Actions</th>
                                     </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <div class="text-center py-4">
-                        <i class="bi bi-people text-muted" style="font-size: 3rem;"></i>
-                        <h5 class="text-muted mt-3">No users found</h5>
-                        <p class="text-muted">No users have registered yet.</p>
-                    </div>
-                {% endif %}
+                                </thead>
+                                <tbody>
+                                    {% for user in users %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ user.username }}</strong>
+                                            </td>
+                                            <td>
+                                                {% if user.email %}
+                                                    {{ user.email }}
+                                                {% else %}
+                                                    <span class="text-muted">No email</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if not user.is_active %}
+                                                    <span class="badge bg-danger">
+                                                        <i class="bi bi-x-circle me-1"></i>Inactive
+                                                    </span>
+                                                {% elif user.is_blocked %}
+                                                    <span class="badge bg-warning">
+                                                        <i class="bi bi-exclamation-triangle me-1"></i>Blocked
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-check-circle me-1"></i>Active
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if user.is_superuser %}
+                                                    <span class="badge bg-primary">
+                                                        <i class="bi bi-star-fill me-1"></i>Admin
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">
+                                                        <i class="bi bi-briefcase me-1"></i>Entrepreneur
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <small>{{ user.date_joined|date:"M d, Y" }}</small>
+                                            </td>
+                                            <td>
+                                                {% if user.last_login %}
+                                                    <small>{{ user.last_login|date:"M d, Y H:i" }}</small>
+                                                {% else %}
+                                                    <span class="text-muted">Never</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if not user.is_superuser %}
+                                                    <div class="btn-group btn-group-sm">
+                                                        {% if user.is_blocked %}
+                                                            <form method="post" style="display: inline;">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                                <input type="hidden" name="action" value="unblock">
+                                                                <button type="submit" class="btn btn-outline-success btn-sm" 
+                                                                        title="Unblock user">
+                                                                    <i class="bi bi-check-circle"></i>
+                                                                </button>
+                                                            </form>
+                                                        {% else %}
+                                                            <form method="post" style="display: inline;">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                                <input type="hidden" name="action" value="block">
+                                                                <button type="submit" class="btn btn-outline-warning btn-sm" 
+                                                                        title="Block user"
+                                                                        onclick="return confirm('Are you sure you want to block this user?')">
+                                                                    <i class="bi bi-x-circle"></i>
+                                                                </button>
+                                                            </form>
+                                                        {% endif %}
+                                                        
+                                                        {% if user.is_active %}
+                                                            <form method="post" style="display: inline;">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                                <input type="hidden" name="action" value="deactivate">
+                                                                <button type="submit" class="btn btn-outline-danger btn-sm" 
+                                                                        title="Deactivate user"
+                                                                        onclick="return confirm('Are you sure you want to deactivate this user?')">
+                                                                    <i class="bi bi-person-x"></i>
+                                                                </button>
+                                                            </form>
+                                                        {% else %}
+                                                            <form method="post" style="display: inline;">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                                <input type="hidden" name="action" value="activate">
+                                                                <button type="submit" class="btn btn-outline-success btn-sm" 
+                                                                        title="Activate user">
+                                                                    <i class="bi bi-person-check"></i>
+                                                                </button>
+                                                            </form>
+                                                        {% endif %}
+                                                    </div>
+                                                {% else %}
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-shield-lock me-1"></i>Admin user
+                                                    </small>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-people text-muted" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3">No users found</h5>
+                            <p>No users have registered yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
