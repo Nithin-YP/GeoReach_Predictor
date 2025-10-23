@@ -380,17 +380,76 @@ class GeoReachMap {
         }
     }
 
-    // Placeholder methods for context menu actions
     viewDetails(props, isStateLevel) {
-        alert(`View Details: ${props.name}\n(To be implemented)`);
+        const regionType = isStateLevel ? 'state' : 'district';
+        const regionId = props.id;
+        
+        this.showLoader('Loading details...');
+        
+        fetch(`/geo/api/${regionType}/${regionId}/details/`)
+            .then(response => response.json())
+            .then(result => {
+                this.hideLoader();
+                
+                if (result.success) {
+                    this.showDetailsModal(result.data);
+                } else {
+                    alert(`Error: ${result.error}`);
+                }
+            })
+            .catch(error => {
+                this.hideLoader();
+                console.error('Error fetching details:', error);
+                alert('Failed to load details');
+            });
     }
 
     viewDemographics(props, isStateLevel) {
-        alert(`Demographics: ${props.name}\n(To be implemented)`);
+        const regionType = isStateLevel ? 'state' : 'district';
+        const regionId = props.id;
+        
+        this.showLoader('Loading demographics...');
+        
+        fetch(`/geo/api/${regionType}/${regionId}/demographics/`)
+            .then(response => response.json())
+            .then(result => {
+                this.hideLoader();
+                
+                if (result.success) {
+                    this.showDemographicsModal(result.data);
+                } else {
+                    alert(`Error: ${result.error}`);
+                }
+            })
+            .catch(error => {
+                this.hideLoader();
+                console.error('Error fetching demographics:', error);
+                alert('Failed to load demographics');
+            });
     }
 
     viewEconomicIndicators(props, isStateLevel) {
-        alert(`Economic Indicators: ${props.name}\n(To be implemented)`);
+        const regionType = isStateLevel ? 'state' : 'district';
+        const regionId = props.id;
+        
+        this.showLoader('Loading economic data...');
+        
+        fetch(`/geo/api/${regionType}/${regionId}/economic/`)
+            .then(response => response.json())
+            .then(result => {
+                this.hideLoader();
+                
+                if (result.success) {
+                    this.showEconomicModal(result.data);
+                } else {
+                    alert(`Error: ${result.error}`);
+                }
+            })
+            .catch(error => {
+                this.hideLoader();
+                console.error('Error fetching economic data:', error);
+                alert('Failed to load economic indicators');
+            });
     }
 
     zoomToBoundary(layer) {
@@ -401,10 +460,94 @@ class GeoReachMap {
     }
 
     exportData(props, isStateLevel) {
-        alert(`Export Data: ${props.name}\n(To be implemented)`);
+        const regionType = isStateLevel ? 'state' : 'district';
+        const regionId = props.id;
+        
+        this.showLoader('Preparing export...');
+        
+        fetch(`/geo/api/${regionType}/${regionId}/export/`)
+            .then(response => response.json())
+            .then(result => {
+                this.hideLoader();
+                
+                if (result.success) {
+                    // Create downloadable JSON file
+                    const dataStr = JSON.stringify(result.data, null, 2);
+                    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(dataBlob);
+                    
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `${props.name.replace(/\s+/g, '_')}_data.json`;
+                    link.click();
+                    
+                    URL.revokeObjectURL(url);
+                } else {
+                    alert(`Error: ${result.error}`);
+                }
+            })
+            .catch(error => {
+                this.hideLoader();
+                console.error('Error exporting data:', error);
+                alert('Failed to export data');
+            });
     }
 
     compareWith(props, isStateLevel) {
-        alert(`Compare: ${props.name}\n(To be implemented)`);
+        alert(`Compare feature coming soon!\nSelected: ${props.name}\n\nThis will allow you to select another region and compare demographics, economics, etc.`);
+        // TODO: Implement comparison interface
+    }
+
+    // Helper methods to show modals with data
+    showDetailsModal(data) {
+        const content = `
+            <div style="padding: 20px;">
+                <h3>${data.name}</h3>
+                <p><strong>Type:</strong> ${data.type}</p>
+                ${data.code ? `<p><strong>Code:</strong> ${data.code}</p>` : ''}
+                ${data.state ? `<p><strong>State:</strong> ${data.state}</p>` : ''}
+                <p><strong>Population:</strong> ${(data.population || 0).toLocaleString()}</p>
+                ${data.area_km2 ? `<p><strong>Area:</strong> ${data.area_km2.toLocaleString()} km²</p>` : ''}
+                ${data.population_density ? `<p><strong>Density:</strong> ${data.population_density.toLocaleString()} per km²</p>` : ''}
+                ${data.literacy_rate ? `<p><strong>Literacy Rate:</strong> ${data.literacy_rate}%</p>` : ''}
+                ${data.district_count ? `<p><strong>Districts:</strong> ${data.district_count}</p>` : ''}
+            </div>
+        `;
+        
+        alert(content.replace(/<[^>]*>/g, '\n')); // Simple alert for now
+        // TODO: Replace with Bootstrap modal
+    }
+
+    showDemographicsModal(data) {
+        let content = `Demographics: ${data.name}\n\n`;
+        content += `Type: ${data.type}\n`;
+        if (data.state) content += `State: ${data.state}\n`;
+        content += `Population: ${(data.population || 0).toLocaleString()}\n`;
+        if (data.literacy_rate) content += `Literacy: ${data.literacy_rate}%\n`;
+        if (data.sex_ratio) content += `Sex Ratio: ${data.sex_ratio}\n`;
+        if (data.rural_percentage) content += `Rural: ${data.rural_percentage}%\n`;
+        if (data.urban_percentage) content += `Urban: ${data.urban_percentage}%\n`;
+        
+        alert(content);
+        // TODO: Replace with Bootstrap modal with charts
+    }
+
+    showEconomicModal(data) {
+        let content = `Economic Indicators: ${data.name}\n\n`;
+        
+        const indicators = data.economic_indicators;
+        if (indicators.employment_rate) content += `Employment Rate: ${indicators.employment_rate}%\n`;
+        if (indicators.unemployment_rate) content += `Unemployment: ${indicators.unemployment_rate}%\n`;
+        if (indicators.avg_monthly_salary) content += `Avg Salary: ₹${indicators.avg_monthly_salary.toLocaleString()}\n`;
+        
+        if (data.top_industries && data.top_industries.length > 0) {
+            content += `\nTop Industries:\n`;
+            data.top_industries.forEach((ind, i) => {
+                content += `${i + 1}. ${ind.industry}: ${ind.employed.toLocaleString()} employed\n`;
+            });
+        }
+        
+        alert(content);
+        // TODO: Replace with Bootstrap modal with charts
     }
 }

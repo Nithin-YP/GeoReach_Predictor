@@ -320,6 +320,7 @@ def export_states_geojson(include_demographics=True):
     features = []
     for state in states:
         properties = {
+            'id': state.id,
             'name': state.name,
             'code': state.code,
             'population': state.population,
@@ -364,6 +365,7 @@ def export_districts_geojson(state_name=None, include_metrics=True):
     features = []
     for district in queryset:
         properties = {
+            'id': district.id,
             'name': district.name,
             'state': district.state.name,
             'population': district.population,

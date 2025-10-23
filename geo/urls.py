@@ -31,4 +31,8 @@ urlpatterns = [
     path('api/analyze-corridor/', views.api_analyze_corridor, name='api_analyze_corridor'),
     path('api/market-reach-analysis/', views.api_market_reach_analysis, name='api_market_reach_analysis'),
     path('api/high-potential-zones/', views.api_high_potential_zones, name='api_high_potential_zones'),
+    path('api/<str:region_type>/<int:region_id>/details/', views.region_details_api, name='region_details_api'),
+    path('api/<str:region_type>/<int:region_id>/demographics/', views.region_demographics_api, name='region_demographics_api'),
+    path('api/<str:region_type>/<int:region_id>/economic/', views.region_economic_api, name='region_economic_api'),
+    path('api/<str:region_type>/<int:region_id>/export/', views.region_export_api, name='region_export_api'),
 ] 

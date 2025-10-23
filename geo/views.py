@@ -3,7 +3,8 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from .models import State, District, MarketPotentialZone
+from django.db.models import Avg, Sum, Count, Q
+from .models import State, District, EconomicIndicator, IndustryEmployment, MarketPotentialZone, DemographicProfile
 from . import utils
 import json
 
@@ -273,3 +274,222 @@ def api_high_potential_zones(request):
     }
     
     return JsonResponse(data)
+
+@require_http_methods(["GET"])
+def region_details_api(request, region_type, region_id):
+    """Get detailed information about a state or district."""
+    try:
+        if region_type == 'state':
+            region = State.objects.get(id=region_id)
+            
+            # Check  District model's ForeignKey to State - it might be 'districts' not 'district_set'
+            district_count = District.objects.filter(state=region).count()
+            
+            data = {
+                'id': region.id,
+                'name': region.name,
+                'code': region.code,
+                'type': 'State',
+                'population': region.population,
+                'male_population': region.male_population,
+                'female_population': region.female_population,
+                'sex_ratio': region.sex_ratio,
+                'rural_population': region.rural_population,
+                'urban_population': region.urban_population,
+                'area_km2': float(region.area_km2) if region.area_km2 else None,
+                'population_density': float(region.population_density) if region.population_density else None,
+                'district_count': district_count,
+            }
+        else:  # district
+            region = District.objects.select_related('state').get(id=region_id)
+            data = {
+                'id': region.id,
+                'name': region.name,
+                'type': 'District',
+                'state': region.state.name,
+                'population': region.population,
+                'growth_rate': float(region.growth_rate) if region.growth_rate else None,
+                'sex_ratio': region.sex_ratio,
+                'literacy_rate': float(region.literacy_rate) if region.literacy_rate else None,
+                'area_km2': float(region.area_km2) if region.area_km2 else None,
+            }
+        
+        return JsonResponse({'success': True, 'data': data})
+    except (State.DoesNotExist, District.DoesNotExist) as e:
+        return JsonResponse({'success': False, 'error': 'Region not found'}, status=404)
+    except Exception as e:
+        import traceback
+        print(f"Error in region_details_api: {str(e)}")
+        print(traceback.format_exc())
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@require_http_methods(["GET"])
+def region_demographics_api(request, region_type, region_id):
+    """Get demographic data for a state or district."""
+    try:
+        if region_type == 'state':
+            region = State.objects.get(id=region_id)
+            
+            demo_profile = DemographicProfile.objects.filter(state=region).first()
+            
+            data = {
+                'name': region.name,
+                'type': 'State',
+                'population': region.population,
+                'male_population': region.male_population,
+                'female_population': region.female_population,
+                'sex_ratio': region.sex_ratio,
+                'rural_population': region.rural_population,
+                'urban_population': region.urban_population,
+            }
+            
+            # Add safe calculations
+            if region.population and region.population > 0:
+                data['rural_percentage'] = round((region.rural_population / region.population * 100), 2) if region.rural_population else 0
+                data['urban_percentage'] = round((region.urban_population / region.population * 100), 2) if region.urban_population else 0
+            else:
+                data['rural_percentage'] = 0
+                data['urban_percentage'] = 0
+            
+            if demo_profile:
+                data.update({
+                    'avg_age': float(demo_profile.avg_age) if demo_profile.avg_age else None,
+                    'median_income': float(demo_profile.median_income) if demo_profile.median_income else None,
+                })
+        else:  # district
+            region = District.objects.select_related('state').get(id=region_id)
+            demo_profile = DemographicProfile.objects.filter(district=region).first()
+            
+            data = {
+                'name': region.name,
+                'type': 'District',
+                'state': region.state.name,
+                'population': region.population,
+                'sex_ratio': region.sex_ratio,
+                'literacy_rate': float(region.literacy_rate) if region.literacy_rate else None,
+                'growth_rate': float(region.growth_rate) if region.growth_rate else None,
+            }
+            
+            if demo_profile:
+                data.update({
+                    'avg_age': float(demo_profile.avg_age) if demo_profile.avg_age else None,
+                    'median_income': float(demo_profile.median_income) if demo_profile.median_income else None,
+                })
+        
+        return JsonResponse({'success': True, 'data': data})
+    except (State.DoesNotExist, District.DoesNotExist):
+        return JsonResponse({'success': False, 'error': 'Region not found'}, status=404)
+    except Exception as e:
+        import traceback
+        print(f"Error in region_demographics_api: {str(e)}")
+        print(traceback.format_exc())
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@require_http_methods(["GET"])
+def region_economic_api(request, region_type, region_id):
+    """Get economic indicators for a state or district."""
+    try:
+        if region_type == 'state':
+            region = State.objects.get(id=region_id)
+            
+            # Use foreign key field name
+            indicators = EconomicIndicator.objects.filter(
+                state_id=region_id
+            ).order_by('-date_recorded').first()
+            
+            # Use foreign key field name
+            industries = IndustryEmployment.objects.filter(
+                state_id=region_id
+            ).values('industry').annotate(
+                total_employed=Sum('employed_count'),
+                avg_salary=Avg('avg_salary')
+            ).order_by('-total_employed')[:5]
+            
+        else:  # district
+            region = District.objects.get(id=region_id)
+            
+            indicators = EconomicIndicator.objects.filter(
+                district_id=region_id
+            ).order_by('-date_recorded').first()
+            
+            industries = IndustryEmployment.objects.filter(
+                district_id=region_id
+            ).values('industry').annotate(
+                total_employed=Sum('employed_count'),
+                avg_salary=Avg('avg_salary')
+            ).order_by('-total_employed')[:5]
+        
+        data = {
+            'name': region.name,
+            'type': region_type.capitalize(),
+            'economic_indicators': {},
+            'top_industries': []
+        }
+        
+        if indicators:
+            data['economic_indicators'] = {
+                'unemployment_rate': float(indicators.unemployment_rate) if indicators.unemployment_rate else None,
+                'employment_rate': float(indicators.employment_rate) if indicators.employment_rate else None,
+                'labour_participation_rate': float(indicators.labour_participation_rate) if indicators.labour_participation_rate else None,
+                'avg_monthly_salary': float(indicators.avg_monthly_salary) if indicators.avg_monthly_salary else None,
+                'estimated_employed': indicators.estimated_employed,
+                'date_recorded': indicators.date_recorded.isoformat() if indicators.date_recorded else None,
+            }
+        
+        data['top_industries'] = [
+            {
+                'industry': ind['industry'],
+                'employed': ind['total_employed'],
+                'avg_salary': float(ind['avg_salary']) if ind['avg_salary'] else None,
+            }
+            for ind in industries
+        ]
+        
+        return JsonResponse({'success': True, 'data': data})
+    except (State.DoesNotExist, District.DoesNotExist):
+        return JsonResponse({'success': False, 'error': 'Region not found'}, status=404)
+    except Exception as e:
+        import traceback
+        print(f"Error in region_economic_api: {str(e)}")
+        print(traceback.format_exc())
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@require_http_methods(["GET"])
+def region_export_api(request, region_type, region_id):
+    """Export comprehensive data for a region as JSON."""
+    try:
+        if region_type == 'state':
+            region = State.objects.get(id=region_id)
+            
+            # Get district names correctly
+            district_names = list(District.objects.filter(state=region).values_list('name', flat=True))
+            
+            data = {
+                'name': region.name,
+                'code': region.code,
+                'type': 'State',
+                'population': region.population,
+                'area_km2': float(region.area_km2) if region.area_km2 else None,
+                'districts': district_names,
+            }
+        else:
+            region = District.objects.select_related('state').get(id=region_id)
+            data = {
+                'name': region.name,
+                'type': 'District',
+                'state': region.state.name,
+                'population': region.population,
+                'literacy_rate': float(region.literacy_rate) if region.literacy_rate else None,
+            }
+        
+        return JsonResponse({'success': True, 'data': data})
+    except (State.DoesNotExist, District.DoesNotExist):
+        return JsonResponse({'success': False, 'error': 'Region not found'}, status=404)
+    except Exception as e:
+        import traceback
+        print(f"Error in region_export_api: {str(e)}")
+        print(traceback.format_exc())
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
