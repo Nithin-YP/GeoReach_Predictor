@@ -211,55 +211,129 @@
     </div>
 </div>
 
+<div class="modal fade" id="dataModal" tabindex="-1" aria-labelledby="dataModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dataModalLabel">Loading...</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="dataModalBody">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Load geo app's CSS and JavaScript -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="{% static 'geo/css/map.css' %}" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="{% static 'geo/js/map.js' %}"></script>
+
 <script>
-    const productTypeSelect = document.getElementById('id_product_type');
-    // Initialize map with safe data from geo app (guarded to avoid parse errors and redeclaration)
-    document.addEventListener('DOMContentLoaded', function() {
+    // Wait for EVERYTHING to load (including Bootstrap)
+    window.addEventListener('load', function() {
+        console.log('🔍 Page fully loaded, checking dependencies...');
+        
+        // ✅ STEP 1: Verify Bootstrap is loaded
+        if (typeof bootstrap === 'undefined') {
+            console.error('❌ Bootstrap JS not loaded!');
+            alert('Error: Bootstrap not loaded. Please refresh the page.');
+            return;
+        }
+        console.log('✅ Bootstrap version:', bootstrap.Tooltip.VERSION);
+        
+        // ✅ STEP 2: Verify modal element exists
+        const modalElement = document.getElementById('dataModal');
+        if (!modalElement) {
+            console.error('❌ Modal element #dataModal not found!');
+            alert('Error: Modal not found in DOM. Please refresh the page.');
+            return;
+        }
+        console.log('✅ Modal element found:', modalElement);
+        
+        // ✅ STEP 3: Test Bootstrap Modal creation
+        try {
+            const testModal = new bootstrap.Modal(modalElement);
+            console.log('✅ Bootstrap Modal test successful');
+        } catch (e) {
+            console.error('❌ Bootstrap Modal creation failed:', e);
+            alert('Error: Cannot create Bootstrap modal. Check console for details.');
+            return;
+        }
+        
+        // ✅ STEP 4: Initialize GeoReach data namespace
         window.GeoReachData = window.GeoReachData || {};
 
-        // Parse (or provide defaults) safely and cache on window.GeoReachData to avoid redeclaration
+        // Parse map config safely
         if (!window.GeoReachData.mapConfig) {
             try {
                 window.GeoReachData.mapConfig = JSON.parse('{{ map_config|default:"{}"|escapejs }}');
             } catch (e) {
+                console.warn('⚠️ Failed to parse map_config, using default:', e);
                 window.GeoReachData.mapConfig = {};
             }
         }
+        
+        // Parse clusters safely
         if (!window.GeoReachData.clusters) {
             try {
                 window.GeoReachData.clusters = JSON.parse('{{ clusters|default:"[]"|escapejs }}');
             } catch (e) {
+                console.warn('⚠️ Failed to parse clusters, using default:', e);
                 window.GeoReachData.clusters = [];
             }
         }
+        
+        // Parse product dependencies safely
         if (!window.GeoReachData.productDependencies) {
             try {
                 window.GeoReachData.productDependencies = JSON.parse('{{ product_dependencies_json|default:"{}"|escapejs }}');
             } catch (e) {
+                console.warn('⚠️ Failed to parse product_dependencies, using default:', e);
                 window.GeoReachData.productDependencies = {};
             }
         }
 
         const mapConfig = window.GeoReachData.mapConfig;
         const clusters = window.GeoReachData.clusters;
+        const productDependencies = window.GeoReachData.productDependencies;
 
-        window.geoReachMapInstance = new GeoReachMap('map', mapConfig, clusters);
-        console.log('Map instance created:', window.geoReachMapInstance);
+        console.log('📊 Loaded data:', {
+            mapConfig,
+            clustersCount: clusters.length,
+            productDependenciesKeys: Object.keys(productDependencies)
+        });
 
-        // Dynamic dropdown logic
+        // ✅ STEP 5: Initialize GeoReach Map
+        console.log('🗺️ Initializing GeoReachMap...');
+        try {
+            window.geoReachMapInstance = new GeoReachMap('map', mapConfig, clusters);
+            console.log('✅ Map instance created successfully:', window.geoReachMapInstance);
+        } catch (e) {
+            console.error('❌ Map initialization failed:', e);
+            alert('Error: Failed to initialize map. Check console for details.');
+            return;
+        }
+
+        // ✅ STEP 6: Setup dynamic dropdown logic
         const productTypeSelect = document.getElementById('id_product_type');
         const productCategorySelect = document.getElementById('id_product_category');
         const sectorSelect = document.getElementById('id_sector');
-        const productDependencies = window.GeoReachData.productDependencies;
 
         function updateDependentDropdowns() {
             const selectedProductType = productTypeSelect ? productTypeSelect.value : '';
             const dependentData = productDependencies[selectedProductType];
+
+            console.log('🔄 Updating dropdowns for product type:', selectedProductType);
 
             // Clear and populate productCategorySelect
             if (productCategorySelect) {
@@ -271,6 +345,7 @@
                         option.textContent = category;
                         productCategorySelect.appendChild(option);
                     });
+                    console.log('✅ Added', dependentData.categories.length, 'categories');
                 }
             }
 
@@ -284,6 +359,7 @@
                         option.textContent = sector;
                         sectorSelect.appendChild(option);
                     });
+                    console.log('✅ Added', dependentData.sectors.length, 'sectors');
                 }
             }
         }
@@ -291,8 +367,11 @@
         // Attach event listener
         if (productTypeSelect) {
             productTypeSelect.addEventListener('change', updateDependentDropdowns);
-            updateDependentDropdowns();
+            updateDependentDropdowns(); // Initialize on page load
+            console.log('✅ Product type dropdown listener attached');
         }
+
+        console.log('🎉 All initialization complete!');
     });
 </script>
 {% endblock %}

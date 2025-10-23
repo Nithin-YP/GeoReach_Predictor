@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GeoReach SQL Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; }
+        header { padding: 12px 16px; background:#0f172a; color:#fff; }
+        main { display: grid; grid-template-columns: 360px 1fr; gap: 0; height: calc(100vh - 56px); }
+        aside { border-right: 1px solid #e5e7eb; padding: 12px; overflow: auto; background:#f8fafc; }
+    #map { height: 100%; width: 100%; position: relative; }
+    #infoBox { position:absolute; right:12px; top:12px; z-index: 1000; max-width: 360px; background:#ffffff; border:1px solid #e5e7eb; border-radius:8px; box-shadow: 0 4px 18px rgba(0,0,0,0.08); }
+    #infoBox header { padding:8px 10px; font-weight:600; font-size:13px; background:#f8fafc; border-bottom:1px solid #e5e7eb; }
+    #infoBox .content { padding:8px 10px; max-height: 260px; overflow:auto; font-size: 12px; line-height:1.5; }
+    #infoBox .empty { color:#6b7280; font-style: italic; }
+        .panel { border:1px solid #e5e7eb; border-radius:8px; margin-bottom:12px; overflow:hidden; background:#fff; }
+        .panel-header { padding:10px 12px; background:#ffffff; font-weight:600; font-size:14px; cursor:pointer; user-select:none; display:flex; align-items:center; justify-content:space-between; }
+        .panel-header:focus { outline: 2px solid #2563eb; }
+        .panel-body { padding: 10px 12px; display:none; }
+        .panel.open .panel-body { display:block; }
+        .chev { transition: transform .15s ease; }
+        .panel.open .chev { transform: rotate(90deg); }
+        h3 { margin: 10px 0 6px; font-size: 14px; }
+        .row { display:flex; gap:6px; flex-wrap:wrap; }
+        input, select { padding:6px; border:1px solid #d1d5db; border-radius:6px; width: 100%; box-sizing:border-box; }
+        .badge { background:#eef2ff; color:#3730a3; padding:2px 6px; border-radius:10px; font-size: 11px; }
+        ul { padding-left: 16px; }
+    </style>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body>
+    <header>
+        <strong>GeoReach Predictor · SQL Dashboard</strong>
+    </header>
+    <main>
+        <aside>
+            <div class="panel card" id="panel-base">
+                <div class="panel-header card-header" tabindex="0" data-panel="base">Base Layers <span class="chev">›</span></div>
+                <div class="panel-body card-body" id="panel-body-base"></div>
+            </div>
+            <div class="panel card" id="panel-spatial">
+                <div class="panel-header card-header" tabindex="0" data-panel="spatial">Spatial Tools <span class="chev">›</span></div>
+                <div class="panel-body card-body" id="panel-body-spatial"></div>
+            </div>
+            <div class="panel card" id="panel-analytics">
+                <div class="panel-header card-header" tabindex="0" data-panel="analytics">Analytics Layers <span class="chev">›</span></div>
+                <div class="panel-body card-body" id="panel-body-analytics"></div>
+            </div>
+            <div class="panel card" id="panel-lists">
+                <div class="panel-header card-header" tabindex="0" data-panel="lists">Lists <span class="chev">›</span></div>
+                <div class="panel-body card-body" id="panel-body-lists"></div>
+            </div>
+
+            <!-- Templates for lazy render -->
+            <template id="tpl-base">
+                <div class="d-flex gap-2 flex-wrap mb-2">
+                    <button class="btn btn-primary btn-sm" onclick="loadStates()">States</button>
+                    <button class="btn btn-primary btn-sm" onclick="loadDistricts()">Districts</button>
+                    <button class="btn btn-primary btn-sm" onclick="loadMarketZones()">Market Zones</button>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <input id="stateFilter" class="form-control form-control-sm" placeholder="Filter by state name (optional)" />
+                    <select id="productType" class="form-select form-select-sm">
+                        <option value="">Product type (optional)</option>
+                        <option>Food</option>
+                        <option>Groceries</option>
+                        <option>Clothing</option>
+                        <option>Technology</option>
+                        <option>Automobile</option>
+                        <option>Healthcare</option>
+                        <option>Education</option>
+                        <option>Energy</option>
+                        <option>Housing</option>
+                        <option>Finance</option>
+                        <option>Entertainment</option>
+                    </select>
+                </div>
+            </template>
+
+            <template id="tpl-spatial">
+                <div class="d-flex gap-2 flex-wrap mb-2">
+                    <input id="lat" class="form-control form-control-sm" placeholder="Latitude" />
+                    <input id="lng" class="form-control form-control-sm" placeholder="Longitude" />
+                    <input id="radius" class="form-control form-control-sm" placeholder="Radius km (e.g., 100)" />
+                </div>
+                <div class="d-flex gap-2 flex-wrap mb-2">
+                    <button class="btn btn-primary btn-sm" onclick="nearbyDistricts()">Districts within radius</button>
+                    <button class="btn btn-secondary btn-sm" onclick="pointLocation()">Point location</button>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <input id="districtId" class="form-control form-control-sm" placeholder="District ID" />
+                    <button class="btn btn-primary btn-sm" onclick="neighboringDistricts()">Neighbors</button>
+                </div>
+            </template>
+
+            <template id="tpl-analytics">
+                <div class="d-flex gap-2 flex-wrap mb-2">
+                    <button class="btn btn-outline-primary btn-sm" onclick="loadPopulationDensity()">Population density</button>
+                    <button class="btn btn-outline-primary btn-sm" onclick="loadSpendingChoropleth()">Spending choropleth</button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="loadUnemploymentBubbles()">Unemployment bubbles</button>
+                </div>
+                <div class="d-flex gap-2 flex-wrap mb-2">
+                    <button class="btn btn-outline-warning btn-sm" onclick="loadWhitespaces()">White spaces</button>
+                    <button class="btn btn-outline-dark btn-sm" onclick="loadMarketAccessibility()">Market Accessibility</button>
+                    <button class="btn btn-outline-secondary btn-sm" style="--bs-btn-color:#7c3aed; --bs-btn-border-color:#7c3aed;" onclick="loadExpansionOpportunity()">Expansion Opportunity</button>
+                </div>
+                <p class="text-secondary small"><span class="badge">Tip</span> Click any layer button to refresh it on the map.</p>
+            </template>
+
+            <template id="tpl-lists">
+                <div class="d-flex gap-2 flex-wrap mb-2">
+                    <button class="btn btn-success btn-sm" onclick="listTopSpending()">Top spending cities</button>
+                    <button class="btn btn-success btn-sm" onclick="listSavings()">Savings leaderboard</button>
+                </div>
+                <ul id="list" class="list-unstyled small"></ul>
+            </template>
+        </aside>
+        <div id="map">
+            <div id="infoBox" class="card" style="display:none;">
+                <header id="infoTitle" class="card-header">Results</header>
+                <div class="content card-body" id="infoContent">
+                    <div class="empty">Run a query to see top results…</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const map = L.map('map').setView([20.5937, 78.9629], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        let layerGroup = L.layerGroup().addTo(map);
+        let pointLayer = L.layerGroup().addTo(map);
+
+        function clearLayers() {
+            layerGroup.clearLayers();
+            pointLayer.clearLayers();
+            setInfo(null, null);
+        }
+
+        function makePopup(feature, layer){
+            const p = feature.properties || {};
+            // Prefer centroid fields if available
+            let lat = p.centroid_lat, lng = p.centroid_lng;
+            if ((lat==null || lng==null) && layer && layer.getBounds) {
+                try { const c = layer.getBounds().getCenter(); lat = c.lat; lng = c.lng; } catch(e) {}
+            }
+            const lines = [];
+            if (p.id != null) lines.push(`<b>ID:</b> ${p.id}`);
+            if (p.name) lines.push(`<b>Name:</b> ${p.name}`);
+            if (p.state) lines.push(`<b>State:</b> ${p.state}`);
+            if (p.code) lines.push(`<b>Code:</b> ${p.code}`);
+            if (lat!=null && lng!=null) lines.push(`<b>Centroid:</b> ${lat.toFixed ? lat.toFixed(4) : lat}, ${lng.toFixed ? lng.toFixed(4) : lng}`);
+            // Show key metrics if available
+            const metricKeys = ['population_density','avg_spending','unemployment_rate','affordability_index','market_accessibility_score','expansion_opportunity_index','avg_disposable_income','avg_purchase_frequency'];
+            metricKeys.forEach(k=>{ if(p[k]!=null) lines.push(`<b>${k.replace(/_/g,' ')}:</b> ${typeof p[k]==='number'? p[k].toFixed(2): p[k]}`) });
+            if (lines.length===0) lines.push('No properties');
+            return lines.join('<br/>');
+        }
+
+        function addGeoJSON(geojson, style={}) {
+            const layer = L.geoJSON(geojson, {
+                style: typeof style === 'function' ? style : () => style,
+                pointToLayer: (feature, latlng) => L.circleMarker(latlng, { radius: 6, color: '#1d4ed8', fillColor:'#60a5fa', fillOpacity: 0.6 }),
+                onEachFeature: (feature, lyr) => {
+                    const html = makePopup(feature, lyr);
+                    if (html) lyr.bindPopup(html);
+                }
+            }).addTo(layerGroup);
+            try { if (layer.getBounds && layer.getBounds().isValid()) map.fitBounds(layer.getBounds(), { maxZoom: 7 }); } catch (e) {}
+        }
+
+        function extent(values){
+            let min=Infinity,max=-Infinity; values.forEach(v=>{ if(v==null||isNaN(v))return; if(v<min)min=v; if(v>max)max=v; });
+            if(min===Infinity) { min=0; max=1; } return [min,max];
+        }
+
+        function ramp(value, min, max){
+            if(value==null||isNaN(value)) return '#e5e7eb';
+            const t = Math.max(0, Math.min(1, (value-min)/(max-min||1)));
+            // blue (low) -> red (high)
+            const r = Math.round(255*t);
+            const b = Math.round(255*(1-t));
+            return `rgb(${r},80,${b})`;
+        }
+
+        function addChoropleth(geojson, prop){
+            const vals = geojson.features.map(f => f.properties && f.properties[prop]);
+            const [min,max] = extent(vals);
+            const styleFn = feat => ({
+                color:'#111827', weight:0.5, fillOpacity:0.6,
+                fillColor: ramp((feat.properties||{})[prop], min, max)
+            });
+            addGeoJSON(geojson, styleFn);
+            updateInfoBoxFromGeoJSON(geojson, `Top by ${prop.replace(/_/g,' ')}`, prop, {desc:true});
+        }
+
+        function addBubbles(geojson, prop, rmin=4, rmax=16){
+            const vals = geojson.features.map(f => f.properties && f.properties[prop]);
+            const [min,max] = extent(vals);
+            const layer = L.geoJSON(geojson, {
+                pointToLayer: (feature, latlng) => {
+                    const v = (feature.properties||{})[prop];
+                    const t = Math.max(0, Math.min(1, ((v??0)-min)/(max-min||1)));
+                    const r = rmin + t*(rmax-rmin);
+                    return L.circleMarker(latlng, { radius:r, color:'#ef4444', fillColor:'#fecaca', fillOpacity:0.7 });
+                }
+            }).addTo(layerGroup);
+            try { if (layer.getBounds && layer.getBounds().isValid()) map.fitBounds(layer.getBounds(), { maxZoom: 7 }); } catch (e) {}
+            updateInfoBoxFromGeoJSON(geojson, `Top by ${prop.replace(/_/g,' ')}`, prop, {desc:true});
+        }
+
+        // ============ Info box helpers ============
+        function setInfo(title, lines){
+            const box = document.getElementById('infoBox');
+            const titleEl = document.getElementById('infoTitle');
+            const content = document.getElementById('infoContent');
+            if (!title || !lines || lines.length === 0){
+                titleEl.textContent = 'Results';
+                content.innerHTML = '<div class="empty">Run a query to see top results…</div>';
+                box.style.display = 'none';
+                return;
+            }
+            titleEl.textContent = title;
+            content.innerHTML = '<ul>' + lines.map(li => `<li>${li}</li>`).join('') + '</ul>';
+            box.style.display = 'block';
+        }
+
+        function formatNumber(n){
+            if (n==null || isNaN(n)) return 'n/a';
+            const x = Number(n);
+            if (Math.abs(x) >= 1000) return x.toLocaleString(undefined, {maximumFractionDigits: 0});
+            return x.toFixed(2);
+        }
+
+        function getFeatureName(p){
+            const name = p.name || p.district || p.state || 'Feature';
+            const state = p.state && (!p.name || (p.name && !String(p.name).includes(p.state))) ? `, ${p.state}` : '';
+            return `${name}${state}`;
+        }
+
+        function updateInfoBoxFromGeoJSON(geojson, title, propKey, opts){
+            try{
+                const features = (geojson && geojson.features) ? geojson.features : [];
+                if (features.length === 0){ setInfo(null,null); return; }
+                let arr = features.map(f => ({ f, v: f.properties ? f.properties[propKey] : null }));
+                arr = arr.filter(x => x.v!=null && !isNaN(x.v));
+                arr.sort((a,b) => (opts && opts.desc ? (b.v - a.v) : (a.v - b.v)));
+                const top = arr.slice(0,5);
+                const lines = top.map(x => `${getFeatureName(x.f.properties||{})}: ${formatNumber(x.v)}`);
+                setInfo(title, lines);
+            }catch(e){ setInfo(null,null); }
+        }
+
+        function statesUrl() { return '/geo/api/states/geojson/?demographics=false'; }
+        function districtsUrl() {
+            const s = document.getElementById('stateFilter').value.trim();
+            return '/geo/api/districts/geojson/?metrics=false' + (s ? ('&state=' + encodeURIComponent(s)) : '');
+        }
+        function marketZonesUrl() {
+            const p = document.getElementById('productType').value;
+            return '/geo/api/market-zones/' + (p ? ('?product_type=' + encodeURIComponent(p)) : '');
+        }
+
+        async function loadStates() {
+            clearLayers();
+            const res = await fetch(statesUrl());
+            // Outline only to avoid "full selection" look
+            const gj = await res.json();
+            addGeoJSON(gj, { color:'#10b981', weight:1, fillOpacity:0.0 });
+            updateInfoBoxFromGeoJSON(gj, 'Top states by population', 'population', {desc:true});
+        }
+        async function loadDistricts() {
+            clearLayers();
+            const res = await fetch(districtsUrl());
+            const gj = await res.json();
+            addGeoJSON(gj, { color:'#0ea5e9', weight:0.5, fillOpacity:0.0 });
+            updateInfoBoxFromGeoJSON(gj, 'Top districts by population', 'population', {desc:true});
+        }
+        async function loadMarketZones() {
+            clearLayers();
+            const res = await fetch(marketZonesUrl());
+            const gj = await res.json();
+            addGeoJSON(gj, { color:'#f59e0b', weight:1, fillOpacity:0.2 });
+            updateInfoBoxFromGeoJSON(gj, 'Top market zones by score', 'market_score', {desc:true});
+        }
+
+        async function nearbyDistricts() {
+            clearLayers();
+            const lat = parseFloat(document.getElementById('lat').value);
+            const lng = parseFloat(document.getElementById('lng').value);
+            const radius = parseFloat(document.getElementById('radius').value || '50');
+            if (isNaN(lat) || isNaN(lng)) return alert('Enter lat/lng');
+            L.circle([lat,lng], { radius: radius*1000, color:'#ef4444'}).addTo(pointLayer);
+            const url = `/geo/api/districts/nearby/?lat=${lat}&lng=${lng}&radius=${radius}`;
+            const res = await fetch(url); const data = await res.json();
+            data.districts.forEach(d => {
+                if (d.lat && d.lng) L.circleMarker([d.lat, d.lng], { radius:6, color:'#ef4444'}).bindPopup(`${d.name} · ${d.distance_km.toFixed(1)} km`).addTo(pointLayer);
+            });
+            const sorted = [...data.districts].sort((a,b)=> a.distance_km - b.distance_km).slice(0,5);
+            setInfo('Nearest districts', sorted.map(d => `${d.name}: ${formatNumber(d.distance_km)} km`));
+        }
+
+        async function pointLocation() {
+            clearLayers();
+            const lat = parseFloat(document.getElementById('lat').value);
+            const lng = parseFloat(document.getElementById('lng').value);
+            if (isNaN(lat) || isNaN(lng)) return alert('Enter lat/lng');
+            const res = await fetch(`/geo/api/point-location/?lat=${lat}&lng=${lng}`);
+            const data = await res.json();
+            L.marker([lat, lng]).addTo(pointLayer).bindPopup(JSON.stringify(data));
+            map.setView([lat, lng], 7);
+            const lines = [];
+            if (data.state) lines.push(`State: ${data.state.name} (id ${data.state.id})`);
+            if (data.district) lines.push(`District: ${data.district.name} (id ${data.district.id})`);
+            setInfo('Point location', lines.length? lines : ['No state/district found']);
+        }
+
+        async function neighboringDistricts() {
+            clearLayers();
+            const id = document.getElementById('districtId').value;
+            if (!id) return alert('Enter district ID');
+            const res = await fetch(`/geo/api/neighboring-districts/?district_id=${encodeURIComponent(id)}`);
+            const data = await res.json();
+            const list = document.getElementById('list');
+            list.innerHTML = '';
+            data.neighbors.forEach(n => {
+                const li = document.createElement('li');
+                li.className='d-flex justify-content-between align-items-center border-bottom py-1';
+                li.innerHTML = `<span>${n.name}</span><span class="badge bg-light text-dark">${n.population || 'n/a'}</span>`;
+                list.appendChild(li);
+            });
+            const top = [...data.neighbors].sort((a,b)=> (b.population||0) - (a.population||0)).slice(0,5);
+            setInfo('Top neighbor populations', top.map(n => `${n.name}: ${formatNumber(n.population||0)}`));
+        }
+
+        async function loadPopulationDensity() {
+            clearLayers();
+            const s = document.getElementById('stateFilter').value.trim();
+            const url = '/geo/api/sql/population-density/' + (s ? ('?state=' + encodeURIComponent(s)) : '');
+            const gj = await (await fetch(url)).json();
+            addChoropleth(gj, 'population_density');
+        }
+        async function loadSpendingChoropleth() {
+            clearLayers();
+            const s = document.getElementById('stateFilter').value.trim();
+            const url = '/geo/api/sql/spending-choropleth/' + (s ? ('?state=' + encodeURIComponent(s)) : '');
+            const gj = await (await fetch(url)).json();
+            addChoropleth(gj, 'avg_spending');
+        }
+        async function loadUnemploymentBubbles() {
+            clearLayers();
+            const s = document.getElementById('stateFilter').value.trim();
+            const url = '/geo/api/sql/unemployment-bubbles/' + (s ? ('?state=' + encodeURIComponent(s)) : '');
+            const gj = await (await fetch(url)).json();
+            addBubbles(gj, 'unemployment_rate');
+        }
+        async function loadWhitespaces() {
+            clearLayers();
+            const p = document.getElementById('productType').value;
+            const url = '/geo/api/sql/whitespaces/' + (p ? ('?product_type=' + encodeURIComponent(p)) : '');
+            const gj = await (await fetch(url)).json();
+            addGeoJSON(gj, { color:'#f97316', weight:0.8, fillOpacity:0.35 });
+            const names = (gj.features||[]).slice(0,10).map(f => getFeatureName(f.properties||{}));
+            setInfo('Uncovered districts', names);
+        }
+        async function loadMarketAccessibility() {
+            clearLayers();
+            const gj = await (await fetch('/geo/api/sql/market-accessibility/')).json();
+            addChoropleth(gj, 'market_accessibility_score');
+        }
+        async function loadExpansionOpportunity() {
+            clearLayers();
+            const p = document.getElementById('productType').value;
+            const url = '/geo/api/sql/expansion-opportunity/' + (p ? ('?product_type=' + encodeURIComponent(p)) : '');
+            const gj = await (await fetch(url)).json();
+            addChoropleth(gj, 'expansion_opportunity_index');
+        }
+        async function listTopSpending() {
+            const res = await fetch('/geo/api/sql/top-spending-cities/?limit=10');
+            const rows = await res.json();
+            const list = document.getElementById('list');
+            list.innerHTML='';
+            rows.forEach(r => {
+                const li = document.createElement('li');
+                li.className='d-flex justify-content-between align-items-center border-bottom py-1';
+                li.innerHTML = `<span>${r.district}, ${r.state}</span><span class=\"badge bg-primary-subtle text-primary-emphasis\">${Number(r.avg_spending).toFixed(0)}</span>`;
+                list.appendChild(li);
+            });
+            const lines = rows.slice(0,5).map(r => `${r.district}, ${r.state}: ${formatNumber(r.avg_spending)}`);
+            setInfo('Top spending cities', lines);
+        }
+        async function listSavings() {
+            const res = await fetch('/geo/api/sql/savings-leaderboard/?limit=10');
+            const rows = await res.json();
+            const list = document.getElementById('list');
+            list.innerHTML='';
+            rows.forEach(r => {
+                const li = document.createElement('li');
+                li.className='d-flex justify-content-between align-items-center border-bottom py-1';
+                li.innerHTML = `<span>${r.district}, ${r.state}</span><span class=\"badge bg-success-subtle text-success-emphasis\">${Number(r.savings_est).toFixed(0)}</span>`;
+                list.appendChild(li);
+            });
+            const lines2 = rows.slice(0,5).map(r => `${r.district}, ${r.state}: ${formatNumber(r.savings_est)}`);
+            setInfo('Top savings leaderboard', lines2);
+        }
+
+        // Accordion behavior with lazy render
+        const rendered = { base:false, spatial:false, analytics:false, lists:false };
+        function togglePanel(kind){
+            const panel = document.getElementById(`panel-${kind}`);
+            const body = document.getElementById(`panel-body-${kind}`);
+            panel.classList.toggle('open');
+            if(panel.classList.contains('open')){
+                if(!rendered[kind]){
+                    const tpl = document.getElementById(`tpl-${kind}`);
+                    if (tpl && tpl.content) body.appendChild(tpl.content.cloneNode(true));
+                    rendered[kind] = true;
+                }
+                body.scrollIntoView({behavior:'smooth', block:'nearest'});
+            }
+        }
+        document.querySelectorAll('.panel-header').forEach(h=>{
+            h.addEventListener('click', ()=> togglePanel(h.dataset.panel));
+            h.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); togglePanel(h.dataset.panel); }});
+        });
+
+        // Do not auto-load any layer; user opens panel and clicks explicitly.
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

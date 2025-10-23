@@ -494,60 +494,210 @@ class GeoReachMap {
     }
 
     compareWith(props, isStateLevel) {
-        alert(`Compare feature coming soon!\nSelected: ${props.name}\n\nThis will allow you to select another region and compare demographics, economics, etc.`);
-        // TODO: Implement comparison interface
+        const modal = new bootstrap.Modal(document.getElementById('dataModal'));
+        document.getElementById('dataModalLabel').textContent = 'Compare Feature';
+        
+        const content = `
+            <div class="alert alert-info">
+                <h5><i class="bi bi-info-circle"></i> Coming Soon!</h5>
+                <p>You selected: <strong>${props.name}</strong></p>
+                <p>This feature will allow you to:</p>
+                <ul>
+                    <li>Select another region to compare</li>
+                    <li>Compare demographics side-by-side</li>
+                    <li>Compare economic indicators</li>
+                    <li>Visualize differences with charts</li>
+                </ul>
+            </div>
+        `;
+        
+        document.getElementById('dataModalBody').innerHTML = content;
+        modal.show();
     }
 
     // Helper methods to show modals with data
     showDetailsModal(data) {
+        const modal = new bootstrap.Modal(document.getElementById('dataModal'));
+        document.getElementById('dataModalLabel').textContent = `${data.name} - Details`;
+        
         const content = `
-            <div style="padding: 20px;">
-                <h3>${data.name}</h3>
-                <p><strong>Type:</strong> ${data.type}</p>
-                ${data.code ? `<p><strong>Code:</strong> ${data.code}</p>` : ''}
-                ${data.state ? `<p><strong>State:</strong> ${data.state}</p>` : ''}
-                <p><strong>Population:</strong> ${(data.population || 0).toLocaleString()}</p>
-                ${data.area_km2 ? `<p><strong>Area:</strong> ${data.area_km2.toLocaleString()} km²</p>` : ''}
-                ${data.population_density ? `<p><strong>Density:</strong> ${data.population_density.toLocaleString()} per km²</p>` : ''}
-                ${data.literacy_rate ? `<p><strong>Literacy Rate:</strong> ${data.literacy_rate}%</p>` : ''}
-                ${data.district_count ? `<p><strong>Districts:</strong> ${data.district_count}</p>` : ''}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">${data.name}</h5>
+                    <p class="card-text"><span class="badge bg-info">${data.type}</span></p>
+                    
+                    ${data.code ? `<p><strong>Code:</strong> ${data.code}</p>` : ''}
+                    ${data.state ? `<p><strong>State:</strong> ${data.state}</p>` : ''}
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Population:</strong> ${(data.population || 0).toLocaleString()}</p>
+                            ${data.area_km2 ? `<p><strong>Area:</strong> ${data.area_km2.toLocaleString()} km²</p>` : ''}
+                            ${data.population_density ? `<p><strong>Density:</strong> ${data.population_density.toLocaleString()} per km²</p>` : ''}
+                        </div>
+                        <div class="col-md-6">
+                            ${data.literacy_rate ? `<p><strong>Literacy Rate:</strong> ${data.literacy_rate}%</p>` : ''}
+                            ${data.growth_rate ? `<p><strong>Growth Rate:</strong> ${data.growth_rate}%</p>` : ''}
+                            ${data.district_count ? `<p><strong>Districts:</strong> ${data.district_count}</p>` : ''}
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
         
-        alert(content.replace(/<[^>]*>/g, '\n')); // Simple alert for now
-        // TODO: Replace with Bootstrap modal
+        document.getElementById('dataModalBody').innerHTML = content;
+        modal.show();
     }
 
     showDemographicsModal(data) {
-        let content = `Demographics: ${data.name}\n\n`;
-        content += `Type: ${data.type}\n`;
-        if (data.state) content += `State: ${data.state}\n`;
-        content += `Population: ${(data.population || 0).toLocaleString()}\n`;
-        if (data.literacy_rate) content += `Literacy: ${data.literacy_rate}%\n`;
-        if (data.sex_ratio) content += `Sex Ratio: ${data.sex_ratio}\n`;
-        if (data.rural_percentage) content += `Rural: ${data.rural_percentage}%\n`;
-        if (data.urban_percentage) content += `Urban: ${data.urban_percentage}%\n`;
+        const modal = new bootstrap.Modal(document.getElementById('dataModal'));
+        document.getElementById('dataModalLabel').textContent = `${data.name} - Demographics`;
         
-        alert(content);
-        // TODO: Replace with Bootstrap modal with charts
+        const ruralPct = data.rural_percentage || 0;
+        const urbanPct = data.urban_percentage || 0;
+        
+        const content = `
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">${data.name}</h5>
+                    <p class="card-text"><span class="badge bg-success">${data.type}</span></p>
+                    ${data.state ? `<p><small class="text-muted">State: ${data.state}</small></p>` : ''}
+                    
+                    <hr>
+                    
+                    <h6>Population Statistics</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h4 class="text-primary">${(data.population || 0).toLocaleString()}</h4>
+                                <small>Total Population</small>
+                            </div>
+                        </div>
+                        ${data.male_population ? `
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h4 class="text-info">${(data.male_population || 0).toLocaleString()}</h4>
+                                <small>Male</small>
+                            </div>
+                        </div>
+                        ` : ''}
+                        ${data.female_population ? `
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h4 class="text-danger">${(data.female_population || 0).toLocaleString()}</h4>
+                                <small>Female</small>
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    ${data.sex_ratio ? `
+                    <div class="alert alert-info">
+                        <strong>Sex Ratio:</strong> ${data.sex_ratio} females per 1000 males
+                    </div>
+                    ` : ''}
+                    
+                    ${data.literacy_rate ? `
+                    <div class="alert alert-success">
+                        <strong>Literacy Rate:</strong> ${data.literacy_rate}%
+                    </div>
+                    ` : ''}
+                    
+                    ${ruralPct || urbanPct ? `
+                    <h6>Urban-Rural Distribution</h6>
+                    <div class="progress mb-2" style="height: 30px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: ${ruralPct}%">
+                            Rural: ${ruralPct.toFixed(1)}%
+                        </div>
+                        <div class="progress-bar bg-info" role="progressbar" style="width: ${urbanPct}%">
+                            Urban: ${urbanPct.toFixed(1)}%
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    ${data.avg_income ? `<p><strong>Avg Income:</strong> ₹${(data.avg_income || 0).toLocaleString()}</p>` : ''}
+                    ${data.avg_spending ? `<p><strong>Avg Spending:</strong> ₹${(data.avg_spending || 0).toLocaleString()}</p>` : ''}
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('dataModalBody').innerHTML = content;
+        modal.show();
     }
 
     showEconomicModal(data) {
-        let content = `Economic Indicators: ${data.name}\n\n`;
+        const modal = new bootstrap.Modal(document.getElementById('dataModal'));
+        document.getElementById('dataModalLabel').textContent = `${data.name} - Economic Indicators`;
         
-        const indicators = data.economic_indicators;
-        if (indicators.employment_rate) content += `Employment Rate: ${indicators.employment_rate}%\n`;
-        if (indicators.unemployment_rate) content += `Unemployment: ${indicators.unemployment_rate}%\n`;
-        if (indicators.avg_monthly_salary) content += `Avg Salary: ₹${indicators.avg_monthly_salary.toLocaleString()}\n`;
+        const indicators = data.economic_indicators || {};
+        const industries = data.top_industries || [];
         
-        if (data.top_industries && data.top_industries.length > 0) {
-            content += `\nTop Industries:\n`;
-            data.top_industries.forEach((ind, i) => {
-                content += `${i + 1}. ${ind.industry}: ${ind.employed.toLocaleString()} employed\n`;
-            });
-        }
+        const content = `
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">${data.name}</h5>
+                    <p class="card-text"><span class="badge bg-warning text-dark">${data.type}</span></p>
+                    
+                    <hr>
+                    
+                    ${Object.keys(indicators).length > 0 ? `
+                    <h6>Employment Statistics</h6>
+                    <div class="row mb-3">
+                        ${indicators.employment_rate ? `
+                        <div class="col-md-6">
+                            <div class="card bg-success text-white mb-2">
+                                <div class="card-body text-center">
+                                    <h3>${indicators.employment_rate}%</h3>
+                                    <small>Employment Rate</small>
+                                </div>
+                            </div>
+                        </div>
+                        ` : ''}
+                        ${indicators.unemployment_rate ? `
+                        <div class="col-md-6">
+                            <div class="card bg-danger text-white mb-2">
+                                <div class="card-body text-center">
+                                    <h3>${indicators.unemployment_rate}%</h3>
+                                    <small>Unemployment Rate</small>
+                                </div>
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    ${indicators.avg_monthly_salary ? `
+                    <div class="alert alert-success">
+                        <strong>Average Monthly Salary:</strong> ₹${(indicators.avg_monthly_salary || 0).toLocaleString()}
+                    </div>
+                    ` : ''}
+                    
+                    ${indicators.labour_participation_rate ? `
+                    <p><strong>Labour Participation:</strong> ${indicators.labour_participation_rate}%</p>
+                    ` : ''}
+                    ` : '<p class="text-muted">No economic data available</p>'}
+                    
+                    ${industries.length > 0 ? `
+                    <hr>
+                    <h6>Top Industries by Employment</h6>
+                    <div class="list-group">
+                        ${industries.map((ind, i) => `
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">${i + 1}. ${ind.industry}</h6>
+                                    <small>${ind.employed.toLocaleString()} employed</small>
+                                </div>
+                                ${ind.avg_salary ? `<p class="mb-1"><small>Avg Salary: ₹${ind.avg_salary.toLocaleString()}</small></p>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
         
-        alert(content);
-        // TODO: Replace with Bootstrap modal with charts
+        document.getElementById('dataModalBody').innerHTML = content;
+        modal.show();
     }
 }
