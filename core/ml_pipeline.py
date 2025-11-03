@@ -16,9 +16,9 @@ logger = logging.getLogger(__name__)
 
 # Try to import ML libraries, with fallback if not available
 try:
-    from sklearn.preprocessing import MinMaxScaler, OneHotEncoder  # type: ignore
-    from sklearn.cluster import KMeans  # type: ignore
-    from sklearn.ensemble import RandomForestRegressor  # type: ignore
+    from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, StandardScaler
+    from sklearn.cluster import KMeans
+    from sklearn.ensemble import RandomForestRegressor
     from sklearn.model_selection import train_test_split  # type: ignore
     import joblib  # type: ignore
     ML_LIBRARIES_AVAILABLE = True
@@ -75,6 +75,102 @@ def load_datasets() -> Dict[str, Optional[pd.DataFrame]]:
             datasets[key] = None
     
     return datasets
+
+
+def create_training_data() -> Optional[pd.DataFrame]:
+    """
+    Create a unified training dataset from various sources.
+    This function will process, pivot, and merge demographic, economic, and market potential data.
+    """
+    logger.info("Creating unified training data...")
+    
+    # Define paths to the datasets
+    demographics_path = os.path.join(DATASETS_DIR, 'synthetic', 'demographic_profiles.csv')
+    economics_path = os.path.join(DATASETS_DIR, 'synthetic', 'economic_indicators.csv')
+    market_potential_path = os.path.join(DATASETS_DIR, 'synthetic', 'market_potential_zones.csv')
+
+    try:
+        # Load the datasets
+        demographics_df = pd.read_csv(demographics_path)
+        economics_df = pd.read_csv(economics_path)
+        market_potential_df = pd.read_csv(market_potential_path)
+
+        # --- 1. Process Demographics Data ---
+        # Pivot to get age groups as columns
+        demographics_pivot = demographics_df.pivot_table(
+            index=['state', 'district'],
+            columns='age_group',
+            values='sample_size',
+            aggfunc='sum'
+        ).reset_index()
+        demographics_pivot.columns.name = None
+        demographics_pivot = demographics_pivot.fillna(0)
+        
+        logger.info(f"Pivoted demographics columns: {demographics_pivot.columns.tolist()}")
+
+        # Dynamically identify age columns
+        age_cols = [col for col in demographics_pivot.columns if isinstance(col, str) and re.match(r'\d+.*', col)]
+        
+        # Calculate total population and other aggregated metrics from the original demographics df
+        demographics_agg = demographics_df.groupby(['state', 'district']).agg(
+            avg_income=('avg_income', 'mean'),
+            avg_disposable_income=('avg_disposable_income', 'mean'),
+            avg_spending=('avg_spending', 'mean')
+        ).reset_index()
+
+        # Merge pivoted data with aggregated data
+        demographics_processed = pd.merge(demographics_pivot, demographics_agg, on=['state', 'district'])
+        
+        # Use the correct pivoted column names for calculations
+        demographics_processed['total_population'] = demographics_processed[age_cols].sum(axis=1)
+        
+        # Identify columns for 18-35 age range
+        pop_18_35_cols = [col for col in age_cols if '18-25' in col or '26-35' in col]
+        demographics_processed['population_18_35'] = demographics_processed[pop_18_35_cols].sum(axis=1)
+
+
+        # --- 2. Process Economics Data ---
+        economics_agg = economics_df.groupby('district').agg(
+            employment_rate=('employment_rate', 'mean'),
+            unemployment_rate=('unemployment_rate', 'mean'),
+            gdp_per_capita=('avg_monthly_salary', lambda x: x.mean() * 12) # Approximate GDP per capita
+        ).reset_index()
+
+        # --- 3. Process Market Potential Data ---
+        # Group by district and calculate the mean market score across all product types
+        market_potential_agg = market_potential_df.groupby('district').agg(
+            market_potential_score=('market_score', 'mean')
+        ).reset_index()
+
+        # --- 4. Merge All Datasets ---
+        merged_df = pd.merge(demographics_processed, economics_agg, on='district', how='inner')
+        training_df = pd.merge(merged_df, market_potential_agg, on='district', how='inner')
+
+        # --- 5. Feature Engineering ---
+        training_df['youth_ratio'] = training_df['population_18_35'] / training_df['total_population']
+        training_df['disposable_income_per_capita'] = training_df['avg_disposable_income'] # This is already per capita from source
+
+        # Select final features and target
+        features = [
+            'total_population', 'population_18_35', 'avg_income', 'gdp_per_capita',
+            'avg_disposable_income', 'avg_spending',
+            'youth_ratio', 'disposable_income_per_capita', 'employment_rate'
+        ]
+        target = 'market_potential_score'
+        
+        final_columns = features + [target, 'district', 'state']
+        training_df = training_df[final_columns].dropna()
+        
+        logger.info(f"Successfully created training data with {len(training_df)} records.")
+        return training_df
+
+    except FileNotFoundError as e:
+        logger.error(f"Error creating training data: Dataset file not found - {e}")
+        return None
+    except Exception as e:
+        logger.error(f"An unexpected error occurred while creating training data: {e}")
+        return None
+
 
 def get_dummy_prediction_data() -> Dict[str, Any]:
     """
@@ -550,91 +646,115 @@ def create_basic_merged_data() -> Optional[pd.DataFrame]:
 def run_prediction_pipeline(product_type: str, product_luxury: str, target_audience: str, 
                           price: float, region: str) -> Dict[str, Any]:
     """
-    Main prediction pipeline function
+    Main prediction pipeline function. This version uses the trained ML model
+    to score all districts and identify the best potential markets.
     
     Args:
-        product_type: Type of product
-        product_luxury: Luxury level (High/Medium/Low)
-        target_audience: Target customer segment
-        price: Product price
-        region: Geographic region
+        product_type: Type of product (used for logical fallback).
+        product_luxury: Luxury level (used for logical fallback).
+        target_audience: Target customer segment (used for logical fallback).
+        price: Product price (used for logical fallback).
+        region: Geographic region (currently unused by the model but kept for API consistency).
     
     Returns:
-        Dictionary containing prediction results
+        Dictionary containing prediction results.
     """
     
-    logger.info(f"Running prediction for {product_type} in {region}")
+    logger.info(f"Running ML-driven prediction for {product_type} in {region}")
     
-    # Check if ML libraries are available
+    # Check if ML libraries and models are available
     if not ML_LIBRARIES_AVAILABLE:
-        logger.warning("ML libraries not available, using logical cluster generation")
+        logger.warning("ML libraries not available, falling back to logical cluster generation.")
+        print("LOGICAL FALLBACK: ML libraries not available.")
         clusters = generate_logical_clusters(product_type, product_luxury, target_audience, price)
         metrics = calculate_realistic_metrics(clusters)
-        return {
-            **metrics,
-            'clusters': clusters
-        }
-    
-    # Check if trained models exist
-    models_exist = all(os.path.exists(path) for path in [SCALER_PATH, KMEANS_PATH, RF_MODEL_PATH])
-    
+        return {**metrics, 'clusters': clusters}
+
+    models_exist = all(os.path.exists(path) for path in [SCALER_PATH, RF_MODEL_PATH])
     if not models_exist:
-        logger.warning("Trained models not found, using logical cluster generation")
+        logger.warning("Trained models not found, falling back to logical cluster generation.")
+        print("LOGICAL FALLBACK: Trained models not found.")
         clusters = generate_logical_clusters(product_type, product_luxury, target_audience, price)
         metrics = calculate_realistic_metrics(clusters)
+        return {**metrics, 'clusters': clusters}
+
+    try:
+        # Load the trained scaler and model
+        scaler: StandardScaler = joblib.load(SCALER_PATH)
+        model: RandomForestRegressor = joblib.load(RF_MODEL_PATH)
+        
+        # Load the complete dataset for prediction
+        prediction_data = create_training_data()
+        if prediction_data is None:
+            raise ValueError("Failed to load prediction data.")
+
+        # Define the features the model was trained on
+        features = [
+            'total_population', 'population_18_35', 'avg_income', 'gdp_per_capita',
+            'avg_disposable_income', 'avg_spending',
+            'youth_ratio', 'disposable_income_per_capita', 'employment_rate'
+        ]
+        
+        X_predict = prediction_data[features]
+        
+        # Scale the features for prediction
+        X_predict_scaled = scaler.transform(X_predict)
+        
+        # Predict the market potential score for all districts
+        prediction_data['predicted_score'] = model.predict(X_predict_scaled)
+        
+        # Sort districts by the predicted score
+        sorted_districts = prediction_data.sort_values(by='predicted_score', ascending=False)
+        
+        # Select High, Medium, and Low potential clusters
+        high_potential_district = sorted_districts.iloc[0]
+        medium_potential_district = sorted_districts.iloc[len(sorted_districts) // 2]
+        low_potential_district = sorted_districts.iloc[-1]
+        
+        selected_districts = [high_potential_district, medium_potential_district, low_potential_district]
+        labels = ['High', 'Medium', 'Low']
+        
+        # Create cluster data for the response
+        clusters = []
+        # Use city data as a proxy for lat/lon for now
+        cities_data = {city['name'].lower(): city for city in get_indian_cities_data()}
+
+        for i, district_data in enumerate(selected_districts):
+            # Attempt to find matching city for lat/lon
+            city_info = cities_data.get(district_data['district'].lower(), {})
+            
+            clusters.append({
+                'lat': city_info.get('lat', 20.5937),  # Default to India's center
+                'lon': city_info.get('lon', 78.9629),
+                'label': labels[i],
+                'city_name': district_data['district'].title(),
+                'state': district_data['state'],
+                'population': int(district_data['total_population']),
+                'population_density': int(district_data.get('population_density', 0)), # This data is not in the new dataset
+                'avg_income': int(district_data['gdp_per_capita']),
+                'employment_rate': round(district_data.get('employment_rate', 95.0), 2), # Placeholder
+                'interest_index': round(district_data['predicted_score'] / 100, 3), # Normalize score
+                'tier': city_info.get('tier', 3),
+                'literacy_rate': city_info.get('literacy_rate', 80), # Placeholder from city data
+                'relevant_expenditure': int(district_data['avg_spending'])
+            })
+
+        # Calculate overall metrics from the selected clusters
+        metrics = calculate_realistic_metrics(clusters)
+
+        logger.info("ML model used for prediction.")
+        print("ML MODEL USED FOR PREDICTION.")
         return {
             **metrics,
-            'clusters': clusters
-        }
-    
-    try:
-        # Load trained models (joblib is guaranteed to be available here due to earlier checks)
-        if not ML_LIBRARIES_AVAILABLE:
-            raise ImportError("ML libraries not available")
-            
-        scaler = joblib.load(SCALER_PATH)  # type: ignore
-        kmeans = joblib.load(KMEANS_PATH)  # type: ignore
-        model = joblib.load(RF_MODEL_PATH)  # type: ignore
-        
-        # Create input features (this would need to be expanded based on your actual features)
-        input_features = np.array([[
-            hash(product_type) % 100,  # Simple hash for categorical
-            hash(product_luxury) % 10,
-            hash(target_audience) % 20,
-            price / 1000,  # Normalize price
-            hash(region) % 50
-        ]])
-        
-        # Scale features
-        input_scaled = scaler.transform(input_features)
-        
-        # Make prediction
-        predicted_reach = model.predict(input_scaled)[0]
-        
-        # Generate logical clusters based on product characteristics
-        clusters = generate_logical_clusters(product_type, product_luxury, target_audience, price)
-        
-        # Calculate success probability based on cluster quality
-        high_clusters = [c for c in clusters if c['label'] == 'High']
-        avg_interest = sum(c['interest_index'] for c in clusters) / len(clusters)
-        success_probability = min(1.0, avg_interest * 0.8 + (len(high_clusters) / len(clusters)) * 0.2)
-        
-        # Model confidence based on prediction and data quality
-        model_confidence = min(0.95, 0.75 + (avg_interest * 0.2))
-        
-        # Create response with logical clusters
-        return {
-            'predicted_reach': max(0, min(100, predicted_reach)),
-            'success_probability': round(success_probability, 3),
-            'model_confidence': round(model_confidence, 3),
             'clusters': clusters
         }
         
     except Exception as e:
-        logger.error(f"Error in prediction pipeline: {e}")
-        logger.info("Falling back to logical cluster generation based on product characteristics")
+        logger.error(f"Error in ML prediction pipeline: {e}")
+        logger.info("Falling back to logical cluster generation.")
+        print("LOGICAL FALLBACK: Error in ML prediction pipeline.")
         
-        # Generate logical clusters instead of dummy random data
+        # Fallback to the old logical system in case of any error
         clusters = generate_logical_clusters(product_type, product_luxury, target_audience, price)
         metrics = calculate_realistic_metrics(clusters)
         
@@ -645,72 +765,64 @@ def run_prediction_pipeline(product_type: str, product_luxury: str, target_audie
 
 def train_models() -> bool:
     """
-    Train and save ML models
-    Returns True if successful, False otherwise
+    Train and save ML models using a real, unified dataset.
+    Returns True if successful, False otherwise.
     """
     if not ML_LIBRARIES_AVAILABLE:
         logger.error("Cannot train models: ML libraries not available")
         return False
     
     try:
-        # Import required modules (guaranteed to be available due to earlier check)
-        if not ML_LIBRARIES_AVAILABLE:
-            raise ImportError("ML libraries not available")
+        # Import required modules
+        from sklearn.model_selection import train_test_split
+        from sklearn.preprocessing import StandardScaler
+        from sklearn.ensemble import RandomForestRegressor
+        import joblib
+
+        # Create the training dataset
+        training_data = create_training_data()
         
-        # Import sklearn modules with type hints to avoid "possibly unbound" errors
-        from sklearn.model_selection import train_test_split  # type: ignore
-        from sklearn.preprocessing import MinMaxScaler  # type: ignore
-        from sklearn.ensemble import RandomForestRegressor  # type: ignore
-        from sklearn.cluster import KMeans  # type: ignore
-        import joblib  # type: ignore
-        
-        # Create basic dataset
-        merged_data = create_basic_merged_data()
-        
-        if merged_data is None:
-            logger.error("Cannot train models: No data available")
+        if training_data is None:
+            logger.error("Cannot train models: Failed to create training data.")
             return False
         
-        # Create synthetic target variable for demonstration
-        # In a real scenario, this would come from actual adoption data
-        merged_data['adoption_rate'] = (
-            (merged_data.get('Population', 0) / 1000000) * 0.5 +
-            (merged_data.get('Density (per km2)', 0) / 100) * 0.2 +
-            np.random.uniform(0, 50, len(merged_data))
-        ).clip(0, 100)
-        
-        # Define features
-        feature_columns = ['Population', 'Area (km2)', 'latitude', 'longitude', 'National_Avg_Personal_Income']
-        available_features = [col for col in feature_columns if col in merged_data.columns]
-        
-        if len(available_features) == 0:
-            logger.error("No suitable features found for training")
-            return False
-        
-        X = merged_data[available_features].fillna(0)
-        y = merged_data['adoption_rate']
+        # Define features and target
+        features = [
+            'total_population', 'population_18_35', 'avg_income', 'gdp_per_capita',
+            'avg_disposable_income', 'avg_spending',
+            'youth_ratio', 'disposable_income_per_capita', 'employment_rate'
+        ]
+        target = 'market_potential_score'
+
+        X = training_data[features]
+        y = training_data[target]
         
         # Split data
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         
         # Train scaler
-        scaler = MinMaxScaler()
+        scaler = StandardScaler()
         X_train_scaled = scaler.fit_transform(X_train)
         
         # Train regression model
-        rf_model = RandomForestRegressor(n_estimators=100, random_state=42)
+        rf_model = RandomForestRegressor(n_estimators=100, random_state=42, oob_score=True)
         rf_model.fit(X_train_scaled, y_train)
         
-        # Train clustering model
-        kmeans = KMeans(n_clusters=3, random_state=42)
-        kmeans.fit(X_train_scaled)
+        logger.info(f"Model trained. OOB Score: {rf_model.oob_score_:.4f}")
+
+        # For this pipeline, we will use the regressor to score districts and then use
+        # the logical clustering to present high/medium/low options from the top-scored districts.
+        # A KMeans model is not strictly necessary if we are ranking districts by score.
         
-        # Save models
+        # Save the scaler and the regressor model
         joblib.dump(scaler, SCALER_PATH)
-        joblib.dump(kmeans, KMEANS_PATH)
         joblib.dump(rf_model, RF_MODEL_PATH)
         
-        logger.info("Models trained and saved successfully")
+        # Clean up old kmeans model if it exists
+        if os.path.exists(KMEANS_PATH):
+            os.remove(KMEANS_PATH)
+
+        logger.info("Scaler and Regressor models trained and saved successfully.")
         return True
         
     except Exception as e:

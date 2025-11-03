@@ -11,9 +11,22 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-import os
 from dotenv import load_dotenv
+import os
 import dj_database_url
+
+# Force Django to use Conda's GDAL/PROJ libraries
+load_dotenv()
+gdal_path = os.getenv('GDAL_LIBRARY_PATH')
+geos_path = os.getenv('GEOS_LIBRARY_PATH')
+proj_lib = os.getenv('PROJ_LIB')
+
+if gdal_path and os.path.exists(gdal_path):
+    GDAL_LIBRARY_PATH = gdal_path
+if geos_path and os.path.exists(geos_path):
+    GEOS_LIBRARY_PATH = geos_path
+if proj_lib and os.path.exists(proj_lib):
+    os.environ['PROJ_LIB'] = proj_lib
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

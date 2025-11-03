@@ -237,6 +237,15 @@ python manage.py collectstatic          # Collect static files
 # Testing
 python manage.py test                   # Run tests
 ```
+## GIS Environment Setup
+
+After creating and activating your Conda environment, set these variables:
+
+Windows:
+    set PROJ_LIB=%CONDA_PREFIX%\Library\share\proj
+    set GDAL_DATA=%CONDA_PREFIX%\Library\share\gdal
+
+Or, copy `setup/set-georeach-env-vars.bat` to your environment's `etc\conda\activate.d` folder.
 
 ## 🔧 Configuration Options
 
